@@ -1,0 +1,45 @@
+/* Flat, readable blue UI; overrides the older decorative scene styles. */
+body{padding-bottom:76px;font-size:16px}
+.panel,.candidate,.offer{border-radius:12px;box-shadow:none}
+.primary,.candidate{box-shadow:none}
+.postseason-summary.champion{background:#fff9e6}
+.postseason-summary.champion::after{background:none;content:'🎉  🎉  🎉';font-size:24px;letter-spacing:25px;text-align:center;opacity:.65}
+.progress-scene{background:#182c55}
+.ballpark{background:#173d35}
+.draft-rounds span{animation:none}
+.season-playback{border:1px solid var(--line);max-width:800px}
+.season-playback h1{font-size:clamp(28px,4vw,42px)}
+.season-playback p{font-size:19px}
+.roster-track{height:26px;border-radius:6px}
+.roster-segments{width:100%}
+.season-months{font-size:15px}
+.metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.metrics>div{min-width:0;padding:8px 0}
+.metrics strong{font-size:clamp(25px,3vw,34px)}
+.metrics span{font-size:15px}
+.leaders{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.leader-card{padding:17px}
+.leader-card li{font-size:15px}
+.leader-card li small,.leader-card small{font-size:13px}
+.result-facts{font-size:16px}
+.result-facts b{font-size:19px}
+.career-high,.career-low{font-style:normal;font-size:12px;font-weight:800;margin-left:6px}
+.career-high{color:#cf3341}.career-low{color:#2361be}
+.season-log{border-top:1px solid var(--line);margin-top:22px;padding-top:16px}
+.season-log>summary{cursor:pointer;font-size:18px;font-weight:700}
+.management-panel .choice{padding:14px}
+.management-panel .choice-number{font-size:26px}
+.management-panel p{margin:6px 0}
+.global-actions{position:fixed;z-index:70;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:10px 18px;background:#fff;border-top:1px solid var(--line)}
+.global-actions button{min-width:170px;min-height:46px;font-size:16px}
+.award-event{border-top-color:#8b5fc2;background:#fcf8ff}
+.award-event::after,.champion-event::after{content:'🎉 🎉 🎉';display:block;text-align:center;font-size:28px;margin-top:12px}
+.champion-event{border-top-color:#d9a527;background:#fff9e6}
+small,.chart-note,.section-note,.form-grid small,.candidate-skill,.training-option small,.leader-card li small,.leader-card small,.report-list,.prose p{font-size:14px!important}
+.header-tools button,.file-label,.season-selector,.season-selector select,.percentile-legend,.axis-labels,.scout-numbers small,.training-footer p,.tier-steps span,.progress-steps span,.draft-rounds span,.eyebrow,.segment button{font-size:14px}
+table{font-size:15px}thead th{font-size:14px}.percentile-cell small{font-size:14px}
+.result-facts,.result-facts b{line-height:1.5}.fa-progress>span,.fa-progress small{font-size:15px}
+.candidate-skill{grid-template-columns:52px minmax(0,1fr) 32px}
+.progress-scene{border-radius:12px;min-height:450px}.draft-rounds span{animation:none}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.leaders{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.metrics strong{font-size:25px}.leaders{grid-template-columns:1fr}.global-actions button{min-width:0;flex:1}.site-header nav{overflow-x:auto;justify-content:flex-start;white-space:nowrap}.site-header nav button{font-size:14px;padding:10px 12px}.result-facts{font-size:15px}.result-facts b{font-size:18px}}

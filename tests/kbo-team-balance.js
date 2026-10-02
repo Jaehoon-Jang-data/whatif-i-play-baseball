@@ -72,7 +72,7 @@ assert.ok(simulation.pooled.avg.mean<=result.official.comparable144.seasonShape.
 assert.ok(simulation.pooled.era.mean>=result.official.comparable144.seasonShape.era.mean.min);
 assert.ok(simulation.pooled.era.mean<=result.official.comparable144.seasonShape.era.mean.max);
 assert.equal(teamSeasons.filter(t=>t.avg>=.5).length,0);
-writeFileSync(new URL('./kbo-team-balance-results.json',import.meta.url),JSON.stringify(result,null,2)+'\n');
+writeFileSync(process.env.BALANCE_OUTPUT||new URL('./kbo-team-balance-results.json',import.meta.url),JSON.stringify(result,null,2)+'\n');
 console.log(JSON.stringify({officialYears:result.official.extractedYears,comparable144Years:result.official.comparable144Years,
   seeds:200,official144:result.official.comparable144.pooled,recent144:result.official.recent144.pooled,
   simulated:simulation.pooled,leagueShape:simulation.seasonShape,outsideOfficial144:simulation.outsideOfficial144,
