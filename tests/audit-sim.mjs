@@ -18,7 +18,7 @@ for(let seed=1;seed<=100;seed++){
 const league=[],regularBatRatio=[],benchBatRatio=[],starterRatio=[],reliefRatio=[],closer=[];
 for(let seed=1;seed<=100;seed++){
   const s=simulateSeason({seed,year:2029});
-  for(const p of s.players){const q=p.stat;if(p.role==='bat'&&q.g>30){if(Number(p.id.split('b')[1])<9)regularBatRatio.push(q.pa/q.g);else benchBatRatio.push(q.pa/q.g);}if(p.position==='선발'&&q.gs>5)starterRatio.push(q.outs/3/q.gs);if(p.position==='중간계투'&&q.g>5)reliefRatio.push(q.outs/3/q.g);if(p.position==='마무리')closer.push({g:q.g,sv:q.sv,bs:q.bs});}
+  for(const p of s.players){const q=p.stat;if(p.role==='bat'&&q.g>30){if(Number(p.id.split('b')[1])<9)regularBatRatio.push(q.pa/q.g);else if(Number(p.id.split('b')[1])>=16)benchBatRatio.push(q.pa/q.g);}if(p.position==='선발'&&q.gs>5)starterRatio.push(q.outs/3/q.gs);if(p.position==='중간계투'&&q.g>5)reliefRatio.push(q.outs/3/q.g);if(p.position==='마무리')closer.push({g:q.g,sv:q.sv,bs:q.bs});}
   league.push({qualified:s.players.filter(p=>p.role==='bat'&&p.stat.pa>=Math.floor(144*3.1)).length,era:rates(s.players.filter(p=>p.role==='pitch').reduce((a,p)=>{for(const k of Object.keys(a))a[k]+=p.stat[k]||0;return a;},{outs:0,er:0,bb:0,h:0}),'pitch').era});
 }
 const postseason=[];

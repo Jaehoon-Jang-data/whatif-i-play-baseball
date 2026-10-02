@@ -1,5 +1,5 @@
 /* Flat, readable blue UI; overrides the older decorative scene styles. */
-body{padding-bottom:76px;font-size:16px}
+body{padding-bottom:0;font-size:16px}
 .panel,.candidate,.offer{border-radius:12px;box-shadow:none}
 .primary,.candidate{box-shadow:none}
 .postseason-summary.champion{background:#fff9e6}
@@ -30,7 +30,7 @@ body{padding-bottom:76px;font-size:16px}
 .management-panel .choice{padding:14px}
 .management-panel .choice-number{font-size:26px}
 .management-panel p{margin:6px 0}
-.global-actions{position:fixed;z-index:70;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:12px;padding:10px 18px;background:#fff;border-top:1px solid var(--line)}
+.global-actions{position:static;display:flex;justify-content:center;gap:12px;margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
 .global-actions button{min-width:170px;min-height:46px;font-size:16px}
 .award-event{border-top-color:#8b5fc2;background:#fcf8ff}
 .award-event::after,.champion-event::after{content:'🎉 🎉 🎉';display:block;text-align:center;font-size:28px;margin-top:12px}
@@ -43,3 +43,5 @@ table{font-size:15px}thead th{font-size:14px}.percentile-cell small{font-size:14
 .progress-scene{border-radius:12px;min-height:450px}.draft-rounds span{animation:none}
 @media(max-width:900px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.leaders{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.metrics strong{font-size:25px}.leaders{grid-template-columns:1fr}.global-actions button{min-width:0;flex:1}.site-header nav{overflow-x:auto;justify-content:flex-start;white-space:nowrap}.site-header nav button{font-size:14px;padding:10px 12px}.result-facts{font-size:15px}.result-facts b{font-size:18px}}
+
+.draft-motion{max-width:700px;margin:24px auto;padding:32px;text-align:left}.draft-motion h2{font-size:clamp(26px,4vw,40px)}.draft-motion .eyebrow{color:var(--muted)}.salary-roster{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);gap:16px}.salary-roster .panel{margin:0}.season-metrics{display:flex;flex-wrap:wrap;gap:0}.season-metrics>div{box-sizing:border-box;flex:0 0 25%;padding:12px}.season-metrics>div.count-stat{flex-basis:20%}@media(max-width:800px){.salary-roster{grid-template-columns:1fr}.season-metrics>div,.season-metrics>div.count-stat{flex-basis:33.333%}}@media(max-width:480px){.season-metrics>div,.season-metrics>div.count-stat{flex-basis:50%}}

@@ -50,3 +50,5 @@ node tests/audit-sim.mjs
 ## 2026-10-02 규칙 개선
 
 학교 선택 목록은 [KBO 공식 드래프트 자료](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=12024)와 [한국대학야구연맹 2026 참가팀](https://www.kubf-baseball.com/)을 참고했습니다. 급여 기준은 [KBO 2026 평균 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11861), [2027 최저 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11814), [2025~2028 경쟁균형세](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11791)를 참고합니다. 이후의 최저 연봉 연 3%, 2029년 이후 팀 한도 연 4% 증가와 팀별 사용액은 게임 가정입니다. 경쟁균형세 기준액은 선수 개인 연봉 상한으로 사용하지 않습니다.
+
+후속 UI·상태 전이·연봉·백분위 수정 근거와 입력별 결과는 [2026-10-02 후속 점검](docs/2026-10-02-followup.md)에 기록했습니다.

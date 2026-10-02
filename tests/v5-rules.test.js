@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {abilityCandidates,createCareer,rosterPlan,progress,nextYear,saveCareer,loadCareer,negotiateSalary,retire,careerScore,teamBudget,coachRecommendation,LEVELS,acknowledgeEvent} from '../src/engine.js';
+import {abilityCandidates,createCareer,rosterPlan,progress,nextYear,saveCareer,loadCareer,negotiateSalary,retire,careerScore,teamBudget,coachChallenge,LEVELS,acknowledgeEvent} from '../src/engine.js';
 
 const config=(seed=1,role='bat',position='중견수')=>({seed,name:'검증 선수',school:'경남고',role,position,type:role==='bat'?'교타형':'제구형',team:0,hand:'우투우타'});
 const pro=(seed=1)=>{const c=createCareer(config(seed));c.stage='프로';c.phase='prepare';c.year=2030;c.age=24;c.reserved=true;c.playerStatus='reserved';c.contract={kind:'reserved',annualMan:12000,left:1};return c;};
@@ -17,4 +17,4 @@ test('재협상 실패에도 최초 구단 제안을 적용한다',()=>{let fail
 
 test('팀 급여 여력은 계약금 배분과 실제 지급 옵션을 반영한다',()=>{const c=pro(32);c.contract={annualMan:30000,years:3,signingBonusMan:9000,options:[{amountMan:5000}]};const planned=teamBudget(c.year,c.player.team,c);assert.equal(planned.playerCostMan,38000);c.salaryLedger.push({year:c.year,team:c.player.team,optionPaidMan:2000});const paid=teamBudget(c.year,c.player.team,c);assert.equal(paid.playerCostMan,35000);assert.equal(paid.roomMan,planned.roomMan+3000);});
 
-test('코치 추천을 따랐을 때만 소폭의 신뢰도 보상을 받는다',()=>{const a=pro(44),b=structuredClone(a),recommended=coachRecommendation(a).index,other=(recommended+1)%6;progress(a,[recommended]);progress(b,[other]);assert.deepEqual(a.history[0].stat,b.history[0].stat);assert.equal(a.clubTrust,b.clubTrust+2);});
+test('코치 과제 달성 시 다음 시즌 출전 기회가 늘어난다',()=>{const a=pro(44);a.proYears=1;const event=coachChallenge(a);assert.equal(event.type,'coach_challenge');assert.equal(coachChallenge(a),null);const row=progress(a,[event.index]);assert.ok(row.stat.g>=0);if(a.player.a[event.index]>=event.target){assert.equal(a.positionOpportunityUntil,a.year+1);assert.ok(a.trustHistory.some(x=>x.reason.includes('코치 과제')));}});

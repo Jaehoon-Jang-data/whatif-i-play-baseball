@@ -36,3 +36,34 @@ test('와일드카드 4위는 한 경기 승리로 진출한다',()=>{
   const out=postseasonResult({year:2030,games:144,teams,players:[]},{team:0,role:'bat',stat:{g:0}},null,15);
   assert.ok(out.rounds[0].games<=2);assert.ok(out.rounds[0].winner===3||out.rounds[0].winner===4);
 });
+
+test('포스트시즌 하위 시드가 우승해도 정규시즌 1위는 최종 2위다',()=>{
+  const teams=Array.from({length:10},(_,id)=>({id,w:90-id*3,l:54+id*3,g:144}));
+  const league={year:2030,games:144,teams,players:[]};
+  for(let seed=1;seed<=1000;seed++){
+    const first=postseasonResult(league,{team:0,role:'bat',stat:{...emptyBat(),g:0}},null,seed);
+    assert.ok([1,2].includes(first.finalRank));
+    assert.equal(first.finalRank,first.champion===0?1:2);
+    assert.deepEqual(first.rounds.map(x=>x.round),['와일드카드','준플레이오프','플레이오프','한국시리즈']);
+  }
+});
+
+test('수상 3개 주전의 연봉과 MVP 타자의 FA 총액은 성적을 반영한다',()=>{
+  const c=career(7);c.player.position='2루수';c.contract.annualMan=4400;c.history=[{stage:'프로',military:false,role:'bat',position:'2루수',stat:{...emptyBat(),g:140,pa:590,ab:520,h:180,hr:25,rbi:100,bb:60},awards:['최다안타','타점','골든글러브 · 2루수']}];
+  assert.ok(salaryOffer(c)>=12000);
+  c.phase='market';c.faDeclared=true;c.age=29;c.contract.annualMan=20000;c.history=Array.from({length:3},(_,i)=>({...c.history[0],awards:i===2?['MVP','최다안타','타점','홈런','골든글러브 · 2루수']:[]}));
+  assert.ok(offers(c).every(x=>x.totalMan>=600000));
+  const without=structuredClone(c);without.history[2].awards=[];
+  assert.ok(offers(c)[0].totalMan>offers(without)[0].totalMan);
+});
+
+test('백분위 비교군은 플레이어 표본 구간 이상이며 동점은 중간 순위다',async()=>{
+  const {percentileReport,percentile}=await import('../src/engine.js');
+  const players=Array.from({length:13},(_,i)=>({id:i?'peer'+i:'user',role:'bat',position:'2루수',team:0,stat:{...emptyBat(),g:100,pa:i===0?223:i<=3?112:i<=6?223:i<=9?335:446,ab:200,h:80+i}}));
+  const league={games:144,teams:[{id:0,g:144}],players};
+  let report=percentileReport(league,'bat').find(x=>x.key==='h');
+  assert.equal(report.qualification,'50%');assert.equal(report.count,10);assert.equal(report.threshold,223);
+  assert.equal(report.percentile,percentile(80,players.slice(4).map(p=>p.stat.h)));
+  players[0].stat.pa=335;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'75%');assert.equal(report.count,7);assert.equal(report.percentile,null);
+  players[0].stat.pa=112;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'25%');assert.equal(report.count,13);
+});
