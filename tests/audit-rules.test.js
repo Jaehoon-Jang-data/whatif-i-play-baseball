@@ -29,7 +29,7 @@ test('부진 연봉과 FA 유보 후 연봉 협상',()=>{
   c.phase='fa_choice';c.contract.left=0;deferFA(c);assert.equal(c.phase,'prepare');assert.equal(c.salaryPending,true);
 });
 test('타이틀 대상에서 WHIP·OPS를 제외하고 실제 대상만 둔다',()=>{
-  const titles=TITLES.map(x=>x[0]);assert.equal(titles.length,14);assert.ok(titles.includes('승률'));assert.ok(titles.includes('득점'));assert.ok(!titles.includes('WHIP'));assert.ok(!titles.includes('OPS'));
+  const titles=TITLES.map(x=>x[0]);assert.equal(titles.length,14);assert.ok(titles.includes('승률왕'));assert.ok(titles.includes('득점왕'));assert.ok(!titles.includes('WHIP'));assert.ok(!titles.includes('OPS'));
 });
 test('와일드카드 4위는 한 경기 승리로 진출한다',()=>{
   const teams=Array.from({length:10},(_,id)=>({id,w:90-id*3,l:54+id*3,g:144}));
@@ -64,6 +64,6 @@ test('백분위 비교군은 플레이어 표본 구간 이상이며 동점은 �
   let report=percentileReport(league,'bat').find(x=>x.key==='h');
   assert.equal(report.qualification,'50%');assert.equal(report.count,10);assert.equal(report.threshold,223);
   assert.equal(report.percentile,percentile(80,players.slice(4).map(p=>p.stat.h)));
-  players[0].stat.pa=335;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'75%');assert.equal(report.count,7);assert.equal(report.percentile,null);
+  players[0].stat.pa=335;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'75%');assert.equal(report.count,10);assert.ok(report.percentile!==null);assert.equal(report.threshold,223);
   players[0].stat.pa=112;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'25%');assert.equal(report.count,13);
 });

@@ -18,13 +18,12 @@ test('2년 FA 계약은 0/2, 1/2, 만료 순서로 진행하고 협상을 계약
 test('일반 육성선수는 첫 시즌 2군에서 출발하고 예외 평가만 시즌 전에 발생한다',()=>{
   const c=career(45);c.age=19;c.proYears=0;c.developmental=true;c.player.a.fill(90);c.contract.left=1;
   const ordinary=rosterPlan(c);assert.equal(ordinary.opening,'2군');assert.ok(ordinary.calendar.every(x=>x==='2군'));
-  assert.equal(springEvaluation(c),null);c.developmentalElite=true;const exceptional=rosterPlan(c);assert.equal(exceptional.opening,'1군');
-  const event=springEvaluation(c);assert.equal(event.type,'spring_evaluation');assert.equal(event.year,c.year);assert.equal(c.phase,'prepare');assert.equal(springEvaluation(c),null);
+  assert.equal(springEvaluation(c),null);c.developmentalElite=true;const exceptional=rosterPlan(c);assert.equal(exceptional.opening,'2군');assert.equal(springEvaluation(c),null);assert.ok(exceptional.calendar.slice(0,46).every(x=>x==='2군'));
   c.developmentalElite=false;const first=progress(c);assert.equal(first.stat.g,0);assert.ok(first.minorStat.g>0);clearEvents(c);nextYear(c);assert.equal(c.proYears,1);assert.equal(c.developmental,true);assert.ok(rosterPlan(c).calendar.includes('1군'));
 });
 
 test('100시드의 안타와 수비상 분포가 정상 능력 및 높은 능력에서 구별된다',()=>{
-  const tally=value=>{let hits=0,hitTitles=0,defense=0;for(let seed=1;seed<=100;seed++){const league=simulateSeason({seed,year:2030,player:{name:'검증',team:0,role:'bat',position:'중견수',a:Array(6).fill(value),opportunity:1}}),user=league.players.find(x=>x.id==='user');hits+=user.stat.h;hitTitles+=+league.awards.some(x=>x.title==='최다안타'&&x.winners.includes('user'));defense+=+league.awards.some(x=>x.title==='수비상 · 중견수'&&x.winners.includes('user'));}return {hits:hits/100,hitTitles,defense};};
+  const tally=value=>{let hits=0,hitTitles=0,defense=0;for(let seed=1;seed<=100;seed++){const league=simulateSeason({seed,year:2030,player:{name:'검증',team:0,role:'bat',position:'중견수',a:Array(6).fill(value),opportunity:1}}),user=league.players.find(x=>x.id==='user');hits+=user.stat.h;hitTitles+=+league.awards.some(x=>x.title==='안타왕'&&x.winners.includes('user'));defense+=+league.awards.some(x=>x.title==='수비상 · 중견수'&&x.winners.includes('user'));}return {hits:hits/100,hitTitles,defense};};
   const normal=tally(60),elite=tally(90);assert.ok(normal.hits>=150&&normal.hits<=155);assert.ok(normal.hitTitles<=10);assert.ok(normal.defense<=35);assert.ok(elite.hits>normal.hits&&elite.hitTitles>normal.hitTitles&&elite.defense>normal.defense);
 });
 
