@@ -1,14 +1,17 @@
-# 다이아몬드 데이즈
+# 차라리 내가 키운다
 
 브라우저에서 진행하는 KBO 커리어 시뮬레이션 게임입니다. 구단명 외의 선수와 경기 결과는 가상이며, 같은 시드와 선택은 같은 결과를 만듭니다.
 
 ## 실행과 검증
+
+macOS에서 [`open-game.command`](open-game.command)를 실행하면 로컬 서버를 시작하고 Chrome에서 게임을 엽니다. 실행 창을 닫으면 서버도 종료됩니다. 주소가 열리지 않으면 실행 창에 출력된 `http://127.0.0.1:포트/` 주소를 Chrome에 입력하세요. `index.html` 파일을 직접 여는 방식은 ES 모듈 로딩과 저장 동작이 제한될 수 있습니다.
 
 ```bash
 python3 -m http.server 5173 --bind 127.0.0.1
 # http://127.0.0.1:5173/
 node --test tests/*.test.js
 node tests/balance.js
+node tests/kbo-team-balance.js
 ```
 
 별도 빌드나 패키지 설치가 필요 없는 ES 모듈 앱입니다. 브라우저에서 `localhost`와 `127.0.0.1`의 저장 공간은 다릅니다.
@@ -31,8 +34,14 @@ node tests/balance.js
 
 ## 저장 호환성
 
-`diamond-days-v2` 키에 버전 3 데이터를 저장합니다. v1·v2 저장을 읽을 때 과거 경기 기록을 보존하며, 없던 2군 기록과 지급 연봉은 만들어 채우지 않습니다. JSON 내보내기·불러오기를 지원합니다.
+`charari-naega-kiunda-v4` 키에 버전 4 데이터를 저장합니다. 기존 게임의 v1·v2 저장 키도 읽어 이전 커리어를 이어갈 수 있습니다. 과거 경기 기록은 보존하며, 없던 2군 기록과 지급 연봉은 만들어 채우지 않습니다. JSON 내보내기·불러오기를 지원합니다.
+
+팀 통계 현실성 검증은 [KBO 공식 역대 구단성적](https://www.koreabaseball.com/Record/History/Team/Record.aspx)의 경기·승·패·무·팀 타율·평균자책점·승률만 사용합니다. `python3 scripts/extract-kbo-team-history.py`로 연도별 자료를 갱신하고 `node tests/kbo-team-balance.js`로 200시드의 팀별 결과 및 선수·팀 합계 일관성을 재검사할 수 있습니다. 추출 범위와 결과는 [검증 기록](docs/kbo-team-balance.md)에 남겼습니다.
 
 ## 밸런스 자료
 
 [규정 확인과 게임 적용](docs/2026-rules.md), [검증 기록](docs/verification.md), [100시드 분포 결과](tests/balance-results.json)에 근거와 재현 가능한 수치를 남겼습니다. 정확한 실제 시즌별 경기·급여·모집 인원을 재현하는 모델은 아닙니다.
+
+## 2026-10-02 규칙 개선
+
+아마추어 시즌은 고교 주말리그·전국대회와 대학 U-리그·대회로 구분해 팀 경기, 개인 출장, 선발 등판을 따로 표시합니다. 대학 2학년 수료 선수는 스카우트 점수와 관계없이 얼리드래프트에 신청할 수 있습니다. 실책·비자책점, 구단 신뢰도와 출장 영향, 최근 3시즌 기반 연봉, 새 구단의 트레이드 연봉 제안, 시즌 팀 성적을 추가했습니다. 기존 v1~v3 저장은 v4로 이관합니다. 공식 출처와 게임용 근사는 [규정 문서](docs/2026-rules.md), 검증 범위는 [검증 기록](docs/verification.md)에 정리했습니다.
