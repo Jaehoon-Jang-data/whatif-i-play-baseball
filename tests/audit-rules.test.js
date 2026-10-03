@@ -64,6 +64,6 @@ test('백분위 비교군은 플레이어 표본 구간 이상이며 동점은 �
   let report=percentileReport(league,'bat').find(x=>x.key==='h');
   assert.equal(report.qualification,'50%');assert.equal(report.count,10);assert.equal(report.threshold,223);
   assert.equal(report.percentile,percentile(80,players.slice(4).map(p=>p.stat.h)));
-  players[0].stat.pa=335;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'75%');assert.equal(report.count,10);assert.ok(report.percentile!==null);assert.equal(report.threshold,223);
+  players[0].stat.pa=335;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'75%');assert.equal(report.count,7);assert.ok(report.percentile!==null);assert.equal(report.threshold,335);
   players[0].stat.pa=112;report=percentileReport(league,'bat').find(x=>x.key==='h');assert.equal(report.qualification,'25%');assert.equal(report.count,13);
 });

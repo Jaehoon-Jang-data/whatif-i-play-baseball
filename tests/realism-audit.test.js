@@ -8,8 +8,8 @@ function pro(seed=1,age=30,position='중견수'){
 }
 function clear(c){while(c.pendingEvent)acknowledgeEvent(c);}
 
-test('2·3·4년 FA 계약은 연차, 단년 보류 연봉, 재취득을 별도로 추적한다',()=>{
-  for(const [years,age] of [[2,37],[3,35],[4,30]]){
+test('2·3·4·6년 FA 계약은 연차, 단년 보류 연봉, 재취득을 별도로 추적한다',()=>{
+  for(const [years,age] of [[2,37],[3,35],[4,32],[6,28]]){
     let c;let offer;
     for(let seed=1;seed<30;seed++){const trial=pro(seed,age);trial.phase='market';trial.faDeclared=true;const found=offers(trial).find(x=>x.years===years);if(found){c=trial;offer=found;break;}}
     assert.ok(c,`${years}년 제안`);sign(c,offer);c.age=30;assert.equal(c.contract.startYear,2030);assert.equal(c.contract.endYear,2029+years);assert.equal(faContractTerm(c).elapsed,0);

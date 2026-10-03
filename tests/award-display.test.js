@@ -41,8 +41,8 @@ test('시즌 수상 이력은 은퇴 집계와 구버전 명칭에 동일하게 
 test('규정이닝 충족 투수는 비교군을 넓혀 백분위를 표시한다',()=>{
  const players=Array.from({length:12},(_,i)=>({id:i?'peer'+i:'user',role:'pitch',position:'선발',team:0,stat:{g:30,gs:30,outs:i===0?qualification(144,'pitch'):i<4?450:270,w:8,l:6,hold:0,sv:0,bs:0,k:80+i,bb:30,h:100,hr:10,r:40,er:35}}));
  const report=percentileReport({year:2030,games:144,teams:[{id:0,g:144}],players},'pitch');
- assert.ok(report.every(x=>x.qualification==='충족'&&x.percentile!==null&&x.count>=10));
- assert.ok(report.every(x=>x.threshold<qualification(144,'pitch')));
+ assert.ok(report.every(x=>x.qualification==='충족'&&x.percentile!==null&&x.count===4));
+ assert.ok(report.every(x=>x.threshold===qualification(144,'pitch')));
 });
 
 test('대표팀 미선발 시즌도 대회 결과를 저장하고 복구한다',()=>{
