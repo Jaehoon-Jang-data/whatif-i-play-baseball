@@ -21,7 +21,7 @@ node scripts/targeted-balance-audit.mjs
 
 별도 빌드나 패키지 설치가 필요 없는 ES 모듈 앱입니다. 브라우저에서 `localhost`와 `127.0.0.1`의 저장 공간은 다릅니다.
 
-규정 근거와 균형 측정의 범위는 [2026 규칙](docs/2026-rules.md)과 [도루·경쟁·성장·계약 감사](docs/2026-10-03-balance-audit.md)에 정리했습니다.
+규정 근거와 균형 측정의 범위는 [2026 규칙](docs/2026-rules.md), [도루·경쟁·성장·계약 감사](docs/2026-10-03-balance-audit.md), [2026-10-06 신인 계약·보직·수상·병역 재감사](docs/2026-10-06-audit.md)에 정리했습니다.
 
 ## 화면 흐름
 
@@ -33,7 +33,7 @@ node scripts/targeted-balance-audit.mjs
 
 - 1군은 144경기, 2군은 108경기입니다. 2군 성적은 표본과 비율을 함께 확인해야 합니다. 육성 입단자는 개막 2군에서 시작하고, 5월 1일 이후 정식 등록을 거쳐 콜업될 수 있습니다. 일반 지명 신인도 대체로 2군에서 출발하며 즉시전력 예외가 있습니다.
 - 선발은 투구 상대량·실점·체력·감독 판단에 따라 교체됩니다. 구원 투수는 휴식·점수 차·보직에 따라 기용됩니다. 승리투수의 선발 5이닝 조건, 세이브 상황과 홀드 기회를 구분합니다.
-- 병역 첫 시즌에는 1군 경기에 나서지 않습니다. 두 번째 시즌에는 후반기 2군을 거쳐 1군 복귀 기회가 열립니다. 상무의 2군 출전과 현역의 첫 시즌 훈련 제한은 구분합니다. 모집 인원과 지원 조건은 게임 규칙입니다.
+- 병역 첫 시즌에는 1군 경기에 나서지 않습니다. 두 번째 시즌에는 후반기 2군을 거쳐 1군 복귀 기회가 열립니다. 상무의 2군 출전과 현역의 첫 시즌 훈련 제한은 구분합니다. 모집 인원, 28세 시즌 자동 입대, 세 국제대회 우승 특례는 게임 규칙입니다.
 - 등록일은 게임의 188일 가상 시즌에서 1군 엔트리 상태를 일별로 기록합니다. 과거 v1 저장의 등록일은 경기 수로 추정한 값이며 결과 화면에서 별도로 표시합니다.
 - 선수 단계는 시즌이 끝난 뒤 실제 출장·타석·이닝·보직으로 산정합니다. 경험치는 역할에 맞춘 출장량을 반영하며, 선택 훈련은 성장량의 배분 비율을 바꿉니다.
 - 포스트시즌 기록은 정규시즌 통산과 분리합니다. 시즌 결과에는 정규시즌 및 최종 순위와 우승 구단을 표시합니다. 은퇴 선수의 요약 기록과 커리어 점수는 새 선수를 시작해도 별도로 남습니다.
@@ -53,7 +53,7 @@ node scripts/targeted-balance-audit.mjs
 
 ## 2026-10-02 규칙 개선
 
-학교 선택 목록은 [KBO 공식 드래프트 자료](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=12024)와 [한국대학야구연맹 2026 참가팀](https://www.kubf-baseball.com/)을 참고했습니다. 급여 기준은 [KBO 2026 평균 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11861), [2027 최저 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11814), [2025~2028 경쟁균형세](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11791)를 참고합니다. 이후의 최저 연봉 연 3%, 2029년 이후 팀 한도 연 4% 증가와 팀별 사용액은 게임 가정입니다. 경쟁균형세 기준액은 선수 개인 연봉 상한으로 사용하지 않습니다.
+학교 선택 목록은 [KBO 공식 드래프트 자료](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=12024)와 [한국대학야구연맹 2026 참가팀](https://www.kubf-baseball.com/)을 참고했습니다. 급여 기준은 [KBO 2026 평균 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11861), [2027 최저 연봉](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11814), [2025~2028 경쟁균형세](https://www.koreabaseball.com/MediaNews/Notice/View.aspx?bdSe=11791)를 참고합니다. 2027년 이후 최저 연봉은 발표된 3,300만 원을 게임에서 고정 적용하며, 2029년 이후 팀 한도 연 4% 증가와 팀별 사용액은 게임 가정입니다. 경쟁균형세 기준액은 선수 개인 연봉 상한으로 사용하지 않습니다.
 
 후속 UI·상태 전이·연봉·백분위 수정 근거와 입력별 결과는 [2026-10-02 후속 점검](docs/2026-10-02-followup.md)에 기록했습니다.
 

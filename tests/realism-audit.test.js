@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCareer,offers,sign,progress,nextYear,acknowledgeEvent,faStatus,faContractTerm,negotiateSalary,saveCareer,loadCareer,migrateCareer,rosterPlan,springEvaluation,nationalPolicy,nationalSelectionChance,simulateSeason,rates,developmentalTryout} from '../src/engine.js';
+import {createCareer,offers,sign,progress,nextYear,resolvePositionOffer,acknowledgeEvent,faStatus,faContractTerm,negotiateSalary,saveCareer,loadCareer,migrateCareer,rosterPlan,springEvaluation,nationalPolicy,nationalSelectionChance,simulateSeason,rates,developmentalTryout} from '../src/engine.js';
 
 function pro(seed=1,age=30,position='중견수'){
   const c=createCareer({seed,name:'감사 선수',school:'가명고',role:position==='선발'||position==='중간계투'||position==='마무리'?'pitch':'bat',position,type:'교타형',team:0});
   c.stage='프로';c.phase='prepare';c.age=age;c.year=2030;c.served=true;c.proYears=8;c.player.a.fill(85);c.contract={kind:'reserved',annualMan:12000,years:1,left:0};c.reserved=true;c.playerStatus='reserved';return c;
 }
 function clear(c){while(c.pendingEvent)acknowledgeEvent(c);}
+function finishYear(c){nextYear(c);if(c.phase==='position_choice')resolvePositionOffer(c,false);clear(c);}
 
 test('2·3·4·6년 FA 계약은 연차, 단년 보류 연봉, 재취득을 별도로 추적한다',()=>{
   for(const [years,age] of [[2,37],[3,35],[4,32],[6,28]]){
@@ -16,14 +17,14 @@ test('2·3·4·6년 FA 계약은 연차, 단년 보류 연봉, 재취득을 별�
     c.phase='prepare';let raw;saveCareer(c,{setItem:(_,v)=>raw=v});assert.equal(loadCareer({getItem:()=>raw}).contract.startYear,2030);
     for(let year=0;year<years;year++){
       assert.equal(c.salaryPending,false);const row=progress(c);assert.equal(row.salaryMan,offer.annualMan);assert.equal(row.optionResults.length,offer.options.length);
-      assert.equal(faContractTerm(c).elapsed,year+1);clear(c);nextYear(c);clear(c);
+      assert.equal(faContractTerm(c).elapsed,year+1);clear(c);finishYear(c);
       if(year<years-1)assert.equal(c.salaryPending,false);
     }
     assert.equal(faStatus(c).required,4);assert.equal(faStatus(c).seasons,years);
     if(years<4){
       assert.equal(c.phase,'prepare');assert.equal(c.salaryPending,true);
       const oldFa=structuredClone(c.contractHistory[0]);const result=negotiateSalary(c);assert.equal(result.kind,'reserved');assert.equal(result.years,1);assert.equal(c.contract.kind,'reserved');assert.deepEqual(c.contractHistory[0],oldFa);assert.equal(faStatus(c).seasons,years);
-      while(faStatus(c).seasons<4){assert.equal(c.phase,'prepare',`${years}년 계약 후 ${c.year}년 상태`);progress(c);clear(c);nextYear(c);clear(c);if(c.phase==='prepare'&&c.salaryPending)negotiateSalary(c);}
+      while(faStatus(c).seasons<4){assert.equal(c.phase,'prepare',`${years}년 계약 후 ${c.year}년 상태`);progress(c);clear(c);finishYear(c);if(c.phase==='prepare'&&c.salaryPending)negotiateSalary(c);}
     }
     assert.equal(c.phase,'fa_choice');assert.equal(faStatus(c).eligible,true);
     const old={...c,version:5,contract:{...offer,left:0},lastContract:{year:2030,...offer},salaryPending:false,phase:'prepare'};
