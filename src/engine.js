@@ -445,7 +445,7 @@ export function enlist(c,path) {
 }
 export function mandatoryEnlist(c){if(c.stage!=='프로'||c.age<28||c.served||c.exempt||c.service)return false;enlist(c,'regular');queueEvent(c,{type:'military',year:c.year,path:'regular',outcome:'입대',mandatory:true});return true;}
 export const nationalTournamentYear=(year,name)=>name==='프리미어12'?year>=2027&&(year-2027)%4===0:year>=2030&&(year-2030)%4===0;
-export function militaryOpportunities(c){if(c.served||c.exempt||c.service||c.age>27)return [];const lastYear=c.year+27-c.age;return Array.from({length:lastYear-c.year+1},(_,i)=>c.year+i).flatMap(year=>['WBC','아시안게임','프리미어12'].filter(name=>nationalTournamentYear(year,name)).map(name=>({year,age:c.age+year-c.year,name})));}
+export function militaryOpportunities(c){if(c.served||c.exempt||c.service||c.age>27)return [];const lastYear=c.year+27-c.age;return Array.from({length:lastYear-c.year+1},(_,i)=>c.year+i).filter(year=>nationalTournamentYear(year,'아시안게임')).map(year=>({year,age:c.age+year-c.year,name:'아시안게임'}));}
 const nationalKey=(year,name)=>`${year}:${name}`;
 // 2030+ Asian Games use the 2026 KBO/KBSA selection policy as a game assumption.
 export function nationalPolicy(year,name){
@@ -501,7 +501,7 @@ function nationalAppearance(c,name,accepted){
 }
 function nationalOutcome(c,name,accepted){
   const result=tournamentResult(c.seed,c.year,name),won=result.result==='우승';
-  const event={...result,selected:accepted,declined:!accepted,...nationalAppearance(c,name,accepted),exemption:won&&accepted&&!c.served&&!c.service};
+  const event={...result,selected:accepted,declined:!accepted,...nationalAppearance(c,name,accepted),exemption:name==='아시안게임'&&won&&accepted&&!c.served&&!c.service};
   if(event.exemption){c.exempt=true;c.served=true;}
   c.nationalHistory.push(event);note(c,`${name} ${accepted?`국가대표 선발 · ${event.result}`:'국가대표 출전 거절'}${event.exemption?' · 병역특례':''}`);
   return event;
@@ -826,9 +826,21 @@ function validateCareer(c) {
   for(const row of c.history){if(!row.stat||!Array.isArray(row.awards)||!['bat','pitch'].includes(row.role)||Object.keys(freshStat(row.role)).filter(k=>c.version===VERSION||!['e','ch','sba','cs'].includes(k)).some(k=>!Number.isFinite(row.stat[k]))||Object.values(row.stat).some(v=>!Number.isFinite(v))||[row.league,row.minorLeague].some(l=>l&&(!Array.isArray(l.players)||!Array.isArray(l.teams)||!Array.isArray(l.awards))))throw Error('시즌 기록이 손상되었습니다.');}
   return c;
 }
+function normalizeNationalExemptions(c){
+  if(!c.nationalHistory.some(x=>x.name!=='아시안게임'&&x.exemption))return;
+  const completedService=c.served&&c.history.some(row=>row.stage==='프로'&&row.servicePath);
+  for(const event of c.nationalHistory)event.exemption=event.name==='아시안게임'&&event.selected&&event.result==='우승'&&!completedService;
+  const byKey=new Map(c.nationalHistory.map(x=>[nationalKey(x.year,x.name),x.exemption]));
+  const sync=items=>{for(const item of items||[])if(byKey.has(nationalKey(item.year,item.name)))item.exemption=byKey.get(nationalKey(item.year,item.name));};
+  for(const row of c.history)sync(row.international);
+  for(const event of [c.pendingEvent,...(c.eventQueue||[])])if(event?.type==='national')sync(event.items);
+  for(const event of c.events||[])if(/^(WBC|프리미어12) 국가대표 선발/.test(event.text))event.text=event.text.replace(' · 병역특례','');
+  c.exempt=c.nationalHistory.some(x=>x.exemption);
+  c.served=completedService||c.exempt;
+}
 export function loadCareer(storage=localStorage) {
   const raw=storage.getItem(SAVE_KEY)||LEGACY_SAVE_KEYS.map(key=>storage.getItem(key)).find(Boolean);if(!raw)return null;
-  const old=JSON.parse(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');validateCareer(old);const c=migrateCareer(old);
+  const old=JSON.parse(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');validateCareer(old);const c=migrateCareer(old);normalizeNationalExemptions(c);
   for(const row of c.history){row.awards=row.awards.map(canonicalAwardName);for(const league of [row.league,row.minorLeague])for(const award of league?.awards||[])award.title=canonicalAwardName(award.title);}
   if(c.latest)for(const award of c.latest.awards||[])award.title=canonicalAwardName(award.title);
   for(const event of c.eventQueue||[])if(event.titles)event.titles=event.titles.map(canonicalAwardName);

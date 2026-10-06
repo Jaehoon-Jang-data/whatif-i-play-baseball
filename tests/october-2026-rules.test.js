@@ -40,11 +40,18 @@ test('패배 최다는 커리어 로우이며 개인 수상 구분자는 수상�
  assert.equal(awardLine(['타격왕','골든글러브 · 우익수','수비상 · 우익수']),'타격왕 / 골든글러브 · 우익수 / 수비상 · 우익수');
 });
 
-test('세 대회 우승 대표팀 선수에게 게임 병역특례가 적용되고 28세 시즌은 입대가 필요하다',()=>{
+test('아시안게임 우승만 병역특례가 적용되고 28세 시즌은 입대가 필요하다',()=>{
  for(const name of ['WBC','아시안게임','프리미어12']){
   const year=name==='프리미어12'?2031:2030;let c;for(let seed=1;seed<5000;seed++)if(tournamentResult(seed,year,name).result==='우승'){c=make(seed);break;}assert.ok(c);c.year=year;c.age=25;c.served=false;c.history=[{stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:140,pa:600,ab:520,h:180}}];
-  c.pendingEvent={type:'national_invitation',year,name};decideNationalInvitation(c,true);if(name==='아시안게임')nationalEvents(c,null,null);assert.ok(c.exempt&&c.served,name);assert.equal(c.nationalHistory.at(-1).exemption,true);
+  c.pendingEvent={type:'national_invitation',year,name};decideNationalInvitation(c,true);if(name==='아시안게임')nationalEvents(c,null,null);assert.equal(c.exempt,name==='아시안게임',name);assert.equal(c.served,name==='아시안게임',name);assert.equal(c.nationalHistory.at(-1).exemption,name==='아시안게임');
  }
- const c=make(17);c.served=false;c.year=2030;c.age=27;assert.ok(militaryOpportunities(c).every(x=>x.age<=27&&nationalTournamentYear(x.year,x.name)));c.age=28;assert.deepEqual(militaryOpportunities(c),[]);assert.throws(()=>progress(c),/현역 입대/);
+ const c=make(17);c.served=false;c.year=2030;c.age=27;assert.ok(militaryOpportunities(c).every(x=>x.age<=27&&x.name==='아시안게임'&&nationalTournamentYear(x.year,x.name)));c.age=28;assert.deepEqual(militaryOpportunities(c),[]);assert.throws(()=>progress(c),/현역 입대/);
  const mandatory=make(18);mandatory.served=false;mandatory.age=27;mandatory.phase='result';nextYear(mandatory);assert.equal(mandatory.age,28);assert.equal(mandatory.service,2);assert.equal(mandatory.pendingEvent.type,'military');assert.equal(mandatory.pendingEvent.mandatory,true);
+});
+
+test('구 저장의 WBC·프리미어12 특례는 성적을 보존하며 해제하고 아시안게임 우승은 인정한다',()=>{
+ const wbc=make(31);wbc.served=true;wbc.exempt=true;wbc.history=[{year:2030,stage:'프로',role:'bat',position:'우익수',stat:emptyBat(),awards:[],international:[{year:2030,name:'WBC',result:'우승',exemption:true}]}];wbc.nationalHistory=[{year:2030,name:'WBC',selected:true,result:'우승',exemption:true}];wbc.pendingEvent={type:'national',items:[{year:2030,name:'WBC',result:'우승',exemption:true}]};wbc.events=[{year:2030,text:'WBC 국가대표 선발 · 우승 · 병역특례'}];
+ const restored=loadCareer({getItem:()=>JSON.stringify(wbc)});assert.equal(restored.exempt,false);assert.equal(restored.served,false);assert.equal(restored.nationalHistory[0].result,'우승');assert.equal(restored.nationalHistory[0].exemption,false);assert.equal(restored.history[0].international[0].exemption,false);assert.equal(restored.pendingEvent.items[0].exemption,false);assert.ok(!restored.events[0].text.includes('병역특례'));
+ const asian=structuredClone(wbc);asian.nationalHistory.push({year:2030,name:'아시안게임',selected:true,result:'우승',exemption:false});const both=loadCareer({getItem:()=>JSON.stringify(asian)});assert.equal(both.nationalHistory[0].exemption,false);assert.equal(both.nationalHistory[1].exemption,true);assert.equal(both.exempt,true);assert.equal(both.served,true);
+ const premier=structuredClone(wbc);premier.nationalHistory=[{year:2031,name:'프리미어12',selected:true,result:'우승',exemption:true}];const p=loadCareer({getItem:()=>JSON.stringify(premier)});assert.equal(p.exempt,false);assert.equal(p.served,false);
 });
