@@ -3,7 +3,6 @@ body{padding-bottom:0;font-size:16px}
 .panel,.candidate,.offer{border-radius:12px;box-shadow:none}
 .primary,.candidate{box-shadow:none}
 .postseason-summary.champion{background:#fff9e6}
-.postseason-summary.champion::after{background:none;content:'🎉  🎉  🎉';font-size:24px;letter-spacing:25px;text-align:center;opacity:.65}
 .progress-scene{background:#182c55}
 .ballpark{background:#173d35}
 .draft-rounds span{animation:none}
@@ -33,7 +32,6 @@ body{padding-bottom:0;font-size:16px}
 .global-actions{position:static;display:flex;justify-content:center;gap:12px;margin:28px 0 0;padding:18px 0;border-top:1px solid var(--line)}
 .global-actions button{min-width:170px;min-height:46px;font-size:16px}
 .award-event{border-top-color:#8b5fc2;background:#fcf8ff}
-.award-event::after,.champion-event::after{content:'🎉 🎉 🎉';display:block;text-align:center;font-size:28px;margin-top:12px}
 .champion-event{border-top-color:#d9a527;background:#fff9e6}
 small,.chart-note,.section-note,.form-grid small,.candidate-skill,.training-option small,.leader-card li small,.leader-card small,.report-list,.prose p{font-size:14px!important}
 .header-tools button,.file-label,.season-selector,.season-selector select,.percentile-legend,.axis-labels,.scout-numbers small,.training-footer p,.tier-steps span,.progress-steps span,.draft-rounds span,.eyebrow,.segment button{font-size:14px}

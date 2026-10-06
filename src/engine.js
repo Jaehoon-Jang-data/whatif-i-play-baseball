@@ -35,7 +35,7 @@ export const HIGH_SCHOOLS=['경문고','부강고','광주이고','대구상민�
 export const COLLEGES=['고원대','연한대','동명대','성균문대','중명대','건명대','한림대','경원대','단명대','원명대','동원대','경명대','영림대'];
 export function randomName(seed){const r=rng(seed),surn=['김','이','박','최','정','강','윤','장','임','한','조','오','서','신','권','황','안','송','류','백','남'];const names=['도윤','시우','지호','태준','건우','서진','유찬','하준','민재','도현','우진','현서','태성','준혁','민철','강민','태건','준서','승현','현우','지민','하영','서윤','다은','지안','유진','세영','은재'];return surn[Math.floor(r()*surn.length)]+names[Math.floor(r()*names.length)];}
 function person(id,team,role,i,r,teamStrength){return{id,name:randomName(Math.floor(r()*4294967295)),team,role,position:role==='bat'?['포수','1루수','2루수','3루수','유격수','좌익수','중견수','우익수','지명타자'][i%9]:i<6?'선발':i===11?'마무리':'중간계투',a:Array.from({length:6},()=>Math.round(35+r()*45+teamStrength)),rookie:r()<.1,stat:role==='bat'?emptyBat():emptyPitch()};}
-export function simulateSeason({seed,year,player=null,games=144,environment=1,level='major',strength=0,competitions=null}){
+export function simulateSeason({seed,year,player=null,games=144,environment=1,level='major',strength=0,competitions=null,onProgress=null}){
  const random=rng(seed+year*7919),teamStrengths=Array.from({length:10},(_,i)=>i-4.5);
  for(let i=teamStrengths.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[teamStrengths[i],teamStrengths[j]]=[teamStrengths[j],teamStrengths[i]];}
  const players=[],teams=TEAMS.map((name,id)=>({id,name,w:0,l:0,tie:0,r:0,ra:0,g:0,park:1+teamStrengths[id]*.014,bats:[],arms:[],competitions:{}}));
@@ -78,7 +78,7 @@ export function simulateSeason({seed,year,player=null,games=144,environment=1,le
  if(scores[0]===scores[1])tt.forEach(t=>t.tie++);else{let win=scores[0]>scores[1]?0:1;tt[win].w++;tt[1-win].l++;let usedWin=[...used[win].values()];let credit=usedWin.find(v=>v.p.id===leadWinner?.id);if(!credit||credit.p===starters[win]&&credit.outs<15)credit=usedWin.filter(v=>v.p!==starters[win]).sort((a,b)=>(a.r-b.r)||(b.outs-a.outs))[0]||usedWin[0];credit.p.stat.w++;if(loser)loser.stat.l++;let finish=usedWin.at(-1);if(finish!==credit&&finish.p.position==='마무리'&&finish.entry>0&&finish.entry<=3&&finish.exit>0&&finish.outs>=3)finish.p.stat.sv++;for(let v of usedWin.slice(1,-1))if(v!==credit&&v.p.position!=='마무리'&&v.entry>0&&v.entry<=3&&v.exit>0&&v.outs>=3)v.p.stat.hold++;}
  }
  // Circle scheduling: nine rounds repeated sixteen times; every team plays once each day.
- let circle=Array.from({length:10},(_,i)=>i),qualifiers=new Map();for(let day=0;day<games;day++){for(let k=0;k<5;k++){let a=circle[k],b=circle[9-k];const competition=competitions?.find(x=>day>=x.start&&day<x.start+x.games);const ta=teams[day%2?a:b],tb=teams[day%2?b:a];if(competition?.cup&&!qualifiers.has(competition.name))qualifiers.set(competition.name,new Set([...teams].sort((x,y)=>y.w/(y.w+y.l||1)-x.w/(x.w+x.l||1)||x.id-y.id).slice(0,8).map(x=>x.id)));const qualified=!competition?.cup||(qualifiers.get(competition.name).has(ta.id)&&qualifiers.get(competition.name).has(tb.id));const alive=!competition?.cup||((ta.competitions[competition.name]?.l||0)<2&&(tb.competitions[competition.name]?.l||0)<2);if(qualified&&alive)game(ta,tb,day,competition?.name);}circle.splice(1,0,circle.pop());}
+ let circle=Array.from({length:10},(_,i)=>i),qualifiers=new Map();for(let day=0;day<games;day++){for(let k=0;k<5;k++){let a=circle[k],b=circle[9-k];const competition=competitions?.find(x=>day>=x.start&&day<x.start+x.games);const ta=teams[day%2?a:b],tb=teams[day%2?b:a];if(competition?.cup&&!qualifiers.has(competition.name))qualifiers.set(competition.name,new Set([...teams].sort((x,y)=>y.w/(y.w+y.l||1)-x.w/(x.w+x.l||1)||x.id-y.id).slice(0,8).map(x=>x.id)));const qualified=!competition?.cup||(qualifiers.get(competition.name).has(ta.id)&&qualifiers.get(competition.name).has(tb.id));const alive=!competition?.cup||((ta.competitions[competition.name]?.l||0)<2&&(tb.competitions[competition.name]?.l||0)<2);if(qualified&&alive)game(ta,tb,day,competition?.name);}circle.splice(1,0,circle.pop());onProgress?.(day+1,games);}
  const result={year,games,environment,level,competitions,players,teams:teams.map(({bats,arms,...t})=>t)};result.awards=level==='major'?awards(result):[];return result;
 }
 export const TITLES=[['다승왕','pitch','w',false],['평균자책점왕','pitch','era',true],['삼진왕','pitch','k',false],['세이브왕','pitch','sv',false],['홀드왕','pitch','hold',false],['승률왕','pitch','winPct',false],['타격왕','bat','avg',true],['출루율왕','bat','obp',true],['타점왕','bat','rbi',false],['홈런왕','bat','hr',false],['도루왕','bat','sb',false],['안타왕','bat','h',false],['득점왕','bat','r',false],['장타율왕','bat','slg',true]];
@@ -583,7 +583,7 @@ export function coachChallenge(c){
   c.coachChallenge={year:c.year,index,target};
   return c.coachChallenge;
 }
-export function progress(c,selected=c.training) {
+export function progress(c,selected=c.training,onProgress=null) {
   if(c.retired||!['prepare','season','incident'].includes(c.phase))throw Error('시즌 진행 단계에서만 진행할 수 있습니다.');
   if(c.pendingEvent)throw Error('주요 이벤트를 먼저 확인하세요.');
   if(c.tradeOffer)throw Error('새 구단의 연봉 제안을 먼저 결정하세요.');
@@ -595,21 +595,25 @@ export function progress(c,selected=c.training) {
   const report=[],aBefore=[...p.a];let injury=injuryForecast(c),missed=0;
   if(injury){missed=Math.max(7,injury.days+(c.rehabChoice==='safe'?14:c.rehabChoice==='fast'?-10:0));injury={...injury,days:missed};c.injuries++;c.recurrenceAdjustment=c.rehabChoice==='safe'?-.04:c.rehabChoice==='fast'?.06:0;report.push(`${injury.body} ${injury.name} · ${missed}일 재활`);}
   const roster=rosterPlan(c,injury),environment=.985+(c.year%5)*.0125;
+  const minorGames=c.stage==='프로'&&(roster.minorDays.some(Boolean)||c.service>0&&c.servicePath==='athletic')?108:0;
+  const majorGames=c.stage==='프로'?144:c.service?0:c.stage==='고교'?34:25;
+  const allGames=majorGames+minorGames;
+  const reportProgress=completed=>onProgress?.(allGames?Math.min(.98,completed/allGames*.98):.98);
   const developmentalConverted=Boolean(c.stage==='프로'&&c.developmental&&roster.registeredDays>0);
   if(developmentalConverted){c.developmental=false;c.playerStatus='reserved';c.developmentalConvertedYear=c.year;report.push('육성선수에서 정식선수로 등록 후 1군 콜업');}
   let league=null,minorLeague=null,stat=freshStat(p.role),minorStat=freshStat(p.role),level=c.stage,registeredDays=0;
   const effectiveA=[...p.a];
   if(c.stage==='프로'){
-    league=simulateSeason({seed:c.seed,year:c.year,environment,level:'major',player:military&&!returning?null:{...p,a:effectiveA,opportunity:roster.majorOpportunity,eligibleDays:roster.majorDays,cameo:roster.cameo,rookie:rookieEligible(c)}});
+    league=simulateSeason({seed:c.seed,year:c.year,environment,level:'major',player:military&&!returning?null:{...p,a:effectiveA,opportunity:roster.majorOpportunity,eligibleDays:roster.majorDays,cameo:roster.cameo,rookie:rookieEligible(c)},onProgress:day=>reportProgress(day)});
     stat=league.players.find(x=>x.id==='user')?.stat||stat;
     registeredDays=roster.registeredDays;level=military&&!returning?(c.servicePath==='athletic'?'상무':'현역'):roster.label;
     if(roster.minorDays.some(Boolean)||(military&&c.servicePath==='athletic')){
-      minorLeague=simulateSeason({seed:c.seed+991,year:c.year,games:108,environment,level:'minor',strength:-12,player:{...p,a:effectiveA,opportunity:roster.minorOpportunity,eligibleDays:military&&!returning&&c.servicePath==='athletic'?undefined:roster.minorDays}});
+      minorLeague=simulateSeason({seed:c.seed+991,year:c.year,games:108,environment,level:'minor',strength:-12,player:{...p,a:effectiveA,opportunity:roster.minorOpportunity,eligibleDays:military&&!returning&&c.servicePath==='athletic'?undefined:roster.minorDays},onProgress:day=>reportProgress(majorGames+day)});
       minorStat=minorLeague.players.find(x=>x.id==='user').stat;
       minorLeague.teams.forEach(t=>t.name=military&&t.id===p.team?'상무':`${TEAMS[t.id]} 2군`);
     }
   }else if(!military){
-    league=simulateSeason({seed:c.seed,year:c.year,games:c.stage==='고교'?34:25,competitions:amateurCompetitions(c.stage),environment,level:'amateur',strength:c.stage==='고교'?-18:-12,player:{...p,a:effectiveA,opportunity:.94,missed}});
+    league=simulateSeason({seed:c.seed,year:c.year,games:c.stage==='고교'?34:25,competitions:amateurCompetitions(c.stage),environment,level:'amateur',strength:c.stage==='고교'?-18:-12,player:{...p,a:effectiveA,opportunity:.94,missed},onProgress:day=>reportProgress(day)});
     stat=league.players.find(x=>x.id==='user').stat;
     league.teams.forEach(t=>t.name=t.id===p.team?(c.stage==='고교'?p.school:c.collegeTeam||COLLEGES[0]):(c.stage==='고교'?HIGH_SCHOOLS:COLLEGES).filter(name=>name!==(c.stage==='고교'?p.school:c.collegeTeam))[t.id%12]);
   }
@@ -657,13 +661,17 @@ export function progress(c,selected=c.training) {
   if(returning&&!c.service)queueEvent(c,{type:'discharge',year:c.year,path:c.servicePath});
   c.history.push(row);report.forEach(text=>note(c,text));c.latest=league;c.phase='result';delete c.rehabChoice;delete c.pendingTraining;
   if(c.stage==='프로'&&!military&&nationalTournamentYear(c.year,'프리미어12')){const invitation=nationalInvitation(c,'프리미어12',stat);if(invitation)queueEvent(c,invitation);}
+  onProgress?.(1);
   return row;
 }
 export function nextYear(c) {
   if(c.phase!=='result')throw Error('시즌 결과 확인 후 다음 시즌으로 진행하세요.');
   if(c.pendingEvent)throw Error('주요 이벤트를 먼저 확인하세요.');
-  const offer=c.age+1>=28&&!c.served&&!c.exempt?null:positionOffer({...c,age:c.age+1,year:c.year+1,phase:'prepare'});
-  if(offer){c.pendingPositionOffer=offer;c.phase='position_choice';return;}
+  const entering={...c,age:c.age+1,year:c.year+1,phase:'prepare'};
+  if(!retirementAdviceEligible(entering)){
+    const offer=entering.age>=28&&!entering.served&&!entering.exempt?null:positionOffer(entering);
+    if(offer&&!retirementAdviceEligible({...entering,player:{...entering.player,position:offer.target}})){c.pendingPositionOffer=offer;c.phase='position_choice';return;}
+  }
   c.age++;c.year++;c.phase='prepare';
   enterOffseason(c);
 }
@@ -675,7 +683,9 @@ export function resolvePositionOffer(c,accept){
   else note(c,`포지션 변경 제안 거절 · ${from} 유지`);
   c.positionDecisionYear=c.year;
   enterOffseason(c);
-  queueEvent(c,{type:'position_result',year:c.year,from,to:accept?offer.target:from,outcome:accept?'수락':'거절'});
+  const following=c.pendingEvent;
+  c.pendingEvent={type:'position_result',year:c.year,from,to:accept?offer.target:from,outcome:accept?'수락':'거절'};
+  if(following)(c.eventQueue??=[]).unshift(following);
 }
 function enterOffseason(c){
   if(mandatoryEnlist(c))return;
@@ -686,11 +696,11 @@ function enterOffseason(c){
     else if(collegeEarlyStatus(c).eligible)c.phase='college_choice';
   }
   if(c.stage==='프로'){
+    if(retirementAdviceEligible(c)){c.phase='retirement_advice';c.pendingEvent={type:'retirement_advice',year:c.year,reason:releaseAssessment(c).reason};return;}
     if(faStatus(c).eligible){c.phase='fa_choice';return;}
     if(secondaryDraftEligible(c)){c.phase='secondary_wait';secondaryDraft(c);if(c.pendingEvent)return;}
     const evaluation=releaseAssessment(c);
     if(c.contract?.kind!=='fa'&&c.proYears>=2&&rng(c.seed+c.year*743+19)()<evaluation.probability){excludeFromReserve(c,evaluation.reason);return;}
-    if(c.reserved&&c.age>=36&&evaluation.score<(c.age>=42?68:c.age>=40?58:48)&&c.contract?.kind!=='fa'){c.phase='retirement_advice';c.pendingEvent={type:'retirement_advice',year:c.year,reason:evaluation.reason};return;}
     c.salaryPending=!c.contract||c.contract.left<=0;
     // Rare club-initiated transactions. A reserved player cannot shop for clubs.
     const r=rng(c.seed+c.year*811);
@@ -699,6 +709,7 @@ function enterOffseason(c){
     }
   }
 }
+export function retirementAdviceEligible(c){return c.stage==='프로'&&!c.service&&c.reserved&&c.age>=36&&c.contract?.kind!=='fa'&&releaseAssessment(c).score<(c.age>=42?68:c.age>=40?58:48);}
 function queueEvent(c,event){if(c.pendingEvent)(c.eventQueue??=[]).push(event);else c.pendingEvent=event;}
 export function acknowledgeEvent(c){if(!c.pendingEvent)throw Error('확인할 이벤트가 없습니다.');c.pendingEvent=(c.eventQueue||[]).shift()||null;}
 export function releaseAssessment(c){
@@ -759,6 +770,9 @@ export function careerScore(c){const rows=c.history.filter(x=>x.stage==='프로'
 export function retire(c,reason='본인 선택') {c.retired=true;c.phase='retired';c.playback=null;c.retirementReason=reason;c.careerScore=careerScore(c);note(c,`${c.age}세 은퇴 · ${reason} · 통산 연봉 ${money(totalSalary(c))}`);}
 export function decideRetirementAdvice(c,accept){if(c.phase!=='retirement_advice')throw Error('은퇴 권고 단계가 아닙니다.');c.pendingEvent=null;if(accept){retire(c,'은퇴 권고 수락');return;}excludeFromReserve(c,'은퇴 권고 거부 · 다른 구단 제안 대기');c.phase='free_agent';}
 export function totalSalary(c) {return c.salaryLedger.reduce((s,x)=>s+(x.salaryMan||0),0);}
+export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,seasons:c.proYears,score:c.careerScore??careerScore(c),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults})),salaryLedger:structuredClone(c.salaryLedger),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
+export function upsertArchive(entries,c){const entry=archiveEntry(c),next=[...entries],index=next.findIndex(x=>x.id===entry.id);if(index<0)next.push(entry);else next[index]=entry;return next;}
+export function archiveSalaryTotal(entry){const ledger=entry.salaryLedger||entry.career?.salaryLedger;return Array.isArray(ledger)?ledger.reduce((sum,row)=>sum+(row.salaryMan||0),0):null;}
 
 export const COMPARISONS={
   bat:[['타율','avg',false],['안타','h',false],['홈런','hr',false],['출루율','obp',false],['장타율','slg',false],['OPS','ops',false],['볼넷%','bbRate',false],['삼진%','kRate',true],['도루','sb',false]],
