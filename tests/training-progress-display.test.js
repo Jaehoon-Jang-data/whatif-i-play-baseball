@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createCareer,availableTraining,progress,saveCareer,loadCareer} from '../src/engine.js';
-import {SEASON_PLAYBACK_STEPS,SEASON_PLAYBACK_STEP_MS,SEASON_PLAYBACK_DURATION_MS,seasonPlaybackState} from '../src/progress-display.js';
+import {SEASON_PLAYBACK_STEPS,SEASON_PLAYBACK_STEP_MS,SEASON_PLAYBACK_DURATION_MS,seasonPlaybackStep} from '../src/progress-display.js';
 import {trainingOptionHtml} from '../src/training-ui.js';
 
 const sample=()=>createCareer({seed:118,name:'훈련 검증',school:'검증고',team:0,role:'bat',position:'우익수',type:'교타형'});
@@ -35,17 +35,15 @@ test('모든 능력치가 상한이면 중점 없이 시즌을 진행하고 새�
   assert.deepEqual(loadCareer({getItem:()=>raw}).training,[]);
 });
 
-test('진행 바는 계산 결과와 무관하게 고정 0.75배 속도로 이동하고 둘 다 끝나야 전환된다',()=>{
+test('기존 180ms 재생 시간을 복원하고 프레임 사이·부상 복귀 위치도 연속적으로 움직인다',()=>{
   assert.equal(SEASON_PLAYBACK_STEPS,24);
-  assert.equal(SEASON_PLAYBACK_STEP_MS,180/.75);
-  assert.equal(SEASON_PLAYBACK_DURATION_MS,5760);
-  assert.deepEqual(seasonPlaybackState(0,false),{step:0,ready:false});
-  assert.deepEqual(seasonPlaybackState(239,true),{step:0,ready:false});
-  assert.deepEqual(seasonPlaybackState(240,true),{step:1,ready:false});
-  assert.deepEqual(seasonPlaybackState(2880,true),{step:12,ready:false});
-  assert.deepEqual(seasonPlaybackState(5759,true),{step:23,ready:false});
-  assert.deepEqual(seasonPlaybackState(5760,false),{step:23,ready:false});
-  assert.deepEqual(seasonPlaybackState(5760,true),{step:23,ready:true});
-  assert.deepEqual(seasonPlaybackState(8000,false),{step:23,ready:false});
-  assert.deepEqual(seasonPlaybackState(8000,true),{step:23,ready:true});
+  assert.equal(SEASON_PLAYBACK_STEP_MS,180);
+  assert.equal(SEASON_PLAYBACK_DURATION_MS,4320);
+  assert.equal(seasonPlaybackStep(0),0);
+  assert.equal(seasonPlaybackStep(90),.5);
+  assert.equal(seasonPlaybackStep(2160),12);
+  assert.equal(seasonPlaybackStep(4320),24);
+  assert.equal(seasonPlaybackStep(9000),24);
+  assert.equal(seasonPlaybackStep(180,8,12),9);
+  assert.equal(seasonPlaybackStep(1000,8,12),12);
 });

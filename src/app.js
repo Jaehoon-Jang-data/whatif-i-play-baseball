@@ -7,12 +7,12 @@ import {
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,awardLine,careerRecordMarker,nationalTournamentYear,militaryOpportunities,upsertArchive,archiveSalaryTotal
 } from './engine.js?v=7.5';
 import {trainingOptionHtml} from './training-ui.js';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackState} from './progress-display.js';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep} from './progress-display.js';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const validViews=['club','records','league','story','archive','help'];
-let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackTimer=null;
+let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null;
 let startingSeed=Math.floor(Math.random()*2147483646)+1;
 try {career=loadCareer();} catch(e) {saveError=e.message;}
 function restoredPlayback(c){
@@ -137,30 +137,46 @@ function trainingPanel(){
 function rosterStateClass(state){return state==='1군'?'state-major':state==='2군'?'state-minor':state==='복무'||state==='상무'?'state-service':state==='재활군'?'state-rehab':'state-neutral';}
 function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage==='고교'?'고교야구':'대학야구';return `<section class="panel season-gate"><h2>${league} ${c.year}년 시즌</h2><p>포지션: ${esc(c.player.position)}</p><p>주력 분야: ${availableTraining(c).map(i=>KEYS[c.player.role][i]).join(' · ')||'선택 없음'}</p>${c.stage==='프로'?`<p class="opening-roster">개막 로스터: <b>${rosterPlan(c).opening}</b></p>`:''}<div class="actions">${btn('시즌 진행','simulate')}${btn('준비로 돌아가기','back-prepare','secondary')}</div></section>`;}
 function playbackPanel(){
-  const c=career,calendar=c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null,percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*percent/100);
+  const c=career,calendar=playback.calendar??(c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null),percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*percent/100);
   const months=c.stage==='프로'?['4월','5월','6월','7월','8월','9월','10월']:c.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'];
-  const current=months[Math.min(months.length-1,Math.floor(percent/100*months.length))],status=playback.preview?'부상 시점 미리보기 · 재활 결정 대기':playback.computing?'시즌 기록 계산 중 · 진행 장면 재생':'시즌 기록 계산 완료 · 진행 장면 재생';
-  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · 장면 ${percent}%</p><p>${status}</p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-label="시즌 진행 장면" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments">${calendar?calendar.slice(0,day).map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/(calendar.length||188)}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:${percent}%"></span>`}</div></div>${calendar?`<p><b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}</p>`:`<p>${current}</p>`}</section>${playback.pause==='injury'?incidentPanel():''}`;
+  const current=months[Math.min(months.length-1,Math.floor(percent/100*months.length))],status=playback.preview?playback.pause==='injury'?'부상 시점 미리보기 · 재활 결정 대기':'부상 시점까지 재생 중':playback.computing?'시즌 기록 계산 중':'시즌 진행 장면 재생 중';
+  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · <span data-playback-percent>${percent}%</span></p><p>${status}</p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-label="시즌 진행 장면" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments" style="clip-path:inset(0 ${100-percent}% 0 0)">${calendar?calendar.map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/calendar.length}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:100%"></span>`}</div></div><p data-playback-detail>${calendar?`<b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}`:current}</p></section>${playback.pause==='injury'?incidentPanel():''}`;
+}
+function updatePlaybackUI(){
+  const panel=$('.season-playback');if(!panel||!playback)return;
+  const percent=Math.min(100,playback.step/playback.limit*100),rounded=Math.round(percent),calendar=playback.calendar;
+  if(rounded!==playback.lastPercent){panel.querySelector('[data-playback-percent]').textContent=`${rounded}%`;panel.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',rounded);playback.lastPercent=rounded;}
+  panel.querySelector('.roster-segments').style.clipPath=`inset(0 ${100-percent}% 0 0)`;
+  const day=Math.floor((calendar?.length||188)*percent/100),detail=panel.querySelector('[data-playback-detail]');
+  if(day===playback.lastDay)return;playback.lastDay=day;
+  if(calendar)detail.innerHTML=`<b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}`;
+  else detail.textContent=(career.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'])[Math.min(career.stage==='고교'?5:3,Math.floor(percent/100*(career.stage==='고교'?6:4)))];
+}
+function animatePlayback(endStep,onEnd){
+  cancelAnimationFrame(playbackFrame);
+  const startStep=playback.step,started=performance.now();
+  const frame=now=>{
+    if(!playback)return;
+    playback.step=seasonPlaybackStep(now-started,startStep,endStep);
+    updatePlaybackUI();
+    if(playback.step>=endStep){playbackFrame=null;onEnd();}
+    else playbackFrame=requestAnimationFrame(frame);
+  };
+  playbackFrame=requestAnimationFrame(frame);
 }
 function startInjuryPreview(){
   const day=injuryForecast(career)?.startDay||1;
-  playback={step:Math.max(1,Math.round(day/188*24)),limit:24,preview:true,pause:'injury',computing:false};
+  busy=true;playback={step:0,limit:SEASON_PLAYBACK_STEPS,preview:true,pause:null,injuryStep:Math.max(1,Math.round(day/188*SEASON_PLAYBACK_STEPS)),computing:false,calendar:career.stage==='프로'?rosterPlan(career,injuryForecast(career)).calendar:null};
   career.playback=playback;persist();render();window.scrollTo(0,0);
+  animatePlayback(playback.injuryStep,()=>{playback.pause='injury';busy=false;career.playback=playback;persist();render();});
 }
 function startSeasonCalculation(){
-  clearInterval(playbackTimer);
-  busy=true;playback={step:0,limit:SEASON_PLAYBACK_STEPS,preview:false,pause:null,computing:true};career.playback=playback;persist();render();window.scrollTo(0,0);
-  const started=performance.now();let completedCareer=null;
-  const finish=candidate=>{clearInterval(playbackTimer);playbackTimer=null;career=candidate;career.playback=null;playback=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);};
-  const fail=error=>{clearInterval(playbackTimer);playbackTimer=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
-  const tick=()=>{
-    if(!playback)return;
-    const state=seasonPlaybackState(performance.now()-started,Boolean(completedCareer));
-    if(state.ready){finish(completedCareer);return;}
-    if(state.step>playback.step){playback.step=state.step;render();}
-  };
-  const calculated=candidate=>{completedCareer=candidate;playback.computing=false;tick();if(playback)render();};
-  playbackTimer=setInterval(tick,50);
+  cancelAnimationFrame(playbackFrame);playbackFrame=null;
+  const start=playback?.pause==='injury'?playback.step:0;
+  busy=true;playback={step:start,limit:SEASON_PLAYBACK_STEPS,preview:false,pause:null,computing:true,calendar:career.stage==='프로'?rosterPlan(career,injuryForecast(career)).calendar:null};career.playback=playback;persist();render();window.scrollTo(0,0);
+  const finish=candidate=>{career=candidate;career.playback=null;playback=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);};
+  const fail=error=>{cancelAnimationFrame(playbackFrame);playbackFrame=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
+  const calculated=candidate=>{playback.computing=false;playback.calendar=candidate.history.at(-1)?.rosterCalendar??null;render();animatePlayback(SEASON_PLAYBACK_STEPS,()=>finish(candidate));};
   if(typeof Worker==='undefined'){
     setTimeout(()=>{try{const candidate=structuredClone(career);progress(candidate,career.pendingTraining||career.training);calculated(candidate);}catch(error){fail(error);}},0);return;
   }
