@@ -1,7 +1,13 @@
-// Keep the display behind completed work. The initial slope is 0.8;
-// the curve catches up at the last completed game so results need no replay delay.
-export function displayedProgressStep(fraction){
-  const currentStep=Math.min(23,Math.max(0,Math.floor(fraction*12)*2));
-  const completed=currentStep/23;
-  return Math.min(23,.8*currentStep+.2*completed**4*23);
+// The earlier fixed playback advanced one of 24 steps every 180 ms.
+// 240 ms per step is 0.75 of that absolute display speed.
+export const SEASON_PLAYBACK_STEPS=24;
+export const SEASON_PLAYBACK_STEP_MS=240;
+export const SEASON_PLAYBACK_DURATION_MS=SEASON_PLAYBACK_STEPS*SEASON_PLAYBACK_STEP_MS;
+
+export function seasonPlaybackState(elapsedMs,calculationDone=false){
+  const elapsed=Math.max(0,elapsedMs);
+  return {
+    step:Math.min(SEASON_PLAYBACK_STEPS-1,Math.floor(elapsed/SEASON_PLAYBACK_STEP_MS)),
+    ready:calculationDone&&elapsed>=SEASON_PLAYBACK_DURATION_MS
+  };
 }

@@ -7,11 +7,12 @@ import {
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,awardLine,careerRecordMarker,nationalTournamentYear,militaryOpportunities,upsertArchive,archiveSalaryTotal
 } from './engine.js?v=7.5';
 import {trainingOptionHtml} from './training-ui.js';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackState} from './progress-display.js';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const validViews=['club','records','league','story','archive','help'];
-let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null;
+let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackTimer=null;
 let startingSeed=Math.floor(Math.random()*2147483646)+1;
 try {career=loadCareer();} catch(e) {saveError=e.message;}
 function restoredPlayback(c){
@@ -138,8 +139,8 @@ function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage===
 function playbackPanel(){
   const c=career,calendar=c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null,percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*percent/100);
   const months=c.stage==='프로'?['4월','5월','6월','7월','8월','9월','10월']:c.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'];
-  const current=months[Math.min(months.length-1,Math.floor(percent/100*months.length))],status=playback.preview?'부상 시점 미리보기 · 재활 결정 대기':'실제 경기 계산 중';
-  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · ${percent}%</p><p>${status}</p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments">${calendar?calendar.slice(0,day).map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/(calendar.length||188)}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:${percent}%"></span>`}</div></div>${calendar?`<p><b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}</p>`:`<p>${current}</p>`}</section>${playback.pause==='injury'?incidentPanel():''}`;
+  const current=months[Math.min(months.length-1,Math.floor(percent/100*months.length))],status=playback.preview?'부상 시점 미리보기 · 재활 결정 대기':playback.computing?'시즌 기록 계산 중 · 진행 장면 재생':'시즌 기록 계산 완료 · 진행 장면 재생';
+  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · 장면 ${percent}%</p><p>${status}</p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-label="시즌 진행 장면" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments">${calendar?calendar.slice(0,day).map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/(calendar.length||188)}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:${percent}%"></span>`}</div></div>${calendar?`<p><b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}</p>`:`<p>${current}</p>`}</section>${playback.pause==='injury'?incidentPanel():''}`;
 }
 function startInjuryPreview(){
   const day=injuryForecast(career)?.startDay||1;
@@ -147,18 +148,27 @@ function startInjuryPreview(){
   career.playback=playback;persist();render();window.scrollTo(0,0);
 }
 function startSeasonCalculation(){
-  busy=true;playback={step:0,limit:24,preview:false,pause:null,computing:true};career.playback=playback;persist();render();window.scrollTo(0,0);
-  const finish=candidate=>{career=candidate;career.playback=null;playback=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);};
-  const fail=error=>{career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
+  clearInterval(playbackTimer);
+  busy=true;playback={step:0,limit:SEASON_PLAYBACK_STEPS,preview:false,pause:null,computing:true};career.playback=playback;persist();render();window.scrollTo(0,0);
+  const started=performance.now();let completedCareer=null;
+  const finish=candidate=>{clearInterval(playbackTimer);playbackTimer=null;career=candidate;career.playback=null;playback=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);};
+  const fail=error=>{clearInterval(playbackTimer);playbackTimer=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
+  const tick=()=>{
+    if(!playback)return;
+    const state=seasonPlaybackState(performance.now()-started,Boolean(completedCareer));
+    if(state.ready){finish(completedCareer);return;}
+    if(state.step>playback.step){playback.step=state.step;render();}
+  };
+  const calculated=candidate=>{completedCareer=candidate;playback.computing=false;tick();if(playback)render();};
+  playbackTimer=setInterval(tick,50);
   if(typeof Worker==='undefined'){
-    try{const candidate=structuredClone(career);progress(candidate,career.pendingTraining||career.training);finish(candidate);}catch(error){fail(error);}return;
+    setTimeout(()=>{try{const candidate=structuredClone(career);progress(candidate,career.pendingTraining||career.training);calculated(candidate);}catch(error){fail(error);}},0);return;
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.6',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
-      if(event.data.type==='progress'){if(playback?.computing&&event.data.step>playback.step){playback.step=event.data.step;render();}return;}
-      worker.terminate();if(event.data.type==='done')finish(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
+      worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
     worker.onerror=event=>{worker.terminate();fail(Error(event.message||'시즌 계산 실패'));};
     worker.postMessage({career,training:career.pendingTraining||career.training});

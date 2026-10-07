@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createCareer,availableTraining,progress,saveCareer,loadCareer} from '../src/engine.js';
-import {displayedProgressStep} from '../src/progress-display.js';
+import {SEASON_PLAYBACK_STEPS,SEASON_PLAYBACK_STEP_MS,SEASON_PLAYBACK_DURATION_MS,seasonPlaybackState} from '../src/progress-display.js';
 import {trainingOptionHtml} from '../src/training-ui.js';
 
 const sample=()=>createCareer({seed:118,name:'훈련 검증',school:'검증고',team:0,role:'bat',position:'우익수',type:'교타형'});
@@ -35,12 +35,17 @@ test('모든 능력치가 상한이면 중점 없이 시즌을 진행하고 새�
   assert.deepEqual(loadCareer({getItem:()=>raw}).training,[]);
 });
 
-test('표시 진행률은 완료 경기보다 앞서지 않고 초반 속도가 약 0.8배이며 결과 직전 따라잡는다',()=>{
-  const values=Array.from({length:99},(_,i)=>(i+1)/100);
-  const steps=values.map(displayedProgressStep);
-  assert.ok(steps.every((step,i)=>step>=0&&step<=23&&(i===0||step>=steps[i-1])));
-  assert.ok(values.every((value,i)=>steps[i]/23<=Math.min(1,value/.98)+1e-9));
-  assert.ok(Math.abs(displayedProgressStep(.49)/10-.8)<.03);
-  assert.ok(displayedProgressStep(.98)>21);
-  assert.equal(displayedProgressStep(1),23);
+test('진행 바는 계산 결과와 무관하게 고정 0.75배 속도로 이동하고 둘 다 끝나야 전환된다',()=>{
+  assert.equal(SEASON_PLAYBACK_STEPS,24);
+  assert.equal(SEASON_PLAYBACK_STEP_MS,180/.75);
+  assert.equal(SEASON_PLAYBACK_DURATION_MS,5760);
+  assert.deepEqual(seasonPlaybackState(0,false),{step:0,ready:false});
+  assert.deepEqual(seasonPlaybackState(239,true),{step:0,ready:false});
+  assert.deepEqual(seasonPlaybackState(240,true),{step:1,ready:false});
+  assert.deepEqual(seasonPlaybackState(2880,true),{step:12,ready:false});
+  assert.deepEqual(seasonPlaybackState(5759,true),{step:23,ready:false});
+  assert.deepEqual(seasonPlaybackState(5760,false),{step:23,ready:false});
+  assert.deepEqual(seasonPlaybackState(5760,true),{step:23,ready:true});
+  assert.deepEqual(seasonPlaybackState(8000,false),{step:23,ready:false});
+  assert.deepEqual(seasonPlaybackState(8000,true),{step:23,ready:true});
 });
