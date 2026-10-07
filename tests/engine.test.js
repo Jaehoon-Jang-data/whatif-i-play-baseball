@@ -38,6 +38,26 @@ test('금액 표기 · 지급 연봉만 집계 · 은퇴 보존',()=>{assert.equ
 test('재활 선택은 결장과 재발 위험에 반영',()=>{let c;for(let seed=1;seed<100;seed++){const a=pro(seed);if(injuryForecast(a)){c=a;break;}}assert.ok(c);let fast=structuredClone(c);c.rehabChoice='safe';fast.rehabChoice='fast';progress(c);progress(fast);assert.ok(c.history[0].injury.days>fast.history[0].injury.days);assert.ok(c.recurrenceAdjustment<fast.recurrenceAdjustment);});
 test('v1 이관 · 과거 기록 보존 · 연봉/2군 누락을 조작하지 않음',()=>{let c=pro();progress(c);let old=structuredClone(c);old.version=1;old.contract={years:1,total:33};delete old.salaryLedger;let migrated=migrateCareer(old);assert.equal(migrated.version,7);assert.equal(migrated.history[0].stat.h,old.history[0].stat.h);assert.equal(migrated.history[0].minorStat,null);assert.equal(migrated.history[0].salaryMan,null);assert.equal(totalSalary(migrated),0);assert.equal(migrated.legacySalaryYears,1);});
 test('저장 왕복 · 오류 전달 · 손상된 파일 차단',()=>{let c=pro();progress(c);let raw;const storage={setItem:(_,v)=>raw=v,getItem:()=>raw};saveCareer(c,storage);assert.deepEqual(loadCareer(storage),c);assert.throws(()=>saveCareer(c,{setItem:()=>{throw Error('quota');}}),/quota/);assert.throws(()=>loadCareer({getItem:()=>'{bad'}));assert.throws(()=>loadCareer({getItem:()=>JSON.stringify({...c,version:999})}),/버전/);});
+test('큰 시즌 저장을 압축해도 우승 알림과 시즌 기록이 복구된다',()=>{
+  const c=pro();progress(c);while(c.pendingEvent)acknowledgeEvent(c);
+  const original=structuredClone(c.history[0]);
+  c.history=Array.from({length:16},(_,i)=>({...structuredClone(original),year:2027+i}));
+  c.latest=c.history.at(-1).league;
+  c.year=2042;c.phase='result';c.pendingEvent={type:'postseason',year:2042,team:c.player.team,champion:c.player.team,selected:true,ring:true};
+  let raw;const storage={setItem:(_,value)=>raw=value,getItem:()=>raw};
+  saveCareer(c,storage);
+  assert.ok(raw.length<JSON.stringify(c).length*.8);
+  const restored=loadCareer(storage);
+  assert.deepEqual(restored,c);
+  assert.equal(restored.pendingEvent.type,'postseason');
+  acknowledgeEvent(restored);
+  saveCareer(restored,storage);
+  const afterConfirmation=loadCareer(storage);
+  assert.equal(afterConfirmation.pendingEvent,null);
+  assert.equal(afterConfirmation.phase,'result');
+  assert.equal(afterConfirmation.history.length,16);
+  assert.deepEqual(afterConfirmation.history.at(-1).league,c.latest);
+});
 test('기존 v2 저장의 새 필드 누락도 복구한다',()=>{let c=pro();progress(c);c.version=2;for(const key of ['contractHistory','nationalHistory','transactionHistory','pendingEvent','exempt','playerStatus'])delete c[key];const loaded=loadCareer({getItem:()=>JSON.stringify(c)});assert.equal(loaded.version,7);assert.equal(loaded.history[0].stat.h,c.history[0].stat.h);assert.equal(loaded.history[0].defenseUnrecorded,true);assert.deepEqual(loaded.contractHistory,[]);assert.deepEqual(loaded.nationalHistory,[]);assert.deepEqual(loaded.transactionHistory,[]);});
 test('고교부터 45세까지 진행 · FA · 군복무 · 저장 용량',()=>{let c=createCareer(config),fa=false;let count=0;while(c.age<45&&!c.retired){assert.ok(count++<160,'진행 상태가 막히지 않음');if(c.pendingEvent){c.pendingEvent=null;continue;}switch(c.phase){case 'season':progress(c,[0,1]);break;case 'prepare':if(c.age===24&&!c.served&&!c.service)enlist(c,'regular');if(c.salaryPending)negotiateSalary(c);if(c.stage==='프로')c.player.a.fill(85);if(c.pendingEvent)c.pendingEvent=null;progress(c,[0,1]);break;case 'result':nextYear(c);break;case 'position_choice':resolvePositionOffer(c,false);break;case 'path':if(c.lastDraft&&!c.lastDraft.selected)developmentalTryout(c);else runDraft(c);break;case 'draft_result':finishDraft(c);break;case 'fa_choice':fa=true;declareFA(c);break;case 'market':sign(c,offers(c)[1]);break;case 'contract_result':c.phase='prepare';break;case 'retirement_advice':decideRetirementAdvice(c,false);break;case 'free_agent':c.phase='prepare';break;default:assert.fail(c.phase);}}if(!c.retired)retire(c);assert.ok(c.history.length>=20);assert.ok(fa);assert.ok(c.history.some(r=>r.military));assert.ok(c.history.every(r=>r.league.year===r.year));const finite=x=>{if(typeof x==='number')assert.ok(Number.isFinite(x));else if(x&&typeof x==='object')Object.values(x).forEach(finite);};finite(c);let raw=JSON.stringify(c);assert.ok(Buffer.byteLength(raw)<5_500_000,`저장 크기 ${Buffer.byteLength(raw)}`);assert.equal(loadCareer({getItem:()=>raw}).retired,true);});
 test('육성 입단은 2군에서 시작하고 연봉·트레이드 선택은 저장된다',()=>{let c=pro();c.developmental=true;c.proYears=0;c.player.a.fill(70);assert.ok(rosterPlan(c).tier<=1);c.proYears=2;c.salaryPending=true;let offer=c.contract.annualMan;negotiateSalary(c,true);assert.equal(c.salaryPending,false);assert.ok(c.contract.annualMan>=offer);assert.equal(c.contractHistory.length,1);requestTrade(c);assert.equal(c.tradeRequestYear,c.year);assert.throws(()=>requestTrade(c));let raw;saveCareer(c,{setItem:(_,v)=>raw=v});assert.equal(loadCareer({getItem:()=>raw}).tradeRequestYear,c.year);});

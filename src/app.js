@@ -4,8 +4,8 @@ import {
   percentileReport,money,totalSalary,faStatus,draftAssessment,collegeEarlyStatus,enterCollege,
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
-  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,awardLine,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,upsertArchive,archiveSalaryTotal
-} from './engine.js?v=7.9';
+  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,awardLine,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,upsertArchive,archiveSalaryTotal
+} from './engine.js?v=7.10';
 import {trainingOptionHtml} from './training-ui.js';
 import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep} from './progress-display.js';
 
@@ -37,7 +37,7 @@ function navigate(target){view=target;if(location.hash.slice(1)!==target)history
 window.addEventListener('popstate',()=>{view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club';render();});
 const ARCHIVE_KEY='charari-naega-kiunda-careers';
 function archives(){try{return JSON.parse(localStorage.getItem(ARCHIVE_KEY)||'[]');}catch{return [];}}
-function persist(){try{if(career.retired&&!career.archiveId)career.archiveId=`${career.seed}-${career.player.name}-${career.year}`;saveCareer(career);if(career.retired)localStorage.setItem(ARCHIVE_KEY,JSON.stringify(upsertArchive(archives(),career)));saveError='';}catch(e){saveError='자동 저장 실패. 저장 파일을 내보내세요.';message(saveError);}}
+function persist(){try{if(career.retired&&!career.archiveId)career.archiveId=`${career.seed}-${career.player.name}-${career.year}`;saveCareer(career);if(career.retired)localStorage.setItem(ARCHIVE_KEY,JSON.stringify(upsertArchive(archives(),career)));saveError='';}catch(e){saveError=e?.name==='QuotaExceededError'?'자동 저장 공간이 부족합니다. 저장 파일을 내보내세요.':'자동 저장 실패. 저장 파일을 내보내세요.';message(saveError);}}
 function confirmChoice(text){return new Promise(resolve=>{
   const dialog=document.createElement('dialog');dialog.className='confirm-dialog';dialog.setAttribute('aria-label','선택 확인');
   dialog.innerHTML=`<h2>선택 확인</h2><p>${esc(text)}</p><div class="actions"><button class="secondary" data-cancel>취소</button><button class="primary" data-confirm>확정</button></div>`;
@@ -183,7 +183,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.9',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.10',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -359,7 +359,7 @@ async function act(action){
     if(!career)return;
     if(career.pendingEvent&&!['ack-event','retirement-accept','retirement-decline','national-accept','national-decline'].includes(action))throw Error('주요 이벤트를 먼저 확인하세요.');
     if(action==='national-accept'||action==='national-decline'){decideNationalInvitation(career,action==='national-accept');persist();render();return;}
-    if(action==='ack-event'){acknowledgeEvent(career);persist();render();return;}
+    if(action==='ack-event'){const previousEvent=career.pendingEvent,previousQueue=[...career.eventQueue];acknowledgeEvent(career);try{render();}catch(error){career.pendingEvent=previousEvent;career.eventQueue=previousQueue;render();throw error;}persist();return;}
     if(action==='ack-season-trade'){if(playback?.pause!=='trade'||!pendingSeasonCandidate)throw Error('확인할 시즌 중 트레이드가 없습니다.');career.seasonTradeAcknowledgedYear=career.year;playback.displayTeam=playback.trade.newTeam;persist();playback.pause=null;playback.trade=null;busy=true;render();animatePlayback(SEASON_PLAYBACK_STEPS,()=>{career=pendingSeasonCandidate;career.seasonTradeAcknowledgedYear=career.year;career.playback=null;pendingSeasonCandidate=null;playback=null;busy=false;persist();render();window.scrollTo(0,0);});return;}
     if(action==='begin-season'){if(career.phase!=='prepare')throw Error('시즌 준비 단계가 아닙니다.');if(mandatoryEnlist(career)){persist();render();return;}if(career.tradeOffer)throw Error('새 구단 연봉 제안을 먼저 결정하세요.');if(career.salaryPending&&!(career.contract?.kind==='fa'&&career.contract.left>0))throw Error('연봉 협상을 먼저 마치세요.');const challenge=coachChallenge(career);if(challenge){persist();render();return;}if(preSeasonNationalInvitation(career)){persist();render();return;}career.phase='season';if(waiverCheck(career)){persist();render();return;}persist();render();window.scrollTo(0,0);return;}
     if(action==='back-prepare'){career.phase='prepare';persist();render();return;}

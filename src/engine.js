@@ -949,7 +949,7 @@ function normalizeNationalExemptions(c){
 }
 export function loadCareer(storage=localStorage) {
   const raw=storage.getItem(SAVE_KEY)||LEGACY_SAVE_KEYS.map(key=>storage.getItem(key)).find(Boolean);if(!raw)return null;
-  const old=JSON.parse(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');validateCareer(old);const c=migrateCareer(old);c.signingLedger??=reconstructedSigningLedger(c);normalizeServiceState(c);normalizeNationalExemptions(c);
+  const old=JSON.parse(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');unpackCareerSave(old);validateCareer(old);const c=migrateCareer(old);c.signingLedger??=reconstructedSigningLedger(c);normalizeServiceState(c);normalizeNationalExemptions(c);
   for(const row of c.history){row.awards=row.awards.map(canonicalAwardName);for(const league of [row.league,row.minorLeague])for(const award of league?.awards||[])award.title=canonicalAwardName(award.title);}
   if(c.latest)for(const award of c.latest.awards||[])award.title=canonicalAwardName(award.title);
   for(const event of c.eventQueue||[])if(event.titles)event.titles=event.titles.map(canonicalAwardName);
@@ -958,4 +958,28 @@ export function loadCareer(storage=localStorage) {
   if(c.pendingTraining)c.pendingTraining=availableTraining(c,c.pendingTraining);
   return validateCareer(c);
 }
-export function saveCareer(c,storage=localStorage) {validateCareer(c);storage.setItem(SAVE_KEY,JSON.stringify(c));}
+const SAVE_FORMAT='packed-stats-v1';
+function packStat(stat,role){if(!stat)return stat;const keys=Object.keys(freshStat(role));if(Object.keys(stat).length!==keys.length||keys.some(key=>!Object.hasOwn(stat,key)||!Number.isFinite(stat[key])))return stat;const values=keys.map(key=>stat[key]),last=values.findLastIndex(value=>value!==0);return values.slice(0,last+1);}
+function unpackStat(stat,role){if(!Array.isArray(stat))return stat;return Object.fromEntries(Object.keys(freshStat(role)).map((key,i)=>[key,stat[i]??0]));}
+function visitStats(row,transform){
+  row.stat=transform(row.stat,row.role);if(row.minorStat)row.minorStat=transform(row.minorStat,row.role);
+  if(row.postseason?.stat)row.postseason.stat=transform(row.postseason.stat,row.role);
+  for(const segment of row.teamSegments||[])segment.stat=transform(segment.stat,row.role);
+  for(const league of [row.league,row.minorLeague])for(const player of league?.players||[])player.stat=transform(player.stat,player.role);
+}
+function packCareerSave(c){
+  const packed=structuredClone(c);
+  for(const row of packed.history)visitStats(row,packStat);
+  const latestInHistory=Boolean(packed.latest&&packed.history.at(-1)?.league&&JSON.stringify(packed.latest)===JSON.stringify(packed.history.at(-1).league));
+  if(latestInHistory){delete packed.latest;packed._latestInHistory=true;}
+  else for(const player of packed.latest?.players||[])player.stat=packStat(player.stat,player.role);
+  packed._saveFormat=SAVE_FORMAT;return packed;
+}
+function unpackCareerSave(c){
+  if(c._saveFormat!==SAVE_FORMAT)return;
+  for(const row of c.history||[])visitStats(row,unpackStat);
+  if(c._latestInHistory)c.latest=c.history.at(-1)?.league??null;
+  else for(const player of c.latest?.players||[])player.stat=unpackStat(player.stat,player.role);
+  delete c._latestInHistory;delete c._saveFormat;
+}
+export function saveCareer(c,storage=localStorage) {validateCareer(c);storage.setItem(SAVE_KEY,JSON.stringify(packCareerSave(c)));}
