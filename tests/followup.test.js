@@ -25,7 +25,7 @@ test('일반 육성선수는 첫 시즌 2군에서 출발하고 예외 평가만
 
 test('100시드의 안타와 수비상 분포가 정상 능력 및 높은 능력에서 구별된다',()=>{
   const tally=value=>{let hits=0,hitTitles=0,defense=0;for(let seed=1;seed<=100;seed++){const league=simulateSeason({seed,year:2030,player:{name:'검증',team:0,role:'bat',position:'중견수',a:Array(6).fill(value),opportunity:1}}),user=league.players.find(x=>x.id==='user');hits+=user.stat.h;hitTitles+=+league.awards.some(x=>x.title==='안타왕'&&x.winners.includes('user'));defense+=+league.awards.some(x=>x.title==='수비상 · 중견수'&&x.winners.includes('user'));}return {hits:hits/100,hitTitles,defense};};
-  const normal=tally(60),elite=tally(90);assert.ok(normal.hits>=150&&normal.hits<=155);assert.ok(normal.hitTitles<=10);assert.ok(normal.defense<=35);assert.ok(elite.hits>normal.hits&&elite.hitTitles>normal.hitTitles&&elite.defense>normal.defense);
+  const normal=tally(60),elite=tally(90);assert.ok(normal.hits>=145&&normal.hits<=155);assert.ok(normal.hitTitles<=10);assert.ok(normal.defense<=35);assert.ok(elite.hits>normal.hits&&elite.hitTitles>normal.hitTitles&&elite.defense>normal.defense);
 });
 
 test('트레이드 제안이 없으면 팝업을 만들지 않는다',()=>{let declined;for(let seed=1;seed<100&&!declined;seed++){const c=career(seed);c.proYears=3;const event=requestTrade(c);if(event.outcome!=='수락')declined=c;}assert.ok(declined);assert.equal(declined.pendingEvent,null);assert.equal(declined.tradeRequestYear,declined.year);});

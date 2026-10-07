@@ -32,12 +32,12 @@ test('우수한 중간계투는 마무리 제안을 시즌 결과 직후 받으�
 test('압도적인 야수는 MVP를 받고 골든글러브 외야수는 한 부문에서 세 명이다',()=>{
  const stat=(h,hr,rbi,pa=600)=>({...emptyBat(),g:140,pa,ab:pa-70,h,hr,rbi,r:105,bb:60,ch:220,e:2});
  const players=[{id:'star',name:'스타',team:0,role:'bat',position:'우익수',a:[90,90,85,70,80,78],stat:stat(205,35,125)},...['좌익수','중견수','우익수'].map((position,i)=>({id:'of'+i,name:'외야',team:0,role:'bat',position,a:[70,65,70,70,72,72],stat:stat(155-i*4,15,70)})),{id:'ace',name:'에이스',team:0,role:'pitch',position:'선발',a:[85,85,85,85,85,85],stat:{...emptyPitch(),g:30,gs:30,outs:540,er:36,k:220,w:20,h:130,bb:35}}];
- const season={year:2030,games:144,level:'major',teams:[{id:0,g:144,w:85,l:59}],players};const result=awards(season);assert.ok(result.find(x=>x.title==='정규시즌 MVP').winners.includes('star'));const glove=result.filter(x=>x.title==='골든글러브 · 외야수');assert.equal(glove.length,1);assert.equal(glove[0].winners.length,3);assert.ok(glove[0].details.star==='골든글러브 · 우익수');assert.ok(result.some(x=>x.title==='수비상 · 투수'));
+ const season={year:2030,games:144,level:'major',teams:[{id:0,g:144,w:85,l:59}],players};const result=awards(season);assert.ok(result.find(x=>x.title==='정규시즌 MVP').winners.includes('star'));const glove=result.filter(x=>x.title==='골든글러브 · 외야수');assert.equal(glove.length,1);assert.equal(glove[0].winners.length,3);assert.equal(glove[0].details,undefined);assert.ok(result.some(x=>x.title==='수비상 · 투수'));
 });
 
 test('패배 최다는 커리어 로우이며 개인 수상 구분자는 수상과 포지션에 따라 다르다',()=>{
  assert.equal(careerRecordMarker('w',18,[12,15]),'CH');assert.equal(careerRecordMarker('l',12,[7,9]),'CL');assert.equal(careerRecordMarker('l',3,[7,9]),'CH');assert.equal(careerRecordMarker('sv',30,[20,25]),'CH');
- assert.equal(awardLine(['타격왕','골든글러브 · 우익수','수비상 · 우익수']),'타격왕 / 골든글러브 · 우익수 / 수비상 · 우익수');
+ assert.equal(awardLine(['타격왕','골든글러브 · 우익수','수비상 · 우익수']),'타격왕 / 골든글러브 · 외야수 / 수비상 · 우익수');
 });
 
 test('아시안게임 우승만 병역특례가 적용되고 28세 시즌은 입대가 필요하다',()=>{
