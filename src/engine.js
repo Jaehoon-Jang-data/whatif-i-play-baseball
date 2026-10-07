@@ -151,8 +151,11 @@ export function createCareer(config) {
 }
 export function skillCaps(a,seed,potential=1,role='bat'){const r=rng(Number(seed)+1979);return a.map((v,i)=>{const limited=role==='bat'?[3,5].includes(i):i===5;return Math.round(clamp(v+(limited?7:14)+Math.floor(r()*(limited?12:19))+(potential-1)*(limited?10:17),v,95));});}
 export function trainingPlan(selected) {
-  if (!Array.isArray(selected)||!selected.length||selected.length>2||new Set(selected).size!==selected.length||selected.some(i=>!Number.isInteger(i)||i<0||i>5)) throw Error('훈련은 서로 다른 능력치 1~2개를 선택하세요.');
-  return {selected:[...selected],hoursEach:Math.round(100/selected.length)};
+  if (!Array.isArray(selected)||selected.length>2||new Set(selected).size!==selected.length||selected.some(i=>!Number.isInteger(i)||i<0||i>5)) throw Error('훈련은 서로 다른 능력치 최대 2개를 선택하세요.');
+  return {selected:[...selected],hoursEach:selected.length?Math.round(100/selected.length):0};
+}
+export function availableTraining(c,selected=c.training){
+  return trainingPlan(selected).selected.filter(i=>c.potentialCaps?.[i]===undefined||c.player.a[i]<c.potentialCaps[i]);
 }
 export function overall(p) {
   const a=p.a;
@@ -590,7 +593,7 @@ export function progress(c,selected=c.training,onProgress=null) {
   if(faContractTerm(c)?.active)c.salaryPending=false;
   if(c.salaryPending)throw Error('연봉 협상을 먼저 마치세요.');
   if(c.stage==='프로'&&!c.served&&!c.service&&c.age>27)throw Error('상무 지원 연령을 넘겼습니다. 현역 입대를 먼저 결정하세요.');
-  const plan=trainingPlan(selected);c.training=plan.selected;
+  const plan=trainingPlan(availableTraining(c,selected));c.training=plan.selected;
   const p=c.player,r=rng(c.seed+c.year*31+c.history.length+233),military=c.service>0,returning=c.service===1;
   const report=[],aBefore=[...p.a];let injury=injuryForecast(c),missed=0;
   if(injury){missed=Math.max(7,injury.days+(c.rehabChoice==='safe'?14:c.rehabChoice==='fast'?-10:0));injury={...injury,days:missed};c.injuries++;c.recurrenceAdjustment=c.rehabChoice==='safe'?-.04:c.rehabChoice==='fast'?.06:0;report.push(`${injury.body} ${injury.name} · ${missed}일 재활`);}
@@ -655,11 +658,11 @@ export function progress(c,selected=c.training,onProgress=null) {
   const international=military?[]:nationalEvents(c,league,stat);
   if(international.some(x=>x.selected&&x.name!=='WBC'))queueEvent(c,{type:'national',year:c.year,items:international.filter(x=>x.selected&&x.name!=='WBC')});
   const row={year:c.year,age:c.age,stage:c.stage,collegeTeam:c.stage==='대학'?c.collegeTeam:null,team:p.team,role:p.role,position:p.position,stat,minorStat,league,minorLeague,level,military:military&&!returning,servicePath:military?c.servicePath:null,registeredDays,developmentalConverted,salaryMan,allowanceMan,experience,totalGrowth,
-    awards:league?.level==='major'?league.awards.filter(x=>x.winners.includes('user')).map(x=>x.details?.user||x.title):[],report,injury,aBefore,aAfter:[...p.a],training:[...selected],trust:c.clubTrust,trustChanges:(c.trustHistory||[]).filter(x=>x.year===c.year),overallBefore:overall({...p,a:aBefore}),overall:overall(p),rosterMoves:c.stage!=='프로'?[]:roster.moves,rosterCalendar:c.stage==='프로'?roster.calendar:null,international,tournamentResults:c.stage==='프로'?['WBC','아시안게임','프리미어12'].filter(name=>nationalTournamentYear(c.year,name)).map(name=>tournamentResult(c.seed,c.year,name)):[],optionResults:c.salaryLedger.at(-1)?.optionResults||[]};
+    awards:league?.level==='major'?league.awards.filter(x=>x.winners.includes('user')).map(x=>x.details?.user||x.title):[],report,injury,aBefore,aAfter:[...p.a],training:[...plan.selected],trust:c.clubTrust,trustChanges:(c.trustHistory||[]).filter(x=>x.year===c.year),overallBefore:overall({...p,a:aBefore}),overall:overall(p),rosterMoves:c.stage!=='프로'?[]:roster.moves,rosterCalendar:c.stage==='프로'?roster.calendar:null,international,tournamentResults:c.stage==='프로'?['WBC','아시안게임','프리미어12'].filter(name=>nationalTournamentYear(c.year,name)).map(name=>tournamentResult(c.seed,c.year,name)):[],optionResults:c.salaryLedger.at(-1)?.optionResults||[]};
   if(c.stage==='프로'&&(!military||returning))row.level=seasonLevel(row);
   if(c.stage==='프로'&&league){row.postseason=postseasonResult(league,row,p,c.seed);const form=performance(stat,p.role),volume=p.role==='bat'?stat.pa/480:p.position==='선발'?stat.outs/480:stat.outs/180;if(!military||returning)changeTrust(c,clamp(Math.round((form-50)*.08+(volume-.5)*3),-4,4),'시즌 성적과 출장 평가');row.trust=c.clubTrust;row.trustChanges=(c.trustHistory||[]).filter(x=>x.year===c.year);for(const title of row.awards)note(c,`${title} 수상`);if(row.awards.length)queueEvent(c,{type:'award',year:c.year,titles:row.awards});if(row.postseason.regularRank<=5)queueEvent(c,{type:'postseason',year:c.year,regularRank:row.postseason.regularRank,finalRank:row.postseason.finalRank,champion:row.postseason.champion,team:row.team,selected:row.postseason.selected,ring:hasChampionshipRing(row)});}
   if(returning&&!c.service)queueEvent(c,{type:'discharge',year:c.year,path:c.servicePath});
-  c.history.push(row);report.forEach(text=>note(c,text));c.latest=league;c.phase='result';delete c.rehabChoice;delete c.pendingTraining;
+  c.history.push(row);report.forEach(text=>note(c,text));c.latest=league;c.phase='result';c.training=availableTraining(c,plan.selected);delete c.rehabChoice;delete c.pendingTraining;
   if(c.stage==='프로'&&!military&&nationalTournamentYear(c.year,'프리미어12')){const invitation=nationalInvitation(c,'프리미어12',stat);if(invitation)queueEvent(c,invitation);}
   onProgress?.(1);
   return row;
@@ -859,6 +862,8 @@ export function loadCareer(storage=localStorage) {
   if(c.latest)for(const award of c.latest.awards||[])award.title=canonicalAwardName(award.title);
   for(const event of c.eventQueue||[])if(event.titles)event.titles=event.titles.map(canonicalAwardName);
   if(c.pendingEvent?.titles)c.pendingEvent.titles=c.pendingEvent.titles.map(canonicalAwardName);
+  c.training=availableTraining(c);
+  if(c.pendingTraining)c.pendingTraining=availableTraining(c,c.pendingTraining);
   return validateCareer(c);
 }
 export function saveCareer(c,storage=localStorage) {validateCareer(c);storage.setItem(SAVE_KEY,JSON.stringify(c));}
