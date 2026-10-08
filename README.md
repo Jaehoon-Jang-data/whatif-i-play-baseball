@@ -45,7 +45,7 @@ node scripts/league-operations-audit.mjs
 
 ## 저장 호환성
 
-`charari-naega-kiunda-v7` 키에 버전 7 데이터를 저장하고, 은퇴 선수 기록은 `charari-naega-kiunda-careers`에 보관합니다. 기존 저장을 읽으며 과거에 없던 상세 기록은 만들어 채우지 않습니다. JSON 내보내기·불러오기를 지원합니다.
+`charari-naega-kiunda-v7` 키에 버전 7 데이터를 저장하고, 은퇴 선수 기록은 `charari-naega-kiunda-careers`에 보관합니다. 기존 저장을 읽으며 과거에 없던 상세 기록은 만들어 채우지 않습니다. JSON 내보내기·불러오기를 지원합니다. 상단 `보관·저장`에서 현재 선수, 은퇴 선수, 구버전 저장과 백업을 개별 삭제할 수 있습니다. 삭제 전 필요한 기록을 내보내세요. [저장 공간과 거래 빈도 조정](docs/2026-10-08-storage-trades.md)을 참조하세요.
 
 팀 통계 현실성 검증은 [KBO 공식 역대 구단성적](https://www.koreabaseball.com/Record/History/Team/Record.aspx)의 경기·승·패·무·팀 타율·평균자책점·승률만 사용합니다. `python3 scripts/extract-kbo-team-history.py`로 연도별 자료를 갱신하고 `node tests/kbo-team-balance.js`로 200시드의 팀별 결과 및 선수·팀 합계 일관성을 재검사할 수 있습니다. 추출 범위와 결과는 [검증 기록](docs/kbo-team-balance.md)에 남겼습니다.
 

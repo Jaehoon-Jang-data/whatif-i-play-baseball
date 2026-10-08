@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster} from '../src/league-operations.js';
-import {createCareer,developmentalEligibility,simulateSeason,emptyBat,nationalSelectionChance,nationalInvitation,offers,canonicalAwardName,progress,saveCareer,loadCareer} from '../src/engine.js';
+import {createCareer,developmentalEligibility,simulateSeason,emptyBat,nationalSelectionChance,nationalInvitation,offers,canonicalAwardName,progress,saveCareer,loadCareer,automaticTradeChance,requestTrade} from '../src/engine.js';
 
 const career=(seed=1)=>createCareer({seed,name:'검증',school:'검증고',team:0,role:'bat',position:'우익수',type:'교타형'});
 
@@ -85,11 +85,22 @@ test('구 저장의 외야 골든글러브 위치 표기는 단일 부문으로 
 });
 
 test('플레이어 시즌 중 이적은 전후 기록·급여·명단을 저장하고 시즌 재진행을 막는다',()=>{
- const c=career(22);c.stage='프로';c.phase='season';c.year=2030;c.age=25;c.proYears=3;c.served=true;c.player.a=[90,90,90,90,90,90];c.clubTrust=100;c.contract={kind:'reserved',annualMan:5000,left:0};
+ const c=career(41);c.stage='프로';c.phase='season';c.year=2030;c.age=25;c.proYears=3;c.served=true;c.player.a=[90,90,90,90,90,90];c.clubTrust=100;c.contract={kind:'reserved',annualMan:5000,left:0};
  c.history=[{year:2029,stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:140,pa:600,ab:540,h:190,hr:30},registeredDays:180,awards:[]}];
  progress(c);const row=c.history.at(-1),trade=row.league.playerTrade;
  assert.ok(trade);assert.equal(trade.oldTeam,0);assert.equal(c.player.team,trade.newTeam);assert.equal(row.teamSegments.length,2);
  for(const key of Object.keys(row.stat))assert.equal(row.teamSegments[0].stat[key]+row.teamSegments[1].stat[key],row.stat[key],key);
  assert.ok(row.teamSegments.every(x=>x.stat.pa>0));assert.equal(c.salaryLedger.at(-1).teamShares.reduce((n,x)=>n+x.salaryMan,0),5000);assert.equal(c.leagueRoster.length,400);
  let raw;saveCareer(c,{setItem:(_,value)=>raw=value});const loaded=loadCareer({getItem:()=>raw});assert.deepEqual(loaded.history.at(-1).teamSegments,row.teamSegments);assert.equal(loaded.leagueRoster.length,400);assert.throws(()=>progress(loaded),/시즌|준비|진행/);
+});
+
+test('FA 계약 중 자동 이적과 트레이드 요청 수락은 보류선수보다 드물다',()=>{
+ const reserved=career(19);reserved.stage='프로';reserved.phase='prepare';reserved.proYears=5;reserved.player.a.fill(60);reserved.contract={kind:'reserved',annualMan:5000,left:1};
+ const fa=structuredClone(reserved);fa.contract={kind:'fa',annualMan:30000,left:3,years:3};
+ assert.ok(automaticTradeChance(fa)<automaticTradeChance(reserved)*.2);
+ fa.contract.left=1;assert.ok(automaticTradeChance(fa)<automaticTradeChance(reserved));
+ fa.contract.left=3;
+ assert.ok(requestTrade(structuredClone(fa)).chance<requestTrade(structuredClone(reserved)).chance);
+ const star=structuredClone(reserved);star.player.a.fill(88);
+ assert.ok(automaticTradeChance(star)<automaticTradeChance(reserved));
 });

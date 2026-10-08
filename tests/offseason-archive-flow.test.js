@@ -18,7 +18,7 @@ test('은퇴 대상이 아니면 시즌 결과 → 보직 제안 → 다음 시�
 });
 
 test('보직 변경과 구단 이동이 같은 겨울이면 변경 결과를 먼저 확인한다',()=>{
- const c=career(159);c.age=31;c.phase='position_choice';c.pendingPositionOffer={target:'마무리'};
+ const c=career(305);c.age=31;c.phase='position_choice';c.pendingPositionOffer={target:'마무리'};
  resolvePositionOffer(c,true);assert.equal(c.pendingEvent.type,'position_result');assert.equal(c.eventQueue[0]?.type,'trade');
 });
 

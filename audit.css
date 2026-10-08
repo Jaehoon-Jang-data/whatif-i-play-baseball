@@ -1,6 +1,8 @@
 /* Flat, readable blue UI; overrides the older decorative scene styles. */
 body{padding-bottom:0;font-size:16px}
 .panel,.candidate,.offer{border-radius:12px;box-shadow:none}
+.storage-list{display:grid;gap:8px;margin:16px 0}.storage-list>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #dfe4ed;border-radius:10px}.storage-list>div span{overflow-wrap:anywhere}.storage-list button{flex:none}.archive-list li{flex-wrap:wrap}.archive-list li>button{margin-left:auto}
+@media(max-width:700px){.storage-list>div{align-items:flex-start;flex-direction:column}.storage-list button{align-self:flex-end}}
 .primary,.candidate{box-shadow:none}
 .postseason-summary.champion{background:#fff9e6}
 .progress-scene{background:#182c55}
