@@ -22,7 +22,7 @@ node scripts/league-operations-audit.mjs
 
 별도 빌드나 패키지 설치가 필요 없는 ES 모듈 앱입니다. 브라우저에서 `localhost`와 `127.0.0.1`의 저장 공간은 다릅니다.
 
-규정 근거와 균형 측정의 범위는 [2026 규칙](docs/2026-rules.md), [도루·경쟁·성장·계약 감사](docs/2026-10-03-balance-audit.md), [2026-10-06 신인 계약·보직·수상·병역 재감사](docs/2026-10-06-audit.md), [스토브리그·진행·은퇴 보관 점검](docs/2026-10-06-flow-audit.md), [훈련 상한·진행 표시 조정](docs/2026-10-07-training-progress.md), [리그 운영 감사](docs/2026-10-07-league-operations-audit.md)에 정리했습니다. 총수입·전역·커리어 비교·신인왕의 최신 기준도 [2026 규칙](docs/2026-rules.md)에 있습니다.
+규정 근거와 균형 측정의 범위는 [2026 규칙](docs/2026-rules.md), [도루·경쟁·성장·계약 감사](docs/2026-10-03-balance-audit.md), [2026-10-06 신인 계약·보직·수상·병역 재감사](docs/2026-10-06-audit.md), [스토브리그·진행·은퇴 보관 점검](docs/2026-10-06-flow-audit.md), [훈련 상한·진행 표시 조정](docs/2026-10-07-training-progress.md), [리그 운영 감사](docs/2026-10-07-league-operations-audit.md), [방출·선발·포스트시즌·세이브 감사](docs/2026-10-10-season-integrity-audit.md)에 정리했습니다. 총수입·전역·커리어 비교·신인왕의 최신 기준도 [2026 규칙](docs/2026-rules.md)에 있습니다.
 
 ## 화면 흐름
 

@@ -35,6 +35,8 @@ export function selectClubRoster(players,limits,strategy){
   const selectedBats=positions.map(pos=>bats.find(p=>p.position===pos)).filter(Boolean);
   for(const bat of bats)if(selectedBats.length<batCount&&!selectedBats.includes(bat))selectedBats.push(bat);
   const selectedArms=arms.filter(p=>p.position==='선발').slice(0,5);
+  const closer=arms.find(p=>p.position==='마무리');
+  if(closer&&selectedArms.length<pitchCount)selectedArms.push(closer);
   for(const arm of arms)if(selectedArms.length<pitchCount&&!selectedArms.includes(arm))selectedArms.push(arm);
   const registered=[...selectedBats,...selectedArms];
   const eligible=registered.slice(0,limits.gameEligible);
