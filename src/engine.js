@@ -944,7 +944,8 @@ export function incomeBreakdown(entry){
   return {salaryMan,signingMan,optionMan,allowanceMan,totalMan:salaryMan+signingMan+optionMan+allowanceMan,complete:!(entry.legacySalaryYears||entry.career?.legacySalaryYears)&&ledger.every(row=>row.optionPaidMan!==undefined)};
 }
 export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,seasons:c.proYears,score:c.careerScore??careerScore(c),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,servicePath:row.servicePath,injury:row.injury,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults})),salaryLedger:structuredClone(c.salaryLedger),signingLedger:structuredClone(c.signingLedger?.length?c.signingLedger:reconstructedSigningLedger(c)),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
-export function upsertArchive(entries,c){const entry=archiveEntry(c),next=[...entries],index=next.findIndex(x=>x.id===entry.id);if(index<0)next.push(entry);else next[index]=entry;return next;}
+export const ARCHIVE_LIMIT=7;
+export function upsertArchive(entries,c){const entry=archiveEntry(c),next=[...entries],index=next.findIndex(x=>x.id===entry.id);if(next.length>ARCHIVE_LIMIT||index<0&&next.length>=ARCHIVE_LIMIT)throw Error('은퇴 선수 보관은 7명까지 가능합니다. 삭제할 기록을 선택하세요.');if(index<0)next.push(entry);else next[index]=entry;return next;}
 export function archiveSalaryTotal(entry){const ledger=entry.salaryLedger||entry.career?.salaryLedger;return Array.isArray(ledger)?ledger.reduce((sum,row)=>sum+(row.salaryMan||0),0):null;}
 
 export const COMPARISONS={

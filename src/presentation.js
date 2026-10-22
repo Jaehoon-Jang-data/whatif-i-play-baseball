@@ -1,4 +1,4 @@
-import {canonicalAwardName} from './engine.js?v=7.12';
+import {canonicalAwardName} from './engine.js?v=7.13';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function awardBadgesHtml(titles){
