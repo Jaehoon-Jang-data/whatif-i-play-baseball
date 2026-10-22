@@ -33,7 +33,7 @@ test('2·3·4·6년 FA 계약은 연차, 단년 보류 연봉, 재취득을 별�
 });
 
 test('지명 신인 개막 예외와 육성선수 정식 등록 시점을 구분한다',()=>{
-  const regular=pro(4,19);regular.proYears=0;regular.lastDraft={selected:true,round:7,scout:{score:60}};regular.history=[{stage:'고교',stat:{pa:130}}];assert.equal(rosterPlan(regular).opening,'2군');
+  const regular=pro(4,19);regular.proYears=0;regular.player.a.fill(55);regular.lastDraft={selected:true,round:7,scout:{score:60}};regular.history=[{stage:'고교',stat:{pa:130}}];assert.equal(rosterPlan(regular).opening,'2군');
   const elite=pro(4,19);elite.proYears=0;elite.lastDraft={selected:true,round:1,scout:{score:78}};elite.history=[{stage:'고교',stat:{pa:150}}];assert.equal(rosterPlan(elite).opening,'1군');assert.equal(springEvaluation(elite)?.type,'spring_evaluation');
   const developmental=pro(4,19);developmental.proYears=0;developmental.developmental=true;developmental.developmentalElite=true;assert.equal(rosterPlan(developmental).opening,'2군');assert.ok(rosterPlan(developmental).calendar.slice(0,46).every(x=>x==='2군'));assert.equal(springEvaluation(developmental),null);
 });

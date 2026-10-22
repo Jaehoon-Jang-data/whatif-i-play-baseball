@@ -1,0 +1,1325 @@
+{
+  "date": "2026-10-22",
+  "baselineCommit": "2c94cf4",
+  "sampleDefinition": {
+    "injuries": "8 cells × 10000 player-seasons; no prior injuries",
+    "rookies": "2000 seeds per role, first candidate, first-round scout score fixed at 75 for opening-roster scenario",
+    "leagues": "3 seeds × 12 seasons (2027–2038)",
+    "growth": "24 controlled ten-season trajectories: 12 ordinary seeds and 12 oversampled rare-profile seeds; contracts/service/offseason choices held fixed; not full career outcomes",
+    "national": "8 cells × 500 seeds; fixed age 25, fixed weak/strong performance, no peer roster in this diagnostic"
+  },
+  "before": {
+    "attachments": [
+      {
+        "year": 2028,
+        "sha256": "a275e7063451e2ba0d9cfabe6fccf561847c1f306bf27132ab544edff3e6f2ee",
+        "phase": "prepare",
+        "rows": 1,
+        "roundTripSameRecords": true,
+        "draft": {
+          "stored": 44.276756756756754,
+          "current": {
+            "score": 44.276756756756754,
+            "probability": 0.47566405161256786,
+            "roundLow": 5,
+            "roundHigh": 9,
+            "sample": 111,
+            "provisional": false,
+            "stat": {
+              "g": 7,
+              "gs": 7,
+              "outs": 111,
+              "w": 1,
+              "l": 5,
+              "hold": 0,
+              "sv": 0,
+              "bs": 0,
+              "k": 31,
+              "bb": 9,
+              "h": 46,
+              "hr": 5,
+              "r": 25,
+              "er": 20
+            }
+          },
+          "pick": 54
+        }
+      },
+      {
+        "year": 2034,
+        "sha256": "b6761ba27ef162b00add5e9484f763ce76d042712938eba34a0128fd03019dfa",
+        "phase": "result",
+        "rows": 8,
+        "roundTripSameRecords": true,
+        "national": {
+          "decisions": {
+            "2031:프리미어12": "미선발",
+            "2034:WBC": "미선발",
+            "2034:아시안게임": "수락"
+          },
+          "priorStat": {
+            "g": 15,
+            "gs": 15,
+            "outs": 228,
+            "w": 6,
+            "l": 5,
+            "hold": 0,
+            "sv": 0,
+            "bs": 0,
+            "k": 65,
+            "bb": 19,
+            "h": 93,
+            "hr": 10,
+            "r": 41,
+            "er": 39
+          },
+          "evaluations": [
+            {
+              "name": "WBC",
+              "chance": 0.027496102545754804,
+              "score": 55.26015384615385,
+              "sample": 0.5846153846153846,
+              "category": "일반",
+              "group": "선발",
+              "stronger": 12,
+              "slots": 5
+            },
+            {
+              "name": "아시안게임",
+              "chance": 0.04091420058808315,
+              "score": 55.26015384615385,
+              "sample": 0.5846153846153846,
+              "category": "연령·연차 대상",
+              "group": "선발",
+              "stronger": 5,
+              "slots": 5
+            }
+          ]
+        }
+      },
+      {
+        "year": 2044,
+        "sha256": "bac90ae91c06bcb6487ef3491710e2860522b33d47a6e45abf084d054f56488d",
+        "phase": "result",
+        "rows": 18,
+        "roundTripSameRecords": true,
+        "dh": {
+          "players": 3,
+          "stored": {
+            "title": "골든글러브 · 지명타자",
+            "winners": [
+              "user"
+            ],
+            "candidates": [
+              {
+                "id": "user",
+                "score": 0.6053941992183983
+              },
+              {
+                "id": "3-b17",
+                "score": 0.5545500540641038
+              }
+            ]
+          },
+          "recomputed": {
+            "title": "골든글러브 · 지명타자",
+            "winners": [
+              "user"
+            ],
+            "candidates": [
+              {
+                "id": "user",
+                "score": 0.6053941992183983
+              },
+              {
+                "id": "3-b17",
+                "score": 0.5545500540641038
+              }
+            ]
+          }
+        }
+      },
+      {
+        "year": 2051,
+        "sha256": "7e440ea940aa5581a0cc415b8d8d46b919ed19164a97dfeb7a8195c298af0b4a",
+        "phase": "retired",
+        "rows": 23,
+        "roundTripSameRecords": true,
+        "elder": [
+          {
+            "year": 2048,
+            "score": 38.50587551361068,
+            "form": 42.85550205444273,
+            "games": 44,
+            "poorSeasons": 1,
+            "competition": -14.600000000000009,
+            "prospect": false,
+            "probability": 0.054117704053244314,
+            "reason": "스토브리그 보류 명단 평가 · 최근 3시즌 부진 1시즌, 1군 평균 44경기, 마무리 경쟁 1명, 40세·프로 22년차",
+            "retirementAdvice": true
+          },
+          {
+            "year": 2049,
+            "score": 34.077475492354104,
+            "form": 34.96590196941643,
+            "games": 46.666666666666664,
+            "poorSeasons": 2,
+            "competition": -16.300000000000004,
+            "prospect": false,
+            "probability": 0.0910210375637158,
+            "reason": "스토브리그 보류 명단 평가 · 최근 3시즌 부진 2시즌, 1군 평균 47경기, 마무리 경쟁 1명, 41세·프로 22년차",
+            "retirementAdvice": true
+          }
+        ]
+      }
+    ],
+    "injuries": [
+      {
+        "role": "bat",
+        "age": 18,
+        "sample": 10000,
+        "injuries": 992,
+        "bodies": {
+          "허리": 328,
+          "팔꿈치": 161,
+          "햄스트링": 172,
+          "무릎": 173,
+          "어깨": 158
+        }
+      },
+      {
+        "role": "bat",
+        "age": 22,
+        "sample": 10000,
+        "injuries": 1402,
+        "bodies": {
+          "햄스트링": 282,
+          "팔꿈치": 278,
+          "허리": 282,
+          "무릎": 282,
+          "어깨": 278
+        }
+      },
+      {
+        "role": "bat",
+        "age": 30,
+        "sample": 10000,
+        "injuries": 1595,
+        "bodies": {
+          "햄스트링": 319,
+          "팔꿈치": 322,
+          "허리": 318,
+          "무릎": 315,
+          "어깨": 321
+        }
+      },
+      {
+        "role": "bat",
+        "age": 38,
+        "sample": 10000,
+        "injuries": 1819,
+        "bodies": {
+          "햄스트링": 373,
+          "허리": 343,
+          "팔꿈치": 371,
+          "무릎": 366,
+          "어깨": 366
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 18,
+        "sample": 10000,
+        "injuries": 992,
+        "bodies": {
+          "허리": 328,
+          "팔꿈치": 161,
+          "햄스트링": 172,
+          "무릎": 173,
+          "어깨": 158
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 22,
+        "sample": 10000,
+        "injuries": 1402,
+        "bodies": {
+          "햄스트링": 282,
+          "팔꿈치": 278,
+          "허리": 282,
+          "무릎": 282,
+          "어깨": 278
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 30,
+        "sample": 10000,
+        "injuries": 1595,
+        "bodies": {
+          "햄스트링": 319,
+          "팔꿈치": 322,
+          "허리": 318,
+          "무릎": 315,
+          "어깨": 321
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 38,
+        "sample": 10000,
+        "injuries": 1819,
+        "bodies": {
+          "햄스트링": 373,
+          "허리": 343,
+          "팔꿈치": 371,
+          "무릎": 366,
+          "어깨": 366
+        }
+      }
+    ],
+    "injuryPositions": [
+      {
+        "position": "포수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 61,
+          "팔꿈치": 28,
+          "햄스트링": 40,
+          "무릎": 37,
+          "어깨": 33
+        }
+      },
+      {
+        "position": "포수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 80,
+          "팔꿈치": 69,
+          "허리": 60,
+          "무릎": 57,
+          "어깨": 55
+        }
+      },
+      {
+        "position": "포수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 89,
+          "허리": 65,
+          "팔꿈치": 74,
+          "무릎": 71,
+          "어깨": 64
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 61,
+          "팔꿈치": 28,
+          "햄스트링": 40,
+          "무릎": 37,
+          "어깨": 33
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 80,
+          "팔꿈치": 69,
+          "허리": 60,
+          "무릎": 57,
+          "어깨": 55
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 89,
+          "허리": 65,
+          "팔꿈치": 74,
+          "무릎": 71,
+          "어깨": 64
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 61,
+          "팔꿈치": 28,
+          "햄스트링": 40,
+          "무릎": 37,
+          "어깨": 33
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 80,
+          "팔꿈치": 69,
+          "허리": 60,
+          "무릎": 57,
+          "어깨": 55
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 89,
+          "허리": 65,
+          "팔꿈치": 74,
+          "무릎": 71,
+          "어깨": 64
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 61,
+          "팔꿈치": 28,
+          "햄스트링": 40,
+          "무릎": 37,
+          "어깨": 33
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 80,
+          "팔꿈치": 69,
+          "허리": 60,
+          "무릎": 57,
+          "어깨": 55
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 89,
+          "허리": 65,
+          "팔꿈치": 74,
+          "무릎": 71,
+          "어깨": 64
+        }
+      }
+    ],
+    "rookies": [
+      {
+        "role": "bat",
+        "sample": 2000,
+        "elite": 0,
+        "opening": 0,
+        "mean": 53.746150000000064,
+        "max": 60.6
+      },
+      {
+        "role": "pitch",
+        "sample": 2000,
+        "elite": 0,
+        "opening": 2,
+        "mean": 54.74769999999988,
+        "max": 61.9
+      }
+    ],
+    "leagues": {
+      "seasons": 36,
+      "missingPositions": 104,
+      "violations": 0,
+      "final": [
+        {
+          "seed": 3,
+          "year": 2038,
+          "dhPlayers": 7,
+          "dhCandidates": 7,
+          "missingBatPositions": 12,
+          "violations": 0,
+          "rookies": 22,
+          "rosterOvr": 63.40875000000002
+        },
+        {
+          "seed": 9,
+          "year": 2038,
+          "dhPlayers": 6,
+          "dhCandidates": 5,
+          "missingBatPositions": 14,
+          "violations": 0,
+          "rookies": 26,
+          "rosterOvr": 62.71025000000003
+        },
+        {
+          "seed": 17,
+          "year": 2038,
+          "dhPlayers": 13,
+          "dhCandidates": 10,
+          "missingBatPositions": 5,
+          "violations": 0,
+          "rookies": 25,
+          "rosterOvr": 63.03525000000001
+        }
+      ]
+    },
+    "growth": [
+      {
+        "cohort": "ordinary",
+        "role": "all",
+        "players": 12,
+        "initialOvr": 54.37,
+        "finalOvr": 62.47,
+        "firstYearGames": 1,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 7
+      },
+      {
+        "cohort": "ordinary",
+        "role": "bat",
+        "players": 6,
+        "initialOvr": 54.07,
+        "finalOvr": 62.77,
+        "firstYearGames": 0,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 3
+      },
+      {
+        "cohort": "ordinary",
+        "role": "pitch",
+        "players": 6,
+        "initialOvr": 54.67,
+        "finalOvr": 62.17,
+        "firstYearGames": 2,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 4
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "all",
+        "players": 12,
+        "initialOvr": 55.32,
+        "finalOvr": 65.83,
+        "firstYearGames": 3.42,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 8
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "bat",
+        "players": 6,
+        "initialOvr": 53.35,
+        "finalOvr": 63.33,
+        "firstYearGames": 4.5,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 3
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "pitch",
+        "players": 6,
+        "initialOvr": 57.28,
+        "finalOvr": 68.32,
+        "firstYearGames": 2.33,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 5
+      }
+    ],
+    "national": [
+      {
+        "role": "bat",
+        "quality": "weak",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 4,
+        "meanChance": 0.014999999999999873
+      },
+      {
+        "role": "bat",
+        "quality": "weak",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 6,
+        "meanChance": 0.013200000000000104
+      },
+      {
+        "role": "bat",
+        "quality": "strong",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 249,
+        "meanChance": 0.4893519379845015
+      },
+      {
+        "role": "bat",
+        "quality": "strong",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 215,
+        "meanChance": 0.43062970542635537
+      },
+      {
+        "role": "pitch",
+        "quality": "weak",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 4,
+        "meanChance": 0.014999999999999873
+      },
+      {
+        "role": "pitch",
+        "quality": "weak",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 6,
+        "meanChance": 0.013200000000000104
+      },
+      {
+        "role": "pitch",
+        "quality": "strong",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 226,
+        "meanChance": 0.43827906976744485
+      },
+      {
+        "role": "pitch",
+        "quality": "strong",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 193,
+        "meanChance": 0.3856855813953452
+      }
+    ],
+    "salaryBoundary": {
+      "old": "5.3억",
+      "next": "5.3억",
+      "change": {
+        "old": 54000,
+        "new": 53000,
+        "rate": 1.9,
+        "kind": "삭감"
+      }
+    },
+    "training": [
+      {
+        "training": "single",
+        "ordinaryFinalOvr": 64.05,
+        "rareFinalOvr": 66.22
+      },
+      {
+        "training": "two",
+        "ordinaryFinalOvr": 60.88,
+        "rareFinalOvr": 65.43
+      }
+    ]
+  },
+  "after": {
+    "attachments": [
+      {
+        "year": 2028,
+        "sha256": "a275e7063451e2ba0d9cfabe6fccf561847c1f306bf27132ab544edff3e6f2ee",
+        "phase": "prepare",
+        "rows": 1,
+        "roundTripSameRecords": true,
+        "draft": {
+          "stored": 44.276756756756754,
+          "current": {
+            "score": 47.65788604593861,
+            "probability": 0.5307622002050416,
+            "roundLow": 5,
+            "roundHigh": 9,
+            "sample": 111,
+            "provisional": false,
+            "stat": {
+              "g": 7,
+              "gs": 7,
+              "outs": 111,
+              "w": 1,
+              "l": 5,
+              "hold": 0,
+              "sv": 0,
+              "bs": 0,
+              "k": 31,
+              "bb": 9,
+              "h": 46,
+              "hr": 5,
+              "r": 25,
+              "er": 20
+            },
+            "abilityScore": 58.8,
+            "formScore": 34.5945945945946,
+            "potentialScore": 58.40588748641313,
+            "demand": 1,
+            "reason": "아마추어 성적·표본과 현재 기량, 성장 여지, 보직 수요를 함께 평가"
+          },
+          "pick": 54
+        }
+      },
+      {
+        "year": 2034,
+        "sha256": "b6761ba27ef162b00add5e9484f763ce76d042712938eba34a0128fd03019dfa",
+        "phase": "result",
+        "rows": 8,
+        "roundTripSameRecords": true,
+        "national": {
+          "decisions": {
+            "2031:프리미어12": "미선발",
+            "2034:WBC": "미선발",
+            "2034:아시안게임": "수락"
+          },
+          "priorStat": {
+            "g": 15,
+            "gs": 15,
+            "outs": 228,
+            "w": 6,
+            "l": 5,
+            "hold": 0,
+            "sv": 0,
+            "bs": 0,
+            "k": 65,
+            "bb": 19,
+            "h": 93,
+            "hr": 10,
+            "r": 41,
+            "er": 39
+          },
+          "evaluations": [
+            {
+              "name": "WBC",
+              "chance": 0,
+              "score": 55.26015384615385,
+              "sample": 0.5846153846153846,
+              "form": 37.4078947368421,
+              "category": "일반",
+              "group": "선발",
+              "stronger": 11,
+              "slots": 5,
+              "reason": "최근 성적 기준 미달"
+            },
+            {
+              "name": "아시안게임",
+              "chance": 0,
+              "score": 55.26015384615385,
+              "sample": 0.5846153846153846,
+              "form": 37.4078947368421,
+              "category": "연령·연차 대상",
+              "group": "선발",
+              "stronger": 4,
+              "slots": 5,
+              "reason": "최근 성적 기준 미달"
+            }
+          ]
+        }
+      },
+      {
+        "year": 2044,
+        "sha256": "bac90ae91c06bcb6487ef3491710e2860522b33d47a6e45abf084d054f56488d",
+        "phase": "result",
+        "rows": 18,
+        "roundTripSameRecords": true,
+        "dh": {
+          "players": 3,
+          "stored": {
+            "title": "골든글러브 · 지명타자",
+            "winners": [
+              "user"
+            ],
+            "candidates": [
+              {
+                "id": "user",
+                "score": 0.6053941992183983
+              },
+              {
+                "id": "3-b17",
+                "score": 0.5545500540641038
+              }
+            ]
+          },
+          "recomputed": {
+            "title": "골든글러브 · 지명타자",
+            "winners": [
+              "user"
+            ],
+            "candidates": [
+              {
+                "id": "user",
+                "score": 0.6053941992183983
+              },
+              {
+                "id": "3-b17",
+                "score": 0.5545500540641038
+              }
+            ]
+          }
+        }
+      },
+      {
+        "year": 2051,
+        "sha256": "7e440ea940aa5581a0cc415b8d8d46b919ed19164a97dfeb7a8195c298af0b4a",
+        "phase": "retired",
+        "rows": 23,
+        "roundTripSameRecords": true,
+        "elder": [
+          {
+            "year": 2048,
+            "score": 61.27531728299948,
+            "form": 53.7221687211094,
+            "games": 44,
+            "poorSeasons": 0,
+            "competition": -14.600000000000009,
+            "prospect": false,
+            "currentValue": true,
+            "lastForm": 52.27272727272727,
+            "participation": 0.8666666666666666,
+            "probability": 0,
+            "reason": "스토브리그 보류 명단 평가 · 최근 3시즌 부진 0시즌, 1군 평균 44경기, 마무리 경쟁 1명, 40세·프로 22년차",
+            "retirementAdvice": false
+          },
+          {
+            "year": 2049,
+            "score": 56.87188170193603,
+            "form": 50.549235302749764,
+            "games": 46.666666666666664,
+            "poorSeasons": 0,
+            "competition": -16.300000000000004,
+            "prospect": false,
+            "currentValue": true,
+            "lastForm": 45.601680672268905,
+            "participation": 0.8077777777777778,
+            "probability": 0,
+            "reason": "스토브리그 보류 명단 평가 · 최근 3시즌 부진 0시즌, 1군 평균 47경기, 마무리 경쟁 1명, 41세·프로 22년차",
+            "retirementAdvice": false
+          }
+        ]
+      }
+    ],
+    "injuries": [
+      {
+        "role": "bat",
+        "age": 18,
+        "sample": 10000,
+        "injuries": 992,
+        "bodies": {
+          "허리": 186,
+          "햄스트링": 374,
+          "무릎": 291,
+          "어깨": 98,
+          "팔꿈치": 43
+        }
+      },
+      {
+        "role": "bat",
+        "age": 22,
+        "sample": 10000,
+        "injuries": 1402,
+        "bodies": {
+          "햄스트링": 533,
+          "허리": 261,
+          "무릎": 399,
+          "어깨": 140,
+          "팔꿈치": 69
+        }
+      },
+      {
+        "role": "bat",
+        "age": 30,
+        "sample": 10000,
+        "injuries": 1595,
+        "bodies": {
+          "햄스트링": 599,
+          "허리": 302,
+          "무릎": 453,
+          "어깨": 159,
+          "팔꿈치": 82
+        }
+      },
+      {
+        "role": "bat",
+        "age": 38,
+        "sample": 10000,
+        "injuries": 1819,
+        "bodies": {
+          "무릎": 522,
+          "허리": 385,
+          "햄스트링": 651,
+          "어깨": 175,
+          "팔꿈치": 86
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 18,
+        "sample": 10000,
+        "injuries": 992,
+        "bodies": {
+          "팔꿈치": 352,
+          "어깨": 288,
+          "허리": 187,
+          "무릎": 97,
+          "햄스트링": 68
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 22,
+        "sample": 10000,
+        "injuries": 1402,
+        "bodies": {
+          "허리": 253,
+          "팔꿈치": 483,
+          "어깨": 418,
+          "햄스트링": 102,
+          "무릎": 146
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 30,
+        "sample": 10000,
+        "injuries": 1595,
+        "bodies": {
+          "허리": 286,
+          "팔꿈치": 543,
+          "어깨": 486,
+          "햄스트링": 115,
+          "무릎": 165
+        }
+      },
+      {
+        "role": "pitch",
+        "age": 38,
+        "sample": 10000,
+        "injuries": 1819,
+        "bodies": {
+          "허리": 383,
+          "팔꿈치": 554,
+          "어깨": 525,
+          "햄스트링": 122,
+          "무릎": 235
+        }
+      }
+    ],
+    "injuryPositions": [
+      {
+        "position": "포수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 44,
+          "무릎": 82,
+          "어깨": 25,
+          "햄스트링": 36,
+          "팔꿈치": 12
+        }
+      },
+      {
+        "position": "포수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "무릎": 130,
+          "허리": 69,
+          "햄스트링": 67,
+          "어깨": 38,
+          "팔꿈치": 17
+        }
+      },
+      {
+        "position": "포수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "무릎": 147,
+          "허리": 85,
+          "햄스트링": 72,
+          "어깨": 41,
+          "팔꿈치": 18
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 33,
+          "햄스트링": 80,
+          "무릎": 56,
+          "어깨": 20,
+          "팔꿈치": 10
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 131,
+          "허리": 54,
+          "무릎": 89,
+          "어깨": 30,
+          "팔꿈치": 17
+        }
+      },
+      {
+        "position": "유격수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "무릎": 105,
+          "허리": 70,
+          "햄스트링": 138,
+          "어깨": 34,
+          "팔꿈치": 16
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 33,
+          "햄스트링": 80,
+          "무릎": 56,
+          "어깨": 20,
+          "팔꿈치": 10
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 131,
+          "허리": 54,
+          "무릎": 89,
+          "어깨": 30,
+          "팔꿈치": 17
+        }
+      },
+      {
+        "position": "중견수",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "무릎": 105,
+          "허리": 70,
+          "햄스트링": 138,
+          "어깨": 34,
+          "팔꿈치": 16
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 18,
+        "sample": 2000,
+        "bodies": {
+          "허리": 33,
+          "햄스트링": 80,
+          "무릎": 56,
+          "어깨": 20,
+          "팔꿈치": 10
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 30,
+        "sample": 2000,
+        "bodies": {
+          "햄스트링": 131,
+          "허리": 54,
+          "무릎": 89,
+          "어깨": 30,
+          "팔꿈치": 17
+        }
+      },
+      {
+        "position": "지명타자",
+        "age": 38,
+        "sample": 2000,
+        "bodies": {
+          "무릎": 105,
+          "허리": 70,
+          "햄스트링": 138,
+          "어깨": 34,
+          "팔꿈치": 16
+        }
+      }
+    ],
+    "rookies": [
+      {
+        "role": "bat",
+        "sample": 2000,
+        "elite": 37,
+        "opening": 39,
+        "mean": 54.060600000000065,
+        "max": 76.4
+      },
+      {
+        "role": "pitch",
+        "sample": 2000,
+        "elite": 42,
+        "opening": 44,
+        "mean": 55.06219999999989,
+        "max": 77
+      }
+    ],
+    "leagues": {
+      "seasons": 36,
+      "missingPositions": 0,
+      "violations": 0,
+      "final": [
+        {
+          "seed": 3,
+          "year": 2038,
+          "dhPlayers": 20,
+          "dhCandidates": 9,
+          "missingBatPositions": 0,
+          "violations": 0,
+          "rookies": 22,
+          "rosterOvr": 61.45324999999998
+        },
+        {
+          "seed": 9,
+          "year": 2038,
+          "dhPlayers": 20,
+          "dhCandidates": 10,
+          "missingBatPositions": 0,
+          "violations": 0,
+          "rookies": 25,
+          "rosterOvr": 61.062000000000005
+        },
+        {
+          "seed": 17,
+          "year": 2038,
+          "dhPlayers": 20,
+          "dhCandidates": 10,
+          "missingBatPositions": 0,
+          "violations": 0,
+          "rookies": 25,
+          "rosterOvr": 62.0025
+        }
+      ]
+    },
+    "growth": [
+      {
+        "cohort": "ordinary",
+        "role": "all",
+        "players": 12,
+        "initialOvr": 54.37,
+        "finalOvr": 62.91,
+        "firstYearGames": 0,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 7
+      },
+      {
+        "cohort": "ordinary",
+        "role": "bat",
+        "players": 6,
+        "initialOvr": 54.07,
+        "finalOvr": 63.28,
+        "firstYearGames": 0,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 3
+      },
+      {
+        "cohort": "ordinary",
+        "role": "pitch",
+        "players": 6,
+        "initialOvr": 54.67,
+        "finalOvr": 62.53,
+        "firstYearGames": 0,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 4
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "all",
+        "players": 12,
+        "initialOvr": 69.57,
+        "finalOvr": 86.68,
+        "firstYearGames": 62,
+        "mvpPlayers": 3,
+        "mvpSeasons": 8,
+        "skillsAtCapInTenthYear": 36
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "bat",
+        "players": 6,
+        "initialOvr": 67.68,
+        "finalOvr": 85.47,
+        "firstYearGames": 88.67,
+        "mvpPlayers": 3,
+        "mvpSeasons": 8,
+        "skillsAtCapInTenthYear": 20
+      },
+      {
+        "cohort": "rare-profile-seed",
+        "role": "pitch",
+        "players": 6,
+        "initialOvr": 71.45,
+        "finalOvr": 87.9,
+        "firstYearGames": 35.33,
+        "mvpPlayers": 0,
+        "mvpSeasons": 0,
+        "skillsAtCapInTenthYear": 16
+      }
+    ],
+    "national": [
+      {
+        "role": "bat",
+        "quality": "weak",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 0,
+        "meanChance": 0
+      },
+      {
+        "role": "bat",
+        "quality": "weak",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 0,
+        "meanChance": 0
+      },
+      {
+        "role": "bat",
+        "quality": "strong",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 249,
+        "meanChance": 0.4893519379845015
+      },
+      {
+        "role": "bat",
+        "quality": "strong",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 215,
+        "meanChance": 0.43062970542635537
+      },
+      {
+        "role": "pitch",
+        "quality": "weak",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 0,
+        "meanChance": 0
+      },
+      {
+        "role": "pitch",
+        "quality": "weak",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 0,
+        "meanChance": 0
+      },
+      {
+        "role": "pitch",
+        "quality": "strong",
+        "name": "WBC",
+        "sample": 500,
+        "invites": 226,
+        "meanChance": 0.43827906976744485
+      },
+      {
+        "role": "pitch",
+        "quality": "strong",
+        "name": "아시안게임",
+        "sample": 500,
+        "invites": 193,
+        "meanChance": 0.3856855813953452
+      }
+    ],
+    "salaryBoundary": {
+      "old": "5.35억",
+      "next": "5.25억",
+      "change": {
+        "old": 53500,
+        "new": 52500,
+        "rate": 1.9,
+        "kind": "삭감"
+      }
+    },
+    "training": [
+      {
+        "training": "single",
+        "ordinaryFinalOvr": 64.02,
+        "rareFinalOvr": 86.4
+      },
+      {
+        "training": "two",
+        "ordinaryFinalOvr": 61.8,
+        "rareFinalOvr": 86.97
+      }
+    ]
+  },
+  "browser": {
+    "viewport": "390 × 844",
+    "originalFiles": [
+      {
+        "year": 2028,
+        "errors": [],
+        "badges": 0,
+        "overflow": false,
+        "national": null
+      },
+      {
+        "year": 2034,
+        "errors": [],
+        "badges": 0,
+        "overflow": false,
+        "national": "국제대회 결과\n\nWBC · 대한민국 우승\n국가대표 미선발\n\n아시안게임 · 대한민국 우승\n국가대표 선발 · 개인 2경기 · 8.0이닝 · ERA 3.38 · 5삼진"
+      },
+      {
+        "year": 2044,
+        "errors": [],
+        "badges": 1,
+        "overflow": false,
+        "national": null
+      },
+      {
+        "year": 2051,
+        "errors": [],
+        "badges": 1,
+        "overflow": false,
+        "national": null
+      }
+    ],
+    "synthetic": [
+      "college zero-appearance injury record",
+      "three personal awards",
+      "draft confirmation without extra join dialog",
+      "confirmed salary 53500 → 52500만원",
+      "legacy trade reason with replacement-strength text"
+    ],
+    "horizontalOverflow": false
+  }
+}

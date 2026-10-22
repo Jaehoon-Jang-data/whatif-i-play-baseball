@@ -57,6 +57,7 @@ node scripts/season-integrity-audit.mjs
 
 | 주제 | 기록 |
 | --- | --- |
+| 첨부 저장 4건·고령 계약·대학 부상·신인·수상 표시 | [2026-10-22 후속 감사](docs/2026-10-22-feedback-audit.md) |
 | 방출·아시안게임·상무·포스트시즌·세이브·이력 | [2026-10-10 시즌 무결성 감사](docs/2026-10-10-season-integrity-audit.md) |
 | 저장 공간·트레이드 빈도 | [2026-10-08 점검](docs/2026-10-08-storage-trades.md) |
 | 포스트시즌 확인 중단·자동 저장 크기 | [2026-10-07 수정](docs/2026-10-07-postseason-save-fix.md) |

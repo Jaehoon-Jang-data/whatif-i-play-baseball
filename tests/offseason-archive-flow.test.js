@@ -5,7 +5,7 @@ import {createCareer,emptyBat,emptyPitch,positionOffer,nextYear,resolvePositionO
 const career=(seed=31)=>{const c=createCareer({seed,name:'흐름 검증',school:'검증고',team:0,role:'pitch',position:'중간계투',type:'변화구형'});c.stage='프로';c.phase='result';c.year=2030;c.age=41;c.proYears=8;c.reserved=true;c.served=true;c.player.a=[75,78,78,70,76,70];c.contract={kind:'reserved',annualMan:5000,left:0};c.latest={players:[{id:'closer',team:0,role:'pitch',position:'마무리',a:[50,50,50,50,50,50]}]};c.history=[{year:2030,stage:'프로',role:'pitch',position:'중간계투',team:0,stat:{...emptyPitch(),g:60,outs:180,er:15,hold:20},awards:[]}];return c;};
 
 test('은퇴 권고가 보직 제안보다 우선하고 시즌 결과 다음 스토브리그 입구에 한 번만 열린다',()=>{
- const c=career();assert.equal(positionOffer({...c,phase:'prepare',age:42})?.target,'마무리');nextYear(c);
+ const c=career();c.player.position='선발';c.player.a=[42,42,42,30,42,42];c.history=Array.from({length:3},(_,i)=>({year:2028+i,stage:'프로',role:'pitch',position:'선발',team:0,stat:{...emptyPitch(),g:8,gs:8,outs:90,er:70,h:70,bb:30},awards:[]}));assert.equal(positionOffer({...c,phase:'prepare',age:42})?.target,'중간계투');nextYear(c);
  assert.equal(c.year,2031);assert.equal(c.age,42);assert.equal(c.phase,'retirement_advice');assert.equal(c.pendingEvent?.type,'retirement_advice');assert.equal(c.pendingPositionOffer,undefined);
  assert.throws(()=>nextYear(c));assert.throws(()=>progress(c));
  let raw;saveCareer(c,{setItem:(_,value)=>raw=value});const loaded=loadCareer({getItem:()=>raw});assert.equal(loaded.phase,'retirement_advice');assert.equal(loaded.pendingEvent.type,'retirement_advice');
