@@ -66,7 +66,7 @@ test('대학 부상 결장은 복무로 표시되지 않고 복귀·졸업 드�
 });
 
 test('타이틀은 개별 박스로 표시하고 부문·문자 이스케이프를 보존한다',()=>{
- const html=awardBadgesHtml(['타격왕','골든글러브 · 우익수','<수상>']);assert.equal((html.match(/class="award-badge"/g)||[]).length,3);assert.match(html,/<b>골든글러브<\/b><small>외야수<\/small>/);assert.match(html,/&lt;수상&gt;/);assert.doesNotMatch(html,/ \/ /);
+ const html=awardBadgesHtml(['타격왕','골든글러브 · 우익수','<수상>']);assert.equal((html.match(/class="award-badge"/g)||[]).length,3);assert.match(html,/<b>골든글러브·외야수<\/b>/);assert.match(html,/&lt;수상&gt;/);assert.doesNotMatch(html,/ \/ /);
  assert.equal(publicReason('최근 성적 60점 · 대체 전력 70.5 · FA 계약 중'),'최근 성적 60점 · FA 계약 중');
 });
 
