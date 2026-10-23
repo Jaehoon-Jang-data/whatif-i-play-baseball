@@ -57,6 +57,7 @@ node scripts/season-integrity-audit.mjs
 
 | 주제 | 기록 |
 | --- | --- |
+| 첨부 저장 7건·FA·연봉·MVP·신인왕·대표팀 | [2026-10-23 추가 감사](docs/2026-10-23-contract-award-feedback.md) |
 | 첨부 저장 4건·고령 계약·대학 부상·신인·수상 표시 | [2026-10-22 후속 감사](docs/2026-10-22-feedback-audit.md) |
 | 방출·아시안게임·상무·포스트시즌·세이브·이력 | [2026-10-10 시즌 무결성 감사](docs/2026-10-10-season-integrity-audit.md) |
 | 저장 공간·트레이드 빈도 | [2026-10-08 점검](docs/2026-10-08-storage-trades.md) |

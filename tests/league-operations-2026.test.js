@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster} from '../src/league-operations.js';
-import {createCareer,developmentalEligibility,simulateSeason,emptyBat,nationalSelectionChance,nationalInvitation,offers,canonicalAwardName,progress,saveCareer,loadCareer,automaticTradeChance,requestTrade} from '../src/engine.js';
+import {createCareer,developmentalEligibility,simulateSeason,emptyBat,nationalSelectionChance,nationalInvitation,offers,canonicalAwardName,progress,saveCareer,loadCareer,automaticTradeChance,requestTrade,rng,injuryForecast} from '../src/engine.js';
 
 const career=(seed=1)=>createCareer({seed,name:'검증',school:'검증고',team:0,role:'bat',position:'우익수',type:'교타형'});
 
@@ -87,6 +87,8 @@ test('구 저장의 외야 골든글러브 위치 표기는 단일 부문으로 
 test('플레이어 시즌 중 이적은 전후 기록·급여·명단을 저장하고 시즌 재진행을 막는다',()=>{
  const c=career(41);c.stage='프로';c.phase='season';c.year=2030;c.age=25;c.proYears=3;c.served=true;c.player.a=[90,90,90,90,90,90];c.clubTrust=100;c.contract={kind:'reserved',annualMan:5000,left:0};
  c.history=[{year:2029,stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:140,pa:600,ab:540,h:190,hr:30},registeredDays:180,awards:[]}];
+ // Find a reproducible rare accepted transaction; high performance no longer implies frequent trades.
+ while(!(rng(c.seed+c.year*991+61)()<automaticTradeChance(c))||(injuryForecast(c)?.startDay??0)>=90)c.seed++;
  progress(c);const row=c.history.at(-1),trade=row.league.playerTrade;
  assert.ok(trade);assert.equal(trade.oldTeam,0);assert.equal(c.player.team,trade.newTeam);assert.equal(row.teamSegments.length,2);
  for(const key of Object.keys(row.stat))assert.equal(row.teamSegments[0].stat[key]+row.teamSegments[1].stat[key],row.stat[key],key);

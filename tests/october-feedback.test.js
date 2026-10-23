@@ -70,9 +70,9 @@ test('타이틀은 개별 박스로 표시하고 부문·문자 이스케이프�
  assert.equal(publicReason('최근 성적 60점 · 대체 전력 70.5 · FA 계약 중'),'최근 성적 60점 · FA 계약 중');
 });
 
-test('만원 단위 변화를 연봉 금액·증감액·변화율에서 숨기지 않는다',()=>{
- assert.equal(money(53400),'5.34억');assert.equal(money(52600),'5.26억');assert.equal(money(53001),'5.3001억');assert.equal(visibleSalaryChange(53400,52600).kind,'삭감');assert.equal(visibleSalaryChange(53400,52600).rate,1.5);assert.equal(visibleSalaryChange(12000,12310).new,12310);
- assert.equal(money(53500),'5.35억');assert.equal(money(52500),'5.25억');assert.equal(visibleSalaryChange(53500,52500).old-visibleSalaryChange(53500,52500).new,1000);
+test('억원 표시는 소수점 첫째 자리이며 같은 표시 금액은 동결이다',()=>{
+ assert.equal(money(53400),'5.3억');assert.equal(money(52600),'5.3억');assert.equal(money(53001),'5.3억');assert.equal(visibleSalaryChange(53400,52600).kind,'동결');assert.equal(visibleSalaryChange(53400,52600).rate,0);assert.equal(visibleSalaryChange(12000,12310).new,12000);
+ assert.equal(money(53500),'5.4억');assert.equal(money(52500),'5.3억');assert.equal(visibleSalaryChange(53500,52500).old-visibleSalaryChange(53500,52500).new,1000);
 });
 
 test('슈퍼루키는 드물게 생성되고 후보 동률·신인 팀 경쟁·육성선수 제한을 지킨다',()=>{

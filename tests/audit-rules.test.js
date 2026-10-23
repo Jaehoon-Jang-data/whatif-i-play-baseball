@@ -52,7 +52,7 @@ test('수상 3개 주전의 연봉과 MVP 타자의 FA 총액은 성적을 반�
   const c=career(7);c.player.position='2루수';c.contract.annualMan=4400;c.history=[{stage:'프로',military:false,role:'bat',position:'2루수',stat:{...emptyBat(),g:140,pa:590,ab:520,h:180,hr:25,rbi:100,bb:60},awards:['최다안타','타점','골든글러브 · 2루수']}];
   assert.ok(salaryOffer(c)>=12000);
   c.phase='market';c.faDeclared=true;c.age=29;c.contract.annualMan=20000;c.history=Array.from({length:3},(_,i)=>({...c.history[0],awards:i===2?['MVP','최다안타','타점','홈런','골든글러브 · 2루수']:[]}));
-  assert.ok(offers(c).every(x=>x.totalMan>=600000));
+  assert.ok(offers(c).every(x=>x.totalMan>=250000&&x.totalMan<=1600000));
   const without=structuredClone(c);without.history[2].awards=[];
   assert.ok(offers(c)[0].totalMan>offers(without)[0].totalMan);
 });
