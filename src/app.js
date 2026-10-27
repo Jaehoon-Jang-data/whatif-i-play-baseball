@@ -4,24 +4,24 @@ import {
   percentileReport,money,totalSalary,faStatus,draftAssessment,collegeEarlyStatus,enterCollege,
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
-  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline
-} from './engine.js?v=7.15';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText} from './presentation.js?v=7.15';
+  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
+} from './engine.js?v=7.16';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText} from './presentation.js?v=7.16';
 import {trainingOptionHtml} from './training-ui.js';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep} from './progress-display.js';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.15';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.16';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.16';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const validViews=['club','records','league','story','archive','help'];
-let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null,pendingSeasonCandidate=null;
+let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null,pendingSeasonCandidate=null,seasonCalculationId=0;
 const primarySave=localStorage.getItem(SAVE_KEY);
 let activeSaveKey=primarySave===SAVE_TOMBSTONE?null:primarySave?SAVE_KEY:LEGACY_SAVE_KEYS.find(key=>localStorage.getItem(key))||null;
 let startingSeed=Math.floor(Math.random()*2147483646)+1;
 try {career=loadCareer();} catch(e) {saveError=e.message;}
 function restoredPlayback(c){
   const saved=c?.playback;
-  if(saved?.preview&&saved.pause==='injury')return saved;
+  if(saved?.preview&&saved.pause==='injury'||saved?.version===2)return saved;
   if(c)c.playback=null;
   return null;
 }
@@ -73,7 +73,7 @@ function shell(content){
 
   return `<header class="site-header"><a class="brand" href="#" data-view="club"><span aria-hidden="true">⚾</span>차라리 내가 키운다</a><nav aria-label="주 메뉴">${nav.map(([key,label])=>`<button data-view="${key}" class="${view===key?'active':''}" ${view===key?'aria-current="page"':''}>${label}</button>`).join('')}</nav><div class="header-tools"><span class="save-state">${saveError?'저장 오류':c?'자동 저장':'선수 생성'}</span>${btn('저장 파일 내보내기','export','text',!c&&!archives().length&&!savedCareerSlots(localStorage).length)}<label class="file-label">불러오기<input type="file" id="import" accept=".json,application/json"></label></div></header>
   ${c?`<section class="player-bar" aria-label="선수 상태"><div><strong>${esc(p.name)}</strong><span>${c.age}세</span><span>${c.year}년</span></div><div><b>${esc(c.playerStatus==='free_agent'?'소속 없음':c.stage==='프로'?TEAMS[playback?.displayTeam??p.team]:c.stage==='고교'?p.school:c.collegeTeam||'대학 야구부')}</b><span>${esc(p.position)}${c.developmental?' · 육성선수':''}</span></div><div class="health"><span>구단 신뢰도 <b>${playback?.displayTeam!==undefined?70:c.clubTrust??70}/100</b></span>${c.stage==='프로'&&c.playerStatus!=='free_agent'?`<span>${c.salaryPending&&!(c.contract?.kind==='fa'&&c.contract.left>0)?'연봉 협상 대기':c.contract?.kind==='fa'&&c.contract.left>0?`FA · ${c.contract.left}년 남음`:`연봉 ${money(c.contract?.annualMan||0)}`}</span>`:''}</div></section>`:''}
-  <main>${saveError?`<div class="alert" role="alert">${esc(saveError)}</div>`:''}${archiveCapacityPanel()}${content}<div class="global-actions">${btn('은퇴 결정','retire','secondary',!c||c.retired)}${btn('새 선수 시작','reset','secondary',archiveState().needsChoice)}</div></main>`;
+  <main>${saveError?`<div class="alert" role="alert">${esc(saveError)}</div>`:''}${archiveCapacityPanel()}${content}<div class="global-actions">${btn('은퇴 결정','retire','secondary',!c||c.retired||!!playback)}${btn('새 선수 시작','reset','secondary',archiveState().needsChoice||!!playback)}</div></main>`;
 }
 function eventReason(reason){return publicReason(reason).replace(/(?:최근 (?:경기력|성적)|(?:불펜|선발진) 최고 전력|주전 전력|\S+ 경쟁 전력) \d+(?:\.\d+)?(?:점)?(?: · |\. )?/g,'').replace(/ · $/,'').replace(/^스토브리그 보류 명단 평가 · /,'');}
 function abilityList(player,before=null){return `<p><b>오버롤 ${overall(player).toFixed(1)}</b></p><div class="ability-list">${player.a.map((n,i)=>{const capped=player.potentialCaps?.[i]!==undefined&&n>=player.potentialCaps[i];return `<div class="${capped?'cap-reached':''}"><span>${KEYS[player.role][i]}</span><div class="ability-track"><i style="width:${n}%"></i></div><b>${Number(n.toFixed(1))}</b>${before?`<small class="${n>=before[i]?'up':'down'}">${n>before[i]?'+':''}${Number((n-before[i]).toFixed(1))}</small>`:''}${capped?`<small>상한 ${player.potentialCaps[i]}</small>`:''}</div>`;}).join('')}</div>`;}
@@ -101,7 +101,7 @@ function archivePanel(){
     const minorTables=['bat','pitch'].filter(role=>regular.some(y=>y.role===role&&y.minorStat?.g)).map(role=>`<h4>${role==='bat'?'타격':'투구'} 2군 시즌별 기록</h4>${statTable(regular.filter(y=>y.role===role&&y.minorStat?.g).map(y=>({label:`${y.year} · ${TEAMS[y.team]||'소속 미기록'}`,stat:y.minorStat})),role)}`).join('');
     const paymentYears=[...new Set([...(ledger||[]).map(y=>y.year),...signing.filter(y=>y.year!==null).map(y=>y.year)])].sort((a,b)=>a-b);
     const salaryRows=paymentYears.map(year=>{const pay=(ledger||[]).find(y=>y.year===year),bonus=signing.filter(y=>y.year===year);return `<tr><th>${year}</th><td>${TEAMS[pay?.team??bonus[0]?.team]||'소속 미기록'}</td><td>${money(pay?.salaryMan||0)}</td><td>${money(bonus.reduce((n,z)=>n+z.amountMan,0))}</td><td>${money(pay?.optionPaidMan||0)}</td><td>${money(pay?.allowanceMan||0)}</td></tr>`;}).join('');
-    return `<li><details><summary><b>${esc(x.name)}</b> · ${esc(x.position)} · ${x.seasons}시즌 <strong>${x.score}점</strong></summary><p>통산 ${regular.reduce((n,y)=>n+(y.stat?.g||0),0)}경기 · 포스트시즌 ${post.g}경기 · 우승 반지 ${wins}개</p><p>타이틀 ${titleCount}개 · ${income?`${income.complete?'총수입':'기록된 총수입'} ${money(income.totalMan)}`:'총수입 미기록'}</p>${income?`<p>기본 연봉 ${money(income.salaryMan)} + 계약금 ${money(income.signingMan)} + 실제 지급 옵션 ${money(income.optionMan)} + 군 보류수당 ${money(income.allowanceMan)}</p>`:''}${x.legacySalaryYears?`<p>연봉 미기록 ${x.legacySalaryYears}시즌</p>`:''}<div class="awards">${awardSummaryHtml(regular)}</div>${tables||'<p>프로 시즌 기록 없음</p>'}${minorTables}${ledger?`<h4>시즌별 지급 내역</h4><div class="table-scroll"><table><thead><tr><th>시즌</th><th>구단</th><th>기본 연봉</th><th>계약금</th><th>지급 옵션</th><th>군 보류수당</th></tr></thead><tbody>${salaryRows}</tbody></table></div>${signing.filter(z=>z.year===null).map(z=>`<p>지급 연도 미상 계약금 ${money(z.amountMan)}</p>`).join('')}${!signing.length&&income?.signingMan?`<p>구 보관 기록의 계약금 지급 연도 미상 ${money(income.signingMan)}</p>`:''}`:'<p>기존 은퇴 보관 기록에는 시즌별 지급액이 없어 총수입을 확인할 수 없습니다.</p>'}</details><div class="actions">${btn('이 선수 기록 내보내기',`export-archive:${x._storageIndex}:${encodeURIComponent(x.id||'')}`,'secondary')}${btn('이 선수 보관 기록 삭제',`delete-archive:${x._storageIndex}`,'text')}</div></li>`;
+    return `<li><details><summary><b>${esc(x.name)}</b> · ${esc(x.position)} · ${x.seasons}시즌 <strong>${x.score}점</strong></summary><p>통산 ${regular.reduce((n,y)=>n+(y.stat?.g||0),0)}경기 · 포스트시즌 ${post.g}경기 · 우승 반지 ${wins}개</p><p>팀 이력 · ${careerTeams(x).map(team=>esc(TEAMS[team])).join(' → ')||'미기록'}</p><p>타이틀 ${titleCount}개 · ${income?`${income.complete?'총수입':'기록된 총수입'} ${money(income.totalMan)}`:'총수입 미기록'}</p>${income?`<p>기본 연봉 ${money(income.salaryMan)} + 계약금 ${money(income.signingMan)} + 실제 지급 옵션 ${money(income.optionMan)} + 군 보류수당 ${money(income.allowanceMan)}</p>`:''}${x.legacySalaryYears?`<p>연봉 미기록 ${x.legacySalaryYears}시즌</p>`:''}<div class="awards">${awardSummaryHtml(regular)}</div>${tables||'<p>프로 시즌 기록 없음</p>'}${minorTables}${ledger?`<h4>시즌별 지급 내역</h4><div class="table-scroll"><table><thead><tr><th>시즌</th><th>구단</th><th>기본 연봉</th><th>계약금</th><th>지급 옵션</th><th>군 보류수당</th></tr></thead><tbody>${salaryRows}</tbody></table></div>${signing.filter(z=>z.year===null).map(z=>`<p>지급 연도 미상 계약금 ${money(z.amountMan)}</p>`).join('')}${!signing.length&&income?.signingMan?`<p>구 보관 기록의 계약금 지급 연도 미상 ${money(income.signingMan)}</p>`:''}`:'<p>기존 은퇴 보관 기록에는 시즌별 지급액이 없어 총수입을 확인할 수 없습니다.</p>'}</details><div class="actions">${btn('이 선수 기록 내보내기',`export-archive:${x._storageIndex}:${encodeURIComponent(x.id||'')}`,'secondary')}${btn('이 선수 보관 기록 삭제',`delete-archive:${x._storageIndex}`,'text')}</div></li>`;
   }).join('')}</ol>`:'<p>은퇴 선수 기록 없음</p>'}</section>`;
 }
 const batColumns=[['g','경기'],['pa','타석'],['ab','타수'],['h','안타'],['d','2루타'],['t','3루타'],['hr','홈런'],['rbi','타점'],['r','득점'],['bb','볼넷'],['k','삼진'],['sb','도루'],['sba','도루 시도'],['cs','도루 실패'],['sf','희비'],['e','실책'],['avg','타율'],['obp','출루율'],['slg','장타율'],['ops','OPS']];
@@ -162,17 +162,17 @@ function trainingPanel(){
 function rosterStateClass(state){return state==='1군'?'state-major':state==='2군'?'state-minor':state==='복무'||state==='상무'?'state-service':state==='재활군'?'state-rehab':'state-neutral';}
 function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage==='고교'?'고교야구':'대학야구';return `<section class="panel season-gate"><h2>${league} ${c.year}년 시즌</h2><p>포지션: ${esc(c.player.position)}</p><p>주력 분야: ${availableTraining(c).map(i=>KEYS[c.player.role][i]).join(' · ')||'선택 없음'}</p>${c.stage==='프로'?`<p class="opening-roster">개막 로스터: <b>${rosterPlan(c).opening}</b></p>`:''}<div class="actions">${btn('시즌 진행','simulate')}${btn('준비로 돌아가기','back-prepare','secondary')}</div></section>`;}
 function playbackPanel(){
-  const c=career,calendar=playback.calendar??(c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null),percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*percent/100);
+  const c=career,calendar=playback.calendar??(c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null),percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*playback.step/playback.limit+1e-7);
   const months=c.stage==='프로'?['4월','5월','6월','7월','8월','9월','10월']:c.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'];
   const current=months[Math.min(months.length-1,Math.floor(percent/100*months.length))];
-  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · <span data-playback-percent>${percent}%</span></p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-label="시즌 진행 장면" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments" style="clip-path:inset(0 ${100-percent}% 0 0)">${calendar?calendar.map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/calendar.length}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:100%"></span>`}</div></div><p data-playback-detail>${calendar?`<b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}`:current}</p></section>${playback.pause==='injury'?incidentPanel():''}${playback.pause==='trade'?`<section class="panel major-event" role="alertdialog" aria-modal="true"><h2>시즌 중 트레이드</h2><p>${playback.trade.date} · ${TEAMS[playback.trade.oldTeam]} → ${TEAMS[playback.trade.newTeam]}</p><p>기존 계약과 시즌 기록은 이어집니다. 새 구단 입단 후 남은 시즌을 진행합니다.</p>${btn('새 구단 입단 확인','ack-season-trade')}</section>`:''}`;
+  return `<section class="panel season-playback" aria-live="polite"><span class="eyebrow">${c.stage==='프로'?'KBO 정규시즌':c.stage==='고교'?'고교야구':'대학야구'} · ${c.year}</span><h1>${c.year} 시즌 진행</h1><p>${esc(c.player.name)} · ${esc(c.player.position)} · <span data-playback-percent>${percent}%</span></p><div class="season-months">${months.map(x=>`<span>${x}</span>`).join('')}</div><div class="roster-track" role="progressbar" aria-label="시즌 진행 장면" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="roster-segments" style="clip-path:inset(0 ${100-percent}% 0 0)">${calendar?calendar.map(x=>`<span class="${rosterStateClass(x)}" style="width:${100/calendar.length}%"></span>`).join(''):`<span class="${c.service?'state-service':'state-major'}" style="width:100%"></span>`}</div></div><p data-playback-detail>${calendar?`<b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}`:current}</p></section>${playback.pause==='injury'?incidentPanel():''}${['national_departure','national'].includes(playback.pause)?`<section class="panel major-event" role="alertdialog" aria-modal="true"><h2>${playback.pause==='national_departure'?'아시안게임 대표팀 차출':'아시안게임 결과 · 소속팀 복귀'}</h2><p>${playback.national.window.start} ~ ${playback.national.window.end} · 10일 차출</p>${playback.pause==='national'?`<p>${playback.national.result}${playback.national.exemption?' · 병역특례':''}</p>`:''}${btn(playback.pause==='national_departure'?'대표팀 합류':'소속팀 복귀 확인','ack-season-national')}</section>`:''}${playback.pause==='trade'?`<section class="panel major-event" role="alertdialog" aria-modal="true"><h2>시즌 중 트레이드</h2><p>${playback.trade.date} · ${TEAMS[playback.trade.oldTeam]} → ${TEAMS[playback.trade.newTeam]}</p><p>기존 계약과 시즌 기록은 이어집니다. 새 구단 입단 후 남은 시즌을 진행합니다.</p>${btn('새 구단 입단 확인','ack-season-trade')}</section>`:''}`;
 }
 function updatePlaybackUI(){
   const panel=$('.season-playback');if(!panel||!playback)return;
   const percent=Math.min(100,playback.step/playback.limit*100),rounded=Math.round(percent),calendar=playback.calendar;
   if(rounded!==playback.lastPercent){panel.querySelector('[data-playback-percent]').textContent=`${rounded}%`;panel.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',rounded);playback.lastPercent=rounded;}
   panel.querySelector('.roster-segments').style.clipPath=`inset(0 ${100-percent}% 0 0)`;
-  const day=Math.floor((calendar?.length||188)*percent/100),detail=panel.querySelector('[data-playback-detail]');
+  const day=Math.floor((calendar?.length||188)*percent/100+1e-7),detail=panel.querySelector('[data-playback-detail]');
   if(day===playback.lastDay)return;playback.lastDay=day;
   if(calendar)detail.innerHTML=`<b>1군 등록 ${calendar.slice(0,day).filter(x=>x==='1군').length}일</b> · 현재 ${calendar[Math.max(0,day-1)]||'개막 전'}`;
   else detail.textContent=(career.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'])[Math.min(career.stage==='고교'?5:3,Math.floor(percent/100*(career.stage==='고교'?6:4)))];
@@ -195,19 +195,30 @@ function startInjuryPreview(){
   career.playback=playback;persist();render();window.scrollTo(0,0);
   animatePlayback(playback.injuryStep,()=>{playback.pause='injury';busy=false;career.playback=playback;persist();render();});
 }
+function continueSeasonPlayback(){
+  const candidate=pendingSeasonCandidate;if(!playback||!candidate)return;
+  const stop=seasonPlaybackStops(career,candidate).find(x=>x.step>=playback.step-.001);
+  if(stop){animatePlayback(stop.step,()=>{Object.assign(playback,stop,{pause:stop.type});busy=false;career.playback=playback;persist();render();});return;}
+  animatePlayback(SEASON_PLAYBACK_STEPS,()=>{
+    candidate.seasonTradeAcknowledgedYear=career.seasonTradeAcknowledgedYear;
+    candidate.seasonNationalDepartureYear=career.seasonNationalDepartureYear;
+    if(career.seasonNationalAcknowledgedYear===career.year)acknowledgeSeasonNational(candidate,career.year);
+    career=candidate;career.playback=null;pendingSeasonCandidate=null;playback=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);
+  });
+}
 function startSeasonCalculation(){
+  const calculationId=++seasonCalculationId;
   cancelAnimationFrame(playbackFrame);playbackFrame=null;
-  const start=playback?.pause==='injury'?playback.step:0;
-  busy=true;playback={step:start,limit:SEASON_PLAYBACK_STEPS,preview:false,pause:null,computing:true,calendar:career.stage==='프로'?rosterPlan(career,injuryForecast(career)).calendar:null};career.playback=playback;persist();render();window.scrollTo(0,0);
-  const finish=candidate=>{career=candidate;career.playback=null;playback=null;pendingSeasonCandidate=null;busy=false;resultLevel='auto';chosenYear=null;persist();render();window.scrollTo(0,0);};
-  const fail=error=>{cancelAnimationFrame(playbackFrame);playbackFrame=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
-  const calculated=candidate=>{playback.computing=false;playback.calendar=candidate.history.at(-1)?.rosterCalendar??null;render();const trade=candidate.history.at(-1)?.league?.playerTrade,tradeStep=trade?.day/144*SEASON_PLAYBACK_STEPS;if(trade&&career.seasonTradeAcknowledgedYear!==career.year&&tradeStep>playback.step){animatePlayback(tradeStep,()=>{playback.pause='trade';playback.trade=trade;pendingSeasonCandidate=candidate;busy=false;persist();render();});}else animatePlayback(SEASON_PLAYBACK_STEPS,()=>finish(candidate));};
+  const start=playback?.step||0;
+  busy=true;playback={version:2,displayTeam:playback?.displayTeam,step:start,limit:SEASON_PLAYBACK_STEPS,preview:false,pause:null,computing:true,calendar:career.stage==='프로'?rosterPlan(career,injuryForecast(career)).calendar:null};career.playback=playback;persist();render();window.scrollTo(0,0);
+  const fail=error=>{if(calculationId!==seasonCalculationId)return;cancelAnimationFrame(playbackFrame);playbackFrame=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
+  const calculated=candidate=>{if(calculationId!==seasonCalculationId)return;candidate.playback=null;pendingSeasonCandidate=candidate;if(career.seasonTradeAcknowledgedYear===career.year)playback.displayTeam=candidate.player.team;playback.computing=false;playback.calendar=candidate.history.at(-1)?.rosterCalendar??null;render();continueSeasonPlayback();};
   if(typeof Worker==='undefined'){
     setTimeout(()=>{try{const candidate=structuredClone(career);progress(candidate,career.pendingTraining||career.training);calculated(candidate);}catch(error){fail(error);}},0);return;
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.15',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.16',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -264,7 +275,7 @@ function resultPanel(row){
   ${row.aAfter?`<section class="panel"><div class="section-title"><h2>능력 변화</h2><span>훈련·출장·이벤트 합산</span></div>${abilityList({a:row.aAfter,role:row.role,position:row.position},row.aBefore)}</section>`:''}`;
 }
 function retirement(){
-  const c=career,rows=c.history.filter(x=>x.stage==='프로'),awards=rows.flatMap(x=>x.awards),post=rows.map(x=>x.postseason?.stat).filter(Boolean),postGames=post.reduce((n,x)=>n+x.g,0),wins=rows.filter(hasChampionshipRing).length,teams=[...new Set(rows.map(x=>x.team))],postTotal=sumStats(post,c.player.role),income=incomeBreakdown(c);
+  const c=career,rows=c.history.filter(x=>x.stage==='프로'),awards=rows.flatMap(x=>x.awards),post=rows.map(x=>x.postseason?.stat).filter(Boolean),postGames=post.reduce((n,x)=>n+x.g,0),wins=rows.filter(hasChampionshipRing).length,teams=careerTeams(c),postTotal=sumStats(post,c.player.role),income=incomeBreakdown(c);
   return `<section class="panel retirement"><span class="eyebrow">커리어 종료 · ${esc(c.retirementReason||'은퇴')}</span><h2>${esc(c.player.name)} · ${esc(c.player.position)}</h2><p>${esc(c.player.type)} · ${c.age}세 · 최종 소속 ${esc(TEAMS[c.player.team])}</p><div class="retirement-stats"><div><span>커리어 점수</span><strong>${c.careerScore??careerScore(c)}</strong></div><div><span>${income?.complete?'총수입':'기록된 총수입'}</span><strong>${money(income?.totalMan)}</strong></div><div><span>프로 시즌</span><strong>${c.proYears}</strong></div><div><span>주요 타이틀</span><strong>${awards.length}</strong></div><div><span>포스트시즌 출장</span><strong>${postGames}경기</strong></div><div><span>한국시리즈 우승</span><strong>${wins}회</strong></div></div><p>기본 연봉 ${money(income?.salaryMan)} + 계약금 ${money(income?.signingMan)} + 실제 지급 옵션 ${money(income?.optionMan)} + 군 보류수당 ${money(income?.allowanceMan)} · 미지급 옵션 제외${c.legacySalaryYears?` · 연봉 미기록 ${c.legacySalaryYears}시즌`:''}</p><div class="actions">${btn('시즌별 기록','records')}${btn('저장 파일 내보내기','export','secondary')}</div></section><section class="panel"><h2>소속팀과 주요 기록</h2><p>팀 이력 · ${teams.map(i=>esc(TEAMS[i])).join(' → ')||'프로 소속 없음'}</p><p>국가대표 · ${c.nationalHistory.filter(x=>x.selected).map(x=>`${x.year} ${esc(x.name)} ${esc(x.result)}`).join(' · ')||'선발 기록 없음'}</p><div class="awards">${awardSummaryHtml(rows)}</div></section><section class="panel"><h2>포스트시즌 통산</h2>${metrics(postTotal,c.player.role,c.player.position)}<p>정규시즌 통산에는 합산하지 않습니다.</p></section>${recordsBody('major')}`;
 }
 function majorEvent(){const e=career.pendingEvent;if(!e)return '';
@@ -348,7 +359,7 @@ function help(){return `${header('플레이 안내')}<div class="rules-grid">
 <section class="panel prose"><h2>진로 · 훈련</h2><p>훈련 중점은 최대 2개입니다. 상한에 도달한 능력치는 선택할 수 없습니다.</p><p>고교 졸업 후 드래프트 또는 대학 진학을 선택합니다. 대학 2학년 수료 후에는 얼리드래프트에 참가할 수 있습니다. 미지명되면 대학에 남습니다.</p><p>출전 기회는 기량·성적·팀 내 경쟁에 따라 달라집니다. 포지션 변경은 적응 기간이 필요합니다.</p></section>
 <section class="panel prose"><h2>계약 · FA</h2><p>FA 자격은 고졸·얼리드래프트 입단 8시즌, 대학 4시즌 이수 졸업자 7시즌, 재취득 4시즌입니다. 1군 등록 145일을 1시즌으로 인정하며 부족한 등록일은 합산합니다.</p><p>다년계약 중에는 연봉을 재협상하지 않습니다. 계약이 끝나도 FA 자격이 부족하면 소속 구단과 연봉을 협상합니다.</p><p>FA 제안은 보장액과 성과 옵션을 나누어 확인하세요. 옵션은 조건을 달성한 시즌에만 지급됩니다.</p></section>
 <section class="panel prose"><h2>기록 · 수상</h2><p>백분위는 100에 가까울수록 좋은 기록입니다. 자신과 같거나 더 많은 타석·이닝을 소화한 표본 집단과 비교합니다.</p><p>커리어 하이·로우 비교에는 타자 규정타석 50%, 선발 규정이닝 50%, 불펜 규정이닝 25% 이상인 시즌만 포함합니다.</p><p>비율 타이틀은 규정타석·이닝을 채워야 합니다. 골든글러브는 투수 1명, 외야수 3명을 선정합니다.</p></section>
-<section class="panel prose"><h2>병역 · 국가대표</h2><p>상무는 27세 이하·프로 1시즌 이상이면 지원할 수 있으며 탈락할 수도 있습니다. 탈락 후 현역 입대나 다음 해 재지원이 가능합니다.</p><p>복무 기간은 2시즌입니다. 상무는 2군 경기와 훈련에 참가하고, 현역은 첫 시즌 구단 훈련과 공식 출전이 없습니다.</p><p>28세 시즌까지 미필이면 자동 입대합니다. 아시안게임 대표팀으로 우승하면 병역특례를 받습니다. WBC·프리미어12는 특례 대상이 아닙니다.</p><p>대표팀 출전은 거절할 수 있습니다. 아시안게임 출전 중에는 소속팀 경기에 나서지 않습니다.</p></section>
+<section class="panel prose"><h2>병역 · 국가대표</h2><p>상무는 27세 이하·프로 1시즌 이상이면 지원할 수 있으며 탈락할 수도 있습니다. 탈락 후 현역 입대나 다음 해 재지원이 가능합니다.</p><p>복무 기간은 2시즌입니다. 상무는 2군 경기와 훈련에 참가하고, 현역은 첫 시즌 구단 훈련과 공식 출전이 없습니다.</p><p>28세 시즌까지 미필이면 자동 입대합니다. 아시안게임 대표팀으로 우승하면 병역특례를 받습니다. WBC·프리미어12는 특례 대상이 아닙니다.</p><p>대표팀 출전은 거절할 수 있습니다. 아시안게임은 9월 하순 열흘간 차출되며 소속팀 경기에 나서지 않습니다.</p></section>
 <section class="panel prose"><h2>저장 · 은퇴</h2><p>진행 상황은 자동 저장됩니다. 내보낸 JSON 파일은 불러오기로 복원할 수 있습니다.</p><p>은퇴 선수는 7명까지 보관합니다. 자리가 가득 차면 새 기록을 삭제하거나 기존 기록을 골라 교체합니다. 삭제 전에 필요한 기록을 내보내세요.</p><p>총수입은 받은 연봉·계약금·지급 옵션·군 보류수당의 합계입니다. 미지급 옵션과 남은 계약액은 제외합니다.</p></section></div>`;}
 function tidyResultLogs(){const root=$('.result-summary');if(!root)return;const nodes=[...root.children].filter(x=>x.classList.contains('report-list')||x.tagName==='DETAILS'||x.textContent.startsWith('구단 신뢰도 변경:'));if(!nodes.length)return;const details=document.createElement('details');details.className='season-log';details.innerHTML='<summary>상세 로그</summary>';nodes.forEach(x=>details.append(x));root.append(details);}
 function render(){const content=view==='archive'?archivePanel():playback?playbackPanel():career?.pendingEvent?majorEvent():view==='club'?club():view==='records'?records():view==='league'?leaguePage():view==='story'?story():help();$('#app').innerHTML=shell(content);tidyResultLogs();bind();}
@@ -366,7 +377,7 @@ function bind(){
     form.querySelector('[name="role"]').onchange=()=>{const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';if(setup.candidates&&p.role!==setup.profile?.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');render();return;}p.team=Number(p.team);p.position=positions(p.role)[0];setup.profile={...setup.profile,...p};setup.position=p.position;saveSetup();render();};
     form.onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';p.team=Number(p.team);p.name=p.name.trim();p.school=p.school.trim();if(!p.name||!p.school){message('이름과 학교 이름을 입력하세요.');return;}if(setup.candidates&&p.role!==setup.profile.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');return;}p.seed=setup.profile?.seed||Math.floor(Math.random()*4294967295);p.position=p.position||setup.position||positions(p.role)[0];if(!setup.candidates||setup.position!==p.position){setup.candidates=abilityCandidates(p.role,p.seed,p.position);setup.selected=null;}setup.profile=p;setup.selected??=null;setup.position=p.position;setup.focus??=[0];setup.step='candidates';saveSetup();render();};
   }
-  $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(archiveState().needsChoice)throw Error('은퇴 기록의 보관·삭제를 먼저 선택하세요.');const raw=await file.text(),data=JSON.parse(raw);if(data?.format===ARCHIVE_EXPORT_FORMAT){if(!await confirmChoice('은퇴 기록을 보관 목록에 복원합니다. 같은 선수의 보관 기록은 이 파일로 갱신합니다.'))return;importArchiveExport(localStorage,data);view='archive';render();message('은퇴 보관 기록 복원 완료');return;}const incoming=loadCareer({getItem:()=>raw});if(career&&!await confirmChoice('현재 커리어를 불러온 파일로 바꿉니다. 기존 기록을 보관하려면 먼저 내보내세요.'))return;career=incoming;activeSaveKey=null;playback=restoredPlayback(career);view='club';chosenYear=null;resultLevel='auto';const saved=persist();render();message(saved?'불러오기 완료':'불러오기는 완료됐지만 자동 저장에 실패했습니다. 보관·저장에서 저장 공간을 정리하세요.');}catch(err){message(`불러오기 실패: ${err.message}`);}};
+  $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(archiveState().needsChoice)throw Error('은퇴 기록의 보관·삭제를 먼저 선택하세요.');const raw=await file.text(),data=JSON.parse(raw);if(data?.format===ARCHIVE_EXPORT_FORMAT){if(!await confirmChoice('은퇴 기록을 보관 목록에 복원합니다. 같은 선수의 보관 기록은 이 파일로 갱신합니다.'))return;importArchiveExport(localStorage,data);view='archive';render();message('은퇴 보관 기록 복원 완료');return;}const incoming=loadCareer({getItem:()=>raw});if(career&&!await confirmChoice('현재 커리어를 불러온 파일로 바꿉니다. 기존 기록을 보관하려면 먼저 내보내세요.'))return;seasonCalculationId++;cancelAnimationFrame(playbackFrame);pendingSeasonCandidate=null;busy=false;career=incoming;activeSaveKey=null;playback=restoredPlayback(career);view='club';chosenYear=null;resultLevel='auto';const saved=persist();render();message(saved?'불러오기 완료':'불러오기는 완료됐지만 자동 저장에 실패했습니다. 보관·저장에서 저장 공간을 정리하세요.');if(playback&&!playback.preview)startSeasonCalculation();}catch(err){message(`불러오기 실패: ${err.message}`);}};
 }
 async function act(action){
   if(busy&&!action.startsWith('export'))return;
@@ -389,7 +400,15 @@ async function act(action){
     if(career.pendingEvent&&!['ack-event','retirement-accept','retirement-decline','national-accept','national-decline'].includes(action))throw Error('주요 이벤트를 먼저 확인하세요.');
     if(action==='national-accept'||action==='national-decline'){decideNationalInvitation(career,action==='national-accept');persist();render();return;}
     if(action==='ack-event'){const previousEvent=career.pendingEvent,previousQueue=[...career.eventQueue];acknowledgeEvent(career);try{render();}catch(error){career.pendingEvent=previousEvent;career.eventQueue=previousQueue;render();throw error;}persist();return;}
-    if(action==='ack-season-trade'){if(playback?.pause!=='trade'||!pendingSeasonCandidate)throw Error('확인할 시즌 중 트레이드가 없습니다.');career.seasonTradeAcknowledgedYear=career.year;playback.displayTeam=playback.trade.newTeam;persist();playback.pause=null;playback.trade=null;busy=true;render();animatePlayback(SEASON_PLAYBACK_STEPS,()=>{career=pendingSeasonCandidate;career.seasonTradeAcknowledgedYear=career.year;career.playback=null;pendingSeasonCandidate=null;playback=null;busy=false;persist();render();window.scrollTo(0,0);});return;}
+    if(action==='ack-season-trade'){
+      if(playback?.pause!=='trade'||!pendingSeasonCandidate)throw Error('확인할 시즌 중 트레이드가 없습니다.');
+      career.seasonTradeAcknowledgedYear=career.year;playback.displayTeam=playback.trade.newTeam;playback.pause=null;playback.trade=null;busy=true;persist();render();continueSeasonPlayback();return;
+    }
+    if(action==='ack-season-national'){
+      if(!['national_departure','national'].includes(playback?.pause)||!pendingSeasonCandidate)throw Error('확인할 대표팀 소식이 없습니다.');
+      if(playback.pause==='national_departure')career.seasonNationalDepartureYear=career.year;else career.seasonNationalAcknowledgedYear=career.year;
+      playback.pause=null;busy=true;persist();render();continueSeasonPlayback();return;
+    }
     if(action==='begin-season'){if(career.phase!=='prepare')throw Error('시즌 준비 단계가 아닙니다.');if(mandatoryEnlist(career)){persist();render();return;}if(career.tradeOffer)throw Error('새 구단 연봉 제안을 먼저 결정하세요.');if(career.salaryPending&&!(career.contract?.kind==='fa'&&career.contract.left>0))throw Error('연봉 협상을 먼저 마치세요.');const challenge=coachChallenge(career);if(challenge){persist();render();return;}if(preSeasonNationalInvitation(career)){persist();render();return;}career.phase='season';if(waiverCheck(career)){persist();render();return;}persist();render();window.scrollTo(0,0);return;}
     if(action==='back-prepare'){career.phase='prepare';persist();render();return;}
     if(action==='salary-accept'||action==='salary-counter')negotiateSalary(career,action==='salary-counter');
@@ -429,3 +448,5 @@ async function act(action){
 }
 if(career?.retired)persist();
 render();
+
+if(playback&&!playback.preview)startSeasonCalculation();
