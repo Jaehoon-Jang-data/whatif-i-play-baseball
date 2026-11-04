@@ -15,13 +15,14 @@ test('최저연봉 자동 인상 없이 부진 동결·삭감과 호성적 인�
  const good=make(3);good.history=[{stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:140,pa:600,ab:520,h:180,hr:25,bb:65}}];assert.ok(salaryOffer(good)>5000);
 });
 
-test('시즌 내내 등록된 선발은 로테이션을 돌고 중간계투는 세이브가 없다',()=>{
+test('시즌 내내 등록된 선발은 로테이션을 돌고 세이브는 주로 마무리가 기록한다',()=>{
  const starters=[],middle=[],closers=[];
  for(let seed=1;seed<=12;seed++)for(const [position,target] of [['선발',starters],['중간계투',middle],['마무리',closers]]){
-  const season=simulateSeason({seed,year:2030,player:{name:'검증',role:'pitch',position,team:0,a:[75,75,75,75,75,75],opportunity:1}});
+  const season=simulateSeason({seed,year:2030,recordPitching:true,player:{name:'검증',role:'pitch',position,team:0,a:[75,75,75,75,75,75],opportunity:1}});
   target.push(season.players.find(p=>p.id==='user').stat);
+  if(position==='중간계투')for(const e of season.pitchingLog.filter(x=>x.id==='user'&&x.save))assert.ok(e.finished&&!e.winner&&!e.started&&(e.outs>=9||e.entry>0&&e.entry<=2+e.entryRunners||e.entry>0&&e.entry<=3&&e.outs>=3));
  }
- assert.ok(starters.every(s=>s.gs>=24&&s.gs<=32),starters.map(s=>s.gs).join(','));assert.ok(middle.every(s=>s.sv===0));assert.ok(closers.some(s=>s.sv>=10));assert.ok(closers.reduce((n,s)=>n+s.sv,0)>middle.reduce((n,s)=>n+s.sv,0));
+ assert.ok(starters.every(s=>s.gs>=24&&s.gs<=32),starters.map(s=>s.gs).join(','));assert.ok(middle.reduce((n,s)=>n+s.sv,0)<closers.reduce((n,s)=>n+s.sv,0)/5);assert.ok(closers.some(s=>s.sv>=10));assert.ok(closers.reduce((n,s)=>n+s.sv,0)>middle.reduce((n,s)=>n+s.sv,0));
 });
 
 test('우수한 중간계투는 마무리 제안을 시즌 결과 직후 받으며 저장·복구된다',()=>{

@@ -61,7 +61,7 @@ test('대학 부상 결장은 복무로 표시되지 않고 복귀·졸업 드�
  assert.match(noAppearanceText({military:true,servicePath:'regular'}),/현역 복무/);
  const availability=amateurAvailability({startDay:80,days:60},25);assert.equal(availability[0],true);assert.equal(availability[12],false);assert.equal(availability[24],true);
  const c=make(803);Object.assign(c,{stage:'대학',year:2030,age:21,collegeSeasons:3,collegeTeam:'가상대',rehabChoice:'safe'});
- const row=progress(c);assert.ok(row.injury);assert.equal(row.stat.g,1);assert.equal(row.military,false);assert.equal(row.servicePath,null);assert.equal(c.service,0);assert.equal(row.level,'대학');
+ const row=progress(c);assert.ok(row.injury);assert.ok(row.stat.g>0&&row.stat.g<=3);assert.equal(row.military,false);assert.equal(row.servicePath,null);assert.equal(c.service,0);assert.equal(row.level,'대학');
  const absence=structuredClone(c);absence.history.at(-1).stat=emptyPitch();absence.history.at(-1).league.players.find(p=>p.id==='user').stat=emptyPitch();assert.match(noAppearanceText(restore(absence).history.at(-1)),/부상/);const loaded=restore(c);assert.equal(loaded.history.at(-1).military,false);while(loaded.pendingEvent){loaded.pendingEvent=null;}nextYear(loaded);assert.equal(loaded.phase,'draft');assert.equal(loaded.stage,'대학');assert.equal(loaded.collegeSeasons,4);
 });
 

@@ -39,6 +39,15 @@ export function selectClubRoster(players,limits,strategy){
   if(closer&&selectedArms.length<pitchCount)selectedArms.push(closer);
   for(const arm of arms)if(selectedArms.length<pitchCount&&!selectedArms.includes(arm))selectedArms.push(arm);
   const registered=[...selectedBats,...selectedArms];
-  const eligible=registered.slice(0,limits.gameEligible);
+  const eligible=gameEligibleRoster(registered,limits.gameEligible);
   return {registered,eligible,minor:players.filter(p=>!registered.includes(p))};
+}
+
+export function gameEligibleRoster(registered,limit){
+  const eligible=[...registered];
+  while(eligible.length>limit){
+    const index=eligible.findLastIndex(p=>p.role==='bat'&&eligible.some(other=>other!==p&&other.role==='bat'&&other.position===p.position));
+    eligible.splice(index>=0?index:eligible.length-1,1);
+  }
+  return eligible;
 }

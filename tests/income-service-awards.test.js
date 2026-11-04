@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCareer,emptyBat,emptyPitch,incomeBreakdown,archiveEntry,upsertArchive,saveCareer,loadCareer,rosterPlan,progress,acknowledgeEvent,nextYear,careerComparisonEligible,awards,rookieEligible,simulateSeason} from '../src/engine.js';
+import {createCareer,emptyBat,emptyPitch,incomeBreakdown,archiveEntry,upsertArchive,saveCareer,loadCareer,rosterPlan,progress,acknowledgeEvent,nextYear,careerComparisonEligible,awards,rookieEligible,simulateSeason,negotiateSalary} from '../src/engine.js';
 
 const career=(seed=3,role='bat',position=role==='bat'?'우익수':'선발')=>createCareer({seed,name:'검증',school:'검증고',team:0,role,position,type:role==='bat'?'교타형':'변화구형'});
 
@@ -26,7 +26,7 @@ test('전역 시즌의 2군 복귀 뒤에는 복무로 되돌아가지 않고 �
  const row=progress(c);assert.equal(c.service,0);assert.equal(c.served,true);assert.equal(row.rosterCalendar[187],'2군');assert.equal(row.rosterMoves.some(x=>x.from==='2군'&&x.to==='복무'),false);
  while(c.pendingEvent)acknowledgeEvent(c);nextYear(c);assert.equal(c.service,0);assert.equal(c.served,true);assert.ok(rosterPlan(c).calendar.every(x=>x!=='복무'));
  let raw;saveCareer(c,{setItem:(_,v)=>raw=v});const loaded=loadCareer({getItem:()=>raw});assert.equal(loaded.service,0);assert.equal(loaded.served,true);assert.ok(rosterPlan(loaded).calendar.every(x=>x!=='복무'));
- loaded.phase='season';const later=progress(loaded);assert.ok(later.rosterCalendar.every(x=>x!=='복무'));
+ if(loaded.salaryPending)negotiateSalary(loaded);loaded.phase='season';const later=progress(loaded);assert.ok(later.rosterCalendar.every(x=>x!=='복무'));
 });
 
 test('현역 복무 첫해는 부상 계산으로 2군 등록이 열리지 않고 복귀 전에도 출전하지 않는다',()=>{

@@ -57,6 +57,7 @@ node scripts/season-integrity-audit.mjs
 
 | 주제 | 기록 |
 | --- | --- |
+| 불펜 역할·휴식·홀드·전향 보너스·보관 점수 | [2026-11-04 불펜 감사](docs/2026-11-04-bullpen-usage-audit.md) |
 | 팀 복귀 이력·상무·포스트시즌·9월 대표팀 차출 | [2026-10-27 후속 감사](docs/2026-10-27-late-season-feedback.md) |
 | 첨부 저장 7건·FA·연봉·MVP·신인왕·대표팀 | [2026-10-23 추가 감사](docs/2026-10-23-contract-award-feedback.md) |
 | 첨부 저장 4건·고령 계약·대학 부상·신인·수상 표시 | [2026-10-22 후속 감사](docs/2026-10-22-feedback-audit.md) |

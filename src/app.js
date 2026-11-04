@@ -5,11 +5,11 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.16';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText} from './presentation.js?v=7.16';
+} from './engine.js?v=7.17';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText} from './presentation.js?v=7.17';
 import {trainingOptionHtml} from './training-ui.js';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.16';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.16';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.17';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.17';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -55,7 +55,7 @@ function archivedExport(entry){return {data:archiveExport([entry]),filename:`cha
 function archiveCapacityPanel(){
   const entries=archives(),state=retirementArchiveState(entries,career);if(!state.needsChoice)return '';
   if(!state.pending)return `<section class="panel archive-capacity"><h2>은퇴 선수 보관 ${entries.length} / ${ARCHIVE_LIMIT}명</h2><p>기존 기록이 보관 한도를 초과했습니다. 내보내기로 보관한 뒤 ${state.excess}명의 기록을 정리하세요.</p>${btn('보관 기록 확인','archive','secondary')}</section>`;
-  return `<section class="panel archive-capacity" aria-label="은퇴 기록 보관 선택"><h2>은퇴 선수 보관 ${entries.length} / ${ARCHIVE_LIMIT}명</h2><p>새로 은퇴한 ${esc(career.player.name)}의 기록을 보관하려면 기존 기록 ${state.excess+1}개를 삭제해야 합니다. 내보내기로 기록을 보관한 뒤 삭제할 선수를 선택하세요.</p><div class="archive-new"><strong>${esc(career.player.name)} · 새 은퇴 선수</strong><div class="actions">${btn('내 기록 내보내기','export','secondary')}${btn('이 선수 기록 삭제','discard-retired','text')}</div></div><ul class="archive-choices">${entries.map((entry,index)=>`<li><span><b>${esc(entry.name)}</b> · ${esc(entry.position)} · ${entry.seasons??'?'}시즌</span><div class="actions">${btn('내보내기',`export-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}${btn(state.excess?'이 기록 삭제':'이 기록 대신 새 선수 보관',`replace-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}</div></li>`).join('')}</ul></section>`;
+  return `<section class="panel archive-capacity" aria-label="은퇴 기록 보관 선택"><h2>은퇴 선수 보관 ${entries.length} / ${ARCHIVE_LIMIT}명</h2><p>새로 은퇴한 ${esc(career.player.name)}의 기록을 보관하려면 기존 기록 ${state.excess+1}개를 삭제해야 합니다. 내보내기로 기록을 보관한 뒤 삭제할 선수를 선택하세요.</p><div class="archive-new"><strong>${esc(career.player.name)} · 새 은퇴 선수 · 커리어 점수 ${career.careerScore??careerScore(career)}점</strong><div class="actions">${btn('내 기록 내보내기','export','secondary')}${btn('이 선수 기록 삭제','discard-retired','text')}</div></div><ul class="archive-choices">${entries.map((entry,index)=>`<li><span><b>${esc(entry.name)}</b> · ${esc(entry.position)} · ${entry.seasons??'?'}시즌 · <strong>${Number.isFinite(entry.score)?`커리어 점수 ${entry.score}점`:'점수 미기록'}</strong></span><div class="actions">${btn('내보내기',`export-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}${btn(state.excess?'이 기록 삭제':'이 기록 대신 새 선수 보관',`replace-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}</div></li>`).join('')}</ul></section>`;
 }
 
 function persist(){try{if(career.retired&&!career.archiveId)career.archiveId=`${career.seed}-${career.player.name}-${career.year}`;saveCareer(career);activeSaveKey=SAVE_KEY;if(career.retired)storeRetiredCareer(localStorage,career);saveError='';return true;}catch(e){saveError=e?.name==='QuotaExceededError'?'자동 저장 공간이 부족합니다. 보관·저장에서 불필요한 저장을 삭제하거나 JSON을 내보내세요.':'자동 저장 실패. 저장 파일을 내보내세요.';message(saveError);return false;}}
@@ -218,7 +218,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.16',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.17',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
