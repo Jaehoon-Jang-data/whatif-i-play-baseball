@@ -1,5 +1,5 @@
-import {normalizeCreationDraft} from './creation-flow.js?v=7.26';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.26';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.27';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.27';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -7,11 +7,11 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.26';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.26';
-import {programOptionHtml} from './training-ui.js?v=7.26';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.26';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.26';
+} from './engine.js?v=7.27';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.27';
+import {programOptionHtml} from './training-ui.js?v=7.27';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.27';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.27';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -159,7 +159,7 @@ function salaryPanel(){
 }
 function trainingPanel(){
   const c=career,plan=programProfile(c),task=c.coachChallenge?.year===c.year?`<div class="coach-task"><strong>코치 성장 과제</strong><span>${KEYS[c.player.role][c.coachChallenge.index]} ${c.coachChallenge.target.toFixed(1)} 달성 시 다음 시즌 출전 기회 확대</span></div>`:'';
-  return `<section class="panel training-panel"><div class="section-title"><h2>훈련 프로그램</h2><span>${c.servicePath==='regular'&&c.service===2?'현역 복무 중 선택 불가':`${plan.ids.length} / 2개 선택`}</span></div>${task}<p class="training-legend"><span class="program-main">주효과</span> · <span class="program-secondary">보조효과</span> · <span class="program-burden">부담</span></p>${c.servicePath==='regular'&&c.service===2?'<p>현역 복무 중에는 구단 훈련을 진행하지 않습니다.</p>':`<div class="training-grid">${programOptions(c).map(p=>programOptionHtml(p,plan.ids.includes(p.id),KEYS[c.player.role])).join('')}</div>`}${c.trainingState?.repertoire?`<p>개발 구종 · ${esc(c.trainingState.repertoire.name)} · ${Math.round(c.trainingState.repertoire.mastery)}% 숙련</p>`:''}<div class="training-footer">${btn('시즌 진행 화면으로','begin-season','primary',busy)}</div></section>`;
+  return `<section class="panel training-panel"><div class="section-title"><h2>훈련 프로그램</h2><span>${c.servicePath==='regular'&&c.service===2?'현역 복무 중 선택 불가':`${plan.ids.length} / 2개 선택`}</span></div>${task}<p class="training-legend"><span class="program-main">주효과</span> · <span class="program-secondary">보조효과</span> · <span class="program-burden">부담</span></p>${c.servicePath==='regular'&&c.service===2?'<p>현역 복무 중에는 구단 훈련을 진행하지 않습니다.</p>':`<div class="training-grid">${programOptions(c).map(p=>programOptionHtml(p,plan.ids.includes(p.id),KEYS[c.player.role])).join('')}</div>`}<div class="training-footer">${btn('시즌 진행 화면으로','begin-season','primary',busy)}</div></section>`;
 }
 function rosterStateClass(state){return state==='1군'?'state-major':state==='2군'?'state-minor':state==='복무'||state==='상무'?'state-service':state==='재활군'?'state-rehab':state==='대표팀'?'state-national':'state-neutral';}
 function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage==='고교'?'고교야구':'대학야구';return `<section class="panel season-gate"><h2>${league} ${c.year}년 시즌</h2><p>포지션: ${esc(c.player.position)}</p><p>주력 분야: ${programProfile(c).ids.map(id=>PROGRAMS[c.player.role].find(p=>p.id===id).name).join(' · ')||'선택 없음'}</p>${c.stage==='프로'?`<p class="opening-roster">개막 로스터: <b>${rosterPlan(c).opening}</b></p>`:''}<div class="actions">${btn('시즌 진행','simulate')}${btn('준비로 돌아가기','back-prepare','secondary')}</div></section>`;}
@@ -219,7 +219,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.26',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.27',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };

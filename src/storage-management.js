@@ -1,5 +1,5 @@
-import {careerWarSnapshot} from './war.js?v=7.26';
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry} from './engine.js?v=7.26';
+import {careerWarSnapshot} from './war.js?v=7.27';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry} from './engine.js?v=7.27';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';

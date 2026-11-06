@@ -52,8 +52,11 @@ test('장기 AI 로스터는 은퇴·신인 보충 뒤에도 타격 포지션을
  let roster;for(let year=2027;year<=2034;year++){const league=simulateSeason({seed:3,year,rosterState:roster});assert.equal(league.rosterViolations,0);for(let team=0;team<10;team++)for(const position of ['포수','1루수','2루수','3루수','유격수','좌익수','중견수','우익수','지명타자'])assert.ok(league.nextRoster.filter(p=>p.team===team&&p.position===position).length>=2,`${year} ${team} ${position}`);roster=league.nextRoster;}
 });
 
-test('역할별 부상은 투수 팔·타자 하체에 치우치되 양쪽 모두 모든 부상이 가능하다',()=>{
- for(const age of [18,22,38]){const distributions=[];for(const role of ['bat','pitch']){const counts={};for(let seed=1;seed<=5000;seed++){const c=make(seed,role);c.age=age;c.stage=age===18?'고교':age===22?'대학':'프로';const injury=injuryForecast(c);if(injury)counts[injury.body]=(counts[injury.body]||0)+1;}assert.equal(Object.keys(counts).length,5);distributions.push(counts);}const [bat,pitch]=distributions;assert.ok(pitch['팔꿈치']>bat['팔꿈치']*3);assert.ok(bat['햄스트링']>pitch['햄스트링']*3);}
+test('새 부상은 투수 팔꿈치·어깨·허리와 타자 햄스트링·무릎·종아리로 제한한다',()=>{
+ for(const age of [18,22,38])for(const role of ['bat','pitch']){
+  const counts={};for(let seed=1;seed<=5000;seed++){const c=make(seed,role);c.age=age;c.stage=age===18?'고교':age===22?'대학':'프로';const injury=injuryForecast(c);if(injury)counts[injury.body]=(counts[injury.body]||0)+1;}
+  assert.deepEqual(Object.keys(counts).sort(),(role==='pitch'?['팔꿈치','어깨','허리']:['햄스트링','무릎','종아리']).sort());assert.ok(Object.values(counts).every(x=>x>0));
+ }
 });
 
 test('대학 부상 결장은 복무로 표시되지 않고 복귀·졸업 드래프트 및 저장을 유지한다',()=>{

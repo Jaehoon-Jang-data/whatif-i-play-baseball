@@ -20,8 +20,8 @@ test('반복 횟수 감점 없이 피로·나이·잠재력·부상 회복 상�
  const high=make(),low=make();high.potential=1.2;low.potential=.85;assert.ok(progress(high,['bat-contact']).totalGrowth>progress(low,['bat-contact']).totalGrowth);
 });
 test('복구·중단 선택·실제 성장과 화면 선택은 같은 프로그램 ID를 사용한다',()=>{
- const c=make('pitch');c.trainingPrograms=['pitch-breaking','pitch-command'];c.pendingTrainingPrograms=[...c.trainingPrograms];const loaded=restore(c);assert.deepEqual(loaded.trainingPrograms,c.trainingPrograms);assert.deepEqual(loaded.pendingTrainingPrograms,c.trainingPrograms);const row=progress(loaded,loaded.pendingTrainingPrograms);assert.deepEqual(row.trainingPrograms,c.trainingPrograms);assert.equal(loaded.pendingTrainingPrograms,undefined);assert.ok(row.trainingEffects[4].applied>row.trainingEffects[0].applied);assert.ok(loaded.trainingState.repertoire.mastery<30);assert.deepEqual(restore(loaded).trainingState,loaded.trainingState);
- const html=programOptionHtml(programOptions(c)[2],true,['구속','제구','구위','체력','변화구','위기관리']);assert.match(html,/data-program="pitch-breaking"/);assert.match(html,/aria-pressed="true"/);assert.match(html,/미숙련 구종.*변화구 실전 효과 감소/);
+ const c=make('pitch');c.trainingPrograms=['pitch-breaking','pitch-command'];c.pendingTrainingPrograms=[...c.trainingPrograms];const loaded=restore(c);assert.deepEqual(loaded.trainingPrograms,c.trainingPrograms);assert.deepEqual(loaded.pendingTrainingPrograms,c.trainingPrograms);const row=progress(loaded,loaded.pendingTrainingPrograms);assert.deepEqual(row.trainingPrograms,c.trainingPrograms);assert.equal(loaded.pendingTrainingPrograms,undefined);assert.ok(row.trainingEffects[4].applied>row.trainingEffects[0].applied);assert.equal('repertoire' in loaded.trainingState,false);assert.deepEqual(restore(loaded).trainingState,loaded.trainingState);
+ const html=programOptionHtml(programOptions(c)[2],true,['구속','제구','구위','체력','변화구','위기관리']);assert.match(html,/data-program="pitch-breaking"/);assert.match(html,/aria-pressed="true"/);assert.match(html,/피로·부상 위험 증가/);
 });
 test('컨디셔닝은 위험을 완만하게 줄이되 부상을 보장하지 않고 피로·이력도 반영한다',()=>{
  let heavy=0,recovery=0;for(let seed=1;seed<=1200;seed++){const c=make('pitch');c.seed=seed;c.trainingPrograms=['pitch-power'];heavy+=+!!injuryForecast(c);c.trainingPrograms=['pitch-condition'];recovery+=+!!injuryForecast(c);}assert.ok(recovery>0&&heavy>recovery);const c=make('pitch');c.trainingState={fatigue:70};assert.ok(programProfile(c,['pitch-power']).riskAdjustment>programProfile(make('pitch'),['pitch-power']).riskAdjustment);
@@ -31,7 +31,7 @@ test('재활 직후와 다음 해 잔여 복귀 단계는 실제 달력에 따�
 });
 test('선구·주루·수비·장타와 투수의 보직·강점이 고정 직업 없이 다른 스타일로 갱신된다',()=>{
  const bat=(position,a,state={})=>playingStyle({role:'bat',position,a},null,state),pitch=(position,a,state={})=>playingStyle({role:'pitch',position,a},null,state);
- assert.equal(bat('유격수',[50,45,50,55,85,80]),'수비형 유격수');assert.equal(bat('포수',[50,45,50,55,85,80]),'포수 수비형');assert.equal(bat('좌익수',[55,80,50,45,55,55]),'장타형');assert.equal(bat('좌익수',[55,50,80,55,55,55]),'선구형');assert.equal(bat('중견수',[55,50,50,80,55,55]),'주루형');assert.equal(bat('2루수',Array(6).fill(65),{positionFamiliarity:{'2루수':50,'3루수':50}}),'유틸리티형');assert.equal(pitch('선발',[90,60,75,65,60,55]),'구속형');assert.equal(pitch('선발',[60,65,60,90,60,55]),'선발 내구형');assert.equal(pitch('마무리',[65,65,70,50,60,60]),'마무리형');assert.equal(pitch('중간계투',[65,65,70,50,60,60]),'짧은 이닝 불펜형');assert.equal(pitch('선발',[60,70,60,60,75,60],{repertoire:{name:'싱커',mastery:75}}),'땅볼 유도형');
+ assert.equal(bat('유격수',[50,45,50,55,85,80]),'수비형 유격수');assert.equal(bat('포수',[50,45,50,55,85,80]),'포수 수비형');assert.equal(bat('좌익수',[55,80,50,45,55,55]),'장타형');assert.equal(bat('좌익수',[55,50,80,55,55,55]),'선구형');assert.equal(bat('중견수',[55,50,50,80,55,55]),'주루형');assert.equal(bat('2루수',Array(6).fill(65),{positionFamiliarity:{'2루수':50,'3루수':50}}),'유틸리티형');assert.equal(pitch('선발',[90,60,75,65,60,55]),'구속형');assert.equal(pitch('선발',[60,65,60,90,60,55]),'선발 내구형');assert.equal(pitch('마무리',[65,65,70,50,60,60]),'마무리형');assert.equal(pitch('중간계투',[65,65,70,50,60,60]),'짧은 이닝 불펜형');assert.equal(playingStyle({role:'pitch',position:'선발',a:[60,70,60,60,75,60],battedBall:{ground:60,air:40}}),'땅볼 유도형');
 });
 test('수비형 유격수의 예상 기여·심한 타격 부진·경쟁자·피로가 기용에 반영된다',()=>{
  const defense={role:'bat',position:'유격수',a:[50,48,53,65,90,80]},weak={...defense,a:[30,30,30,50,55,50]},balanced={...defense,a:Array(6).fill(55)};assert.ok(expectedContribution(defense).score>expectedContribution(balanced).score);assert.ok(expectedContribution(weak).score<50);assert.ok(expectedContribution(defense,{fatigue:70}).score<expectedContribution(defense).score);
@@ -46,5 +46,15 @@ test('12개 프로그램 모두 과거 반복 횟수가 실제 성장·기록·�
   assert.doesNotMatch(programOptionHtml(programOptions(legacy).find(p=>p.id===program.id),true,[]),/반복/);
   const a=progress(fresh,[program.id]),b=progress(legacy,[program.id]);assert.deepEqual(b.aAfter,a.aAfter);assert.deepEqual(b.stat,a.stat);assert.equal('repeats' in legacy.trainingState,false);
   assert.equal('repeats' in restore(legacy).trainingState,false);
+ }
+});
+
+test('개발 구종·숙련도는 복구·성장·실전에서 제거하고 변화구 능력치는 성장한다',()=>{
+ for(const [stage,position]of [['고교','선발'],['대학','선발'],['프로','선발'],['프로','중간계투'],['프로','마무리']]){
+  const fresh=make('pitch',position);fresh.stage=stage;fresh.age=stage==='고교'?18:stage==='대학'?21:24;fresh.trainingPrograms=['pitch-breaking'];const legacy=structuredClone(fresh);legacy.trainingState={repertoire:{name:'싱커',mastery:100}};
+  const loaded=loadCareer({getItem:()=>JSON.stringify(legacy)});assert.equal('repertoire' in (loaded.trainingState||{}),false);
+  let packed;saveCareer(legacy,{setItem:(_,s)=>packed=s});assert.equal('repertoire' in JSON.parse(packed).trainingState,false);
+  const a=progress(fresh,['pitch-breaking']),b=progress(legacy,['pitch-breaking']);assert.deepEqual(a.stat,b.stat);assert.deepEqual(a.aAfter,b.aAfter);assert.ok(b.trainingEffects[4].applied>0);assert.equal('repertoire' in legacy.trainingState,false);assert.equal('repertoire' in b.developmentState,false);
+  const html=programOptionHtml(programOptions(legacy).find(x=>x.id==='pitch-breaking'),true,[]);assert.match(html,/변화구 훈련/);assert.doesNotMatch(html,/구종|숙련|싱커/);
  }
 });

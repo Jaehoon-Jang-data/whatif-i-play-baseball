@@ -12,7 +12,7 @@ export const PROGRAMS={
  pitch:[
   {id:'pitch-power',name:'구속·구위 개발',weights:[3, .35,2.4,.3,.35,.1],load:1,main:'구속·구위',support:'체력 소폭',burden:'피로·부상 위험 증가 · 제구 성장 감소',cost:[0,.12,0,0,0,0]},
   {id:'pitch-command',name:'제구·투구 설계',weights:[.1,4.5,.8,.2,.9,.5],load:.2,main:'제구',support:'변화구·위기관리',burden:'구속 성장 낮음'},
-  {id:'pitch-breaking',name:'변화구·구종 개발',weights:[.2,1,.9,.2,3.9,.4],load:.65,main:'변화구',support:'제구·구종 숙련',burden:'미숙련 구종의 변화구 실전 효과 감소'},
+  {id:'pitch-breaking',name:'변화구 훈련',weights:[.2,1,.9,.2,3.9,.4],load:.65,main:'변화구',support:'제구',burden:'피로·부상 위험 증가'},
   {id:'pitch-endurance',name:'선발 체력·회복',weights:[.3,.7,.5,4.1,.4,.3],load:-.25,main:'체력·피로 회복',support:'제구',burden:'구속·구위 성장 낮음',recovery:true},
   {id:'pitch-bullpen',name:'불펜 실전·구종 조합',weights:[1,1.3,2.5,.15,1.4,.6],load:.7,main:'구위',support:'제구·변화구·위기관리',burden:'체력 성장 낮음 · 피로·부상 위험 증가'},
   {id:'pitch-condition',name:'견제·컨디셔닝',weights:[.15,.8,.25,1.8,.5,.6],load:-.65,main:'피로 회복·견제',support:'체력·제구',burden:'구속·구위 성장 낮음',recovery:true}
@@ -39,7 +39,7 @@ export function programProfile(c,selection){
  return {ids:active.map(p=>p.id),disabled,programs:active,load:active.length?load:0,recovery,efficiency,fatigue,volume,recentWorkload:recent??null,
   riskAdjustment:load*.028+fatigue*.00065+Math.max(0,volume-1)*.025-(recovery?.018:0),recoveryFactor:recovery?.9:1};
 }
-export function programOptions(c){return PROGRAMS[c.player.role].map(p=>{const profile=programProfile(c,[p.id]),mainIndices=p.weights.map((w,i)=>({w,i})).filter(x=>x.w>=2).map(x=>x.i),capped=mainIndices.filter(i=>c.player.a[i]>=(c.potentialCaps?.[i]??95));let reason=p.recovery&&(profile.fatigue>=5||c.injuries>0)?'부하·부상 이력 관리':p.id==='bat-field'&&['포수','유격수','중견수'].includes(c.player.position)?'수비 부담이 큰 포지션':p.id==='pitch-endurance'&&c.player.position==='선발'?'선발 이닝 소화 보완':mainIndices.some(i=>c.player.a[i]<55)?'현재 약점 보완':({'bat-contact':'타석 전반의 안정성','bat-power':'장타 기여 확대','bat-approach':'출루와 타석 판단 보완','bat-field':'포지션 적응 보완','bat-running':'도루·주루 기회 확대','bat-condition':'회복력 유지','pitch-power':'빠른 공 경쟁력 강화','pitch-command':'볼넷 억제 보완','pitch-breaking':'구종 선택지 확장','pitch-endurance':'긴 이닝 소화 보완','pitch-bullpen':'짧은 이닝 집중력','pitch-condition':'견제와 회복력 보완'}[p.id]);if(c.age>=38)reason=p.recovery?'회복과 기량 유지':'기량 유지 중심 · 성장 제한';else if(c.recoveryState?.year===c.year)reason='복귀 단계 · 강도 조절';return {...p,enabled:profile.ids.length>0,capped,reason,status:c.age>=38?'기술 성장 제한':c.recoveryState?.year===c.year?'재활 중 · 성장 효율 감소':'',efficiency:profile.efficiency};});}
+export function programOptions(c){return PROGRAMS[c.player.role].map(p=>{const profile=programProfile(c,[p.id]),mainIndices=p.weights.map((w,i)=>({w,i})).filter(x=>x.w>=2).map(x=>x.i),capped=mainIndices.filter(i=>c.player.a[i]>=(c.potentialCaps?.[i]??95));let reason=p.recovery&&(profile.fatigue>=5||c.injuries>0)?'부하·부상 이력 관리':p.id==='bat-field'&&['포수','유격수','중견수'].includes(c.player.position)?'수비 부담이 큰 포지션':p.id==='pitch-endurance'&&c.player.position==='선발'?'선발 이닝 소화 보완':mainIndices.some(i=>c.player.a[i]<55)?'현재 약점 보완':({'bat-contact':'타석 전반의 안정성','bat-power':'장타 기여 확대','bat-approach':'출루와 타석 판단 보완','bat-field':'포지션 적응 보완','bat-running':'도루·주루 기회 확대','bat-condition':'회복력 유지','pitch-power':'빠른 공 경쟁력 강화','pitch-command':'볼넷 억제 보완','pitch-breaking':'변화구 보완','pitch-endurance':'긴 이닝 소화 보완','pitch-bullpen':'짧은 이닝 집중력','pitch-condition':'견제와 회복력 보완'}[p.id]);if(c.age>=38)reason=p.recovery?'회복과 기량 유지':'기량 유지 중심 · 성장 제한';else if(c.recoveryState?.year===c.year)reason='복귀 단계 · 강도 조절';return {...p,enabled:profile.ids.length>0,capped,reason,status:c.age>=38?'기술 성장 제한':c.recoveryState?.year===c.year?'재활 중 · 성장 효율 감소':'',efficiency:profile.efficiency};});}
 export function programGrowth(c,selection,totalGrowth){
  const profile=programProfile(c,selection),weights=Array(6).fill(.35),cost=Array(6).fill(0),effects=[];
  // Keep absolute program weights; a capped skill never redistributes its budget.
@@ -56,6 +56,6 @@ export function completeProgramSeason(c,profile,injury,stat,minorStat={}){
  if(profile.ids.includes('bat-running'))state.runningJudgment=limit((state.runningJudgment||0)+1.2*profile.efficiency,0,8);
  if(profile.ids.includes('pitch-condition'))state.pickoff=limit((state.pickoff||0)+1.3*profile.efficiency,0,8);
  if(profile.ids.includes('bat-field')){state.positionFamiliarity??={};state.positionFamiliarity[c.player.position]=Math.min(100,(state.positionFamiliarity[c.player.position]||0)+25*profile.efficiency);}
- if(profile.ids.includes('pitch-breaking')){state.repertoire??={name:['슬라이더','체인지업','싱커'][Math.abs(c.seed)%3],mastery:0};state.repertoire.mastery=Math.min(100,state.repertoire.mastery+22*profile.efficiency);}
+ delete state.repertoire;
  return state;
 }

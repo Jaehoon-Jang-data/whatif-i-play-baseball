@@ -1,5 +1,5 @@
 // Conservative ability-based projections for selection; these are not measured defensive WAR.
-import {POSITION_RUNS} from './war.js?v=7.26';
+import {POSITION_RUNS} from './war.js?v=7.27';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function expectedContribution(p,{stat=p.stat,fatigue=p.fatigue||0,adapt=0,strategy='중립'}={}){
  const a=p.a||Array(6).fill(50);let batting=0,running=0,defense=0,position=0,pitching=0,innings=0,score;
@@ -34,6 +34,6 @@ export function playingStyle(p,stat=p.stat,development={}){
  if(p.position==='마무리')return '마무리형';
  if(p.position==='중간계투'&&a[2]>=avg+3&&a[3]<a[2]-8)return '짧은 이닝 불펜형';
  if(p.position==='선발'&&a[3]>=Math.max(a[0],a[2])+4)return '선발 내구형';
- if(development.repertoire?.name==='싱커'&&development.repertoire.mastery>=70&&(!(p.battedBall?.ground+p.battedBall?.air>=30)||p.battedBall.ground/(p.battedBall.ground+p.battedBall.air)>=.52)&&a[1]>=65&&a[4]>=65)return '땅볼 유도형';
+ if(p.battedBall?.ground+p.battedBall?.air>=30&&p.battedBall.ground/(p.battedBall.ground+p.battedBall.air)>=.52&&a[1]>=65&&a[4]>=65)return '땅볼 유도형';
  if(a[0]>=Math.max(a[1],a[4])+3)return '구속형';if(a[4]>=a[1]+3)return '변화구형';return '제구형';
 }

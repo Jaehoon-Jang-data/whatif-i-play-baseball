@@ -1,0 +1,2 @@
+import{createCareer,injuryForecast}from'../src/engine.js';
+const out=[];for(const role of ['bat','pitch'])for(const age of [18,22,38]){const counts={};let total=0,days=0;for(let seed=1;seed<=5000;seed++){const c=createCareer({seed,name:'분포',school:'가상고',role,position:role==='bat'?'유격수':'선발',team:0,type:role==='bat'?'교타형':'제구형'});Object.assign(c,{age,stage:age===18?'고교':age===22?'대학':'프로'});const x=injuryForecast(c);if(x){total++;days+=x.days;counts[x.body]=(counts[x.body]||0)+1;}}out.push({role,age,seasons:5000,total,days,counts});}console.log(JSON.stringify(out,null,2));
