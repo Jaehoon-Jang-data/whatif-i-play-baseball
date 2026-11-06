@@ -1,5 +1,5 @@
-import {normalizeCreationDraft} from './creation-flow.js?v=7.20';
-import {seasonWAR,careerWAR} from './war.js?v=7.20';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.23';
+import {seasonWAR,careerWAR} from './war.js?v=7.23';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,careerScore,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -7,11 +7,11 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.20';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warNoteHtml,warCareerHtml,formatWAR} from './presentation.js?v=7.20';
-import {programOptionHtml} from './training-ui.js?v=7.20';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.20';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.20';
+} from './engine.js?v=7.23';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warNoteHtml,warCareerHtml,formatWAR} from './presentation.js?v=7.23';
+import {programOptionHtml} from './training-ui.js?v=7.23';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.23';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.23';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -119,7 +119,7 @@ function displayStat(s,role,key){
 }
 function statTable(rows,role){const cols=[...(role==='bat'?batColumns:pitchColumns),...(rows.some(x=>'war' in x)?[['war','WAR']]:[])];return `<div class="table-scroll" tabindex="0" aria-label="${role==='bat'?'타격':'투구'} 기록 표"><table><thead><tr><th>시즌 / 소속</th>${cols.map(([,name])=>`<th>${name}</th>`).join('')}</tr></thead><tbody>${rows.map(x=>`<tr class="${x.total?'total':''}"><th>${esc(x.label)}</th>${cols.map(([k])=>`<td>${k==='war'?formatWAR(x.war):k==='e'&&x.defenseUnrecorded?'—':displayStat(x.stat,role,k)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function metrics(stat,role,position,row=null,warLevel='major'){
-  const war=row?seasonWAR(row,{level:warLevel==='minor'?'minor':'major'}):null;
+  const war=row?.stage==='프로'&&warLevel==='major'?seasonWAR(row):null;
   row??=career?.history.find(x=>x.stat===stat&&x.stage==='프로');
   const roleStat=position==='마무리'?['sv','세이브']:position==='중간계투'?['hold','홀드']:['w','승'];
   const columns=role==='bat'?[['avg','타율'],['obp','출루율'],['slg','장타율'],['ops','OPS'],['h','안타'],['hr','홈런'],['rbi','타점'],['r','득점'],['sb','도루']]:[['era','ERA'],['whip','WHIP'],['k9','K/9'],['bb9','BB/9'],roleStat,['l','패'],['k','탈삼진'],['g','경기'],['outs','이닝']];
@@ -220,7 +220,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.20',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.23',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };

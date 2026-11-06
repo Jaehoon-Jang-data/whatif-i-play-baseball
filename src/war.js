@@ -23,7 +23,7 @@ function park(s,role,usage,team,league){
  return Number.isFinite(home)?(1+home)/2:1;
 }
 export function leagueWarContext(league){
- if(!league?.players?.length||!league.teams?.length)return null;
+ if(!league?.players?.length||!league.teams?.length||(league.level&&league.level!=='major'))return null;
  const bats=league.players.filter(p=>p.role==='bat'),arms=league.players.filter(p=>p.role==='pitch');
  const battingPa=sum(bats,p=>pa(p.stat)),outs=sum(arms,p=>n(p.stat.outs)),runs=sum(league.teams,t=>n(t.r)),teamGames=sum(league.teams,t=>n(t.g));
  if(!battingPa||!outs||!teamGames)return null;
@@ -43,17 +43,19 @@ export function leagueWarContext(league){
   missingCs:bats.some(p=>!Number.isFinite(p.stat.cs)),missingHbp:bats.some(p=>!Number.isFinite(p.stat.hbp))};
 }
 export function seasonWAR(row,{level='major',context=null}={}){
- const minor=level==='minor',s=(minor?row.minorStat:row.stat)||{},league=minor?row.minorLeague:row.league;
- const ctx=context||leagueWarContext(league)||(minor?row.minorWarContext:row.warContext);
  const unavailable=reason=>({version:WAR_VERSION,value:null,reason,notes:[reason]});
+ if(level!=='major'||(row.stage&&row.stage!=='프로')||(row.league?.level&&row.league.level!=='major'))return unavailable('프로 1군 정규시즌만 산출');
+ const s=row.stat||{},league=row.league;
+ const ctx=context||leagueWarContext(league)||row.warContext;
+ if(ctx?.level&&ctx.level!=='major')return unavailable('프로 1군 정규시즌만 산출');
  if(row.military)return unavailable('군 복무 시즌 제외');
  if(!ctx||![1,WAR_VERSION].includes(ctx.version))return unavailable('해당 시즌 리그 자료 없음');
  if(ctx.year!==undefined&&row.year!==undefined&&ctx.year!==row.year)return unavailable('시즌 리그 연도 불일치');
- const role=row.role,usage=league?.players?.find(p=>p.id===(row.playerId??row.id??'user')&&p.role===role)?.warUsage||(minor?row.minorWarUsage:row.warUsage);
+ const role=row.role,usage=league?.players?.find(p=>p.id===(row.playerId??row.id??'user')&&p.role===role)?.warUsage||row.warUsage;
  const volume=role==='bat'?pa(s):n(s.outs),parkLeague=league||{teams:Object.entries(ctx.parkFactors||{}).map(([id,park])=>({id:Number(id),park}))};
  const segmentVolume=sum(row.teamSegments||[],x=>role==='bat'?pa(x.stat||{}):n(x.stat?.outs));
  const exactPark=Number.isFinite(role==='bat'?usage?.parkPa:usage?.parkOuts);
- const factor=!minor&&!exactPark&&segmentVolume?sum(row.teamSegments,x=>(role==='bat'?pa(x.stat||{}):n(x.stat?.outs))*park(x.stat||{},role,null,x.team,parkLeague))/segmentVolume:park(s,role,usage,row.team,parkLeague),notes=['시뮬레이션 추정치'];
+ const factor=!exactPark&&segmentVolume?sum(row.teamSegments,x=>(role==='bat'?pa(x.stat||{}):n(x.stat?.outs))*park(x.stat||{},role,null,x.team,parkLeague))/segmentVolume:park(s,role,usage,row.team,parkLeague),notes=['시뮬레이션 추정치'];
  if(!usage||ctx.estimatedExposure)notes.push('구장·출장 비중 일부 추정');
  if(ctx.missingCs)notes.push('구 기록 도루 실패 일부 미기록');
  if(ctx.missingHbp)notes.push('구 기록 사구 일부 미기록');
@@ -83,13 +85,11 @@ export function seasonWAR(row,{level='major',context=null}={}){
  return {version:WAR_VERSION,value,runs,runsPerWin:ctx.runsPerWin,components,diagnostics,method,notes:[...new Set(notes)]};
 }
 export function warSnapshot(row){
- const snapshot={};
- for(const [level,prefix]of [['major',''],['minor','minor']]){
-  const league=level==='major'?row.league:row.minorLeague,ctx=leagueWarContext(league)||(level==='major'?row.warContext:row.minorWarContext),usage=league?.players?.find(p=>p.id===(row.playerId??row.id??'user')&&p.role===row.role)?.warUsage||(level==='major'?row.warUsage:row.minorWarUsage);
-  if(ctx)snapshot[prefix?prefix+'WarContext':'warContext']=structuredClone(ctx);
-  if(usage)snapshot[prefix?prefix+'WarUsage':'warUsage']=structuredClone(usage);
- }
- return snapshot;
+ if((row.stage&&row.stage!=='프로')||(row.league?.level&&row.league.level!=='major'))return {};
+ const ctx=leagueWarContext(row.league)||row.warContext;
+ if(!ctx||(ctx.level&&ctx.level!=='major'))return {};
+ const usage=row.league?.players?.find(p=>p.id===(row.playerId??row.id??'user')&&p.role===row.role)?.warUsage||row.warUsage;
+ return {warContext:structuredClone(ctx),...(usage?{warUsage:structuredClone(usage)}:{})};
 }
 export function careerWAR(rows){
  const seasons=rows.filter(x=>x.stage==='프로'&&!x.military&&n(x.stat?.g)>0).map(row=>({row,war:seasonWAR(row)})),known=seasons.filter(x=>x.war.value!==null);

@@ -33,12 +33,12 @@ test('시즌별 득점 환경과 실제 구장 노출을 쓰며 없는 과거 �
  assert.equal(value({...row,league:null}),null);assert.equal(value({...row,year:2031}),null);assert.equal(value({...row,military:true}),null);
  const changed={...row,stat:{...bat,hr:bat.hr+1}};assert.notEqual(value(changed),value(row));
 });
-test('완전한 1군·2군 시즌과 트레이드의 실제 노출량을 저장·복구·은퇴 보관 후에도 보존한다',()=>{
+test('1군 WAR와 트레이드 실제 노출량은 보존하고 2군 WAR 스냅샷은 만들지 않는다',()=>{
  for(const role of ['bat','pitch']){
   const l=simulateSeason({seed:13,year:2030,playerTrade:true,player:{name:'가상 WAR',role,position:role==='bat'?'포수':'선발',team:0,a:Array(6).fill(78),opportunity:1}}),user=l.players.find(p=>p.id==='user');
   const r={...row,role,position:user.position,stat:user.stat,team:user.team,league:l,minorStat:user.stat,minorLeague:l,teamSegments:[{team:0},{team:user.team}]},before=seasonWAR(r),snapshot=warSnapshot(r);
   assert.ok(Object.keys(user.warUsage.teams).length===2);near(Object.values(user.warUsage.teams).reduce((a,b)=>a+b,0),role==='bat'?user.stat.pa:user.stat.outs);
-  near(value({...r,league:null,...snapshot}),before.value);near(seasonWAR({...r,minorLeague:null,...snapshot},{level:'minor'}).value,seasonWAR(r,{level:'minor'}).value);
+  near(value({...r,league:null,...snapshot}),before.value);assert.equal(seasonWAR({...r,minorLeague:null,...snapshot},{level:'minor'}).value,null);assert.equal(snapshot.minorWarContext,undefined);assert.equal(snapshot.minorWarUsage,undefined);
   const c=createCareer({seed:13,name:'검증',school:'가상고',role,position:user.position,type:role==='bat'?'교타형':'제구형',team:0});c.history=[r];c.latest=l;c.player.position=role==='bat'?'1루수':'마무리';let raw;saveCareer(c,{setItem:(_,v)=>raw=v});const loaded=loadCareer({getItem:()=>raw});near(value(loaded.history[0]),before.value);
   const archived=JSON.parse(JSON.stringify(archiveEntry(loaded)));near(value(archived.history[0]),before.value);assert.equal(archived.history[0].league,undefined);assert.deepEqual(archived.history[0].teamSegments,r.teamSegments);
  }
@@ -65,4 +65,18 @@ test('피사구는 리그·선수 모두 기록된 경우만 FIP에 반영하고
  near(seasonWAR({...pRow,league:null,warContext:v1}).value,seasonWAR(pRow).value);
  assert.equal(seasonWAR({...pRow,league:null,warContext:{...ctx,version:99}}).value,null);
  const c=createCareer({seed:2,name:'피사구 보존',school:'가상고',role:'pitch',position:'선발',type:'제구형',team:0});c.history=[r];let raw;saveCareer(c,{setItem:(_,s)=>raw=s});near(seasonWAR(loadCareer({getItem:()=>raw}).history[0]).value,base.value);
+});
+
+test('고교·대학·2군은 과거 WAR 문맥이 남아 있어도 계산하지 않는다',()=>{
+ const ctx=leagueWarContext(league);
+ for(const stage of ['고교','대학']){
+  const amateur={...row,stage,warContext:ctx};assert.equal(seasonWAR(amateur).value,null);assert.deepEqual(warSnapshot(amateur),{});
+ }
+ const minor={...league,level:'minor'};
+ assert.equal(leagueWarContext(minor),null);assert.deepEqual(teamWarReport(minor),[]);
+ assert.equal(seasonWAR({...row,league:minor},{context:ctx}).value,null);
+ assert.equal(seasonWAR({...row,minorWarContext:ctx},{level:'minor',context:ctx}).value,null);
+ assert.equal(seasonWAR({...row,league:null,warContext:{...ctx,level:'minor'}}).value,null);
+ assert.deepEqual(warSnapshot({...row,league:null,warContext:{...ctx,level:'minor'}}),{});
+ assert.ok(Number.isFinite(seasonWAR(row).value));
 });
