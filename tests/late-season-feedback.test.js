@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {careerTeams,createCareer,archiveEntry,retire,saveCareer,loadCareer,emptyBat,rosterPlan,asianGamesWindow,tournamentResult,rng,sangmuRecruitment,postseasonRosterAssessment,nationalEvents,acknowledgeSeasonNational} from '../src/engine.js';
+import {careerTeams,createCareer,archiveEntry,retire,saveCareer,loadCareer,emptyBat,rosterPlan,asianGamesWindow,tournamentResult,rng,sangmuRecruitment,postseasonRosterAssessment,nationalEvents,acknowledgeSeasonNational,progress} from '../src/engine.js';
 import {seasonDate} from '../src/league-operations.js';
 import {seasonPlaybackStops,SEASON_PLAYBACK_STEPS} from '../src/progress-display.js';
 const make=(seed=31)=>{const c=createCareer({seed,name:'가상 선수',school:'가상고',role:'bat',position:'중견수',type:'교타형',team:0});Object.assign(c,{stage:'프로',year:2034,age:24,proYears:3,reserved:true});c.player.a.fill(70);return c;};
@@ -38,8 +38,16 @@ test('대표팀 결과·특례는 중복 생성하지 않고 시즌 중 확인 �
  const c=make();c.nationalDecisions={'2034:아시안게임':'수락'};const one=nationalEvents(c,null,null),two=nationalEvents(c,null,null);assert.equal(c.nationalHistory.length,1);assert.deepEqual(one,two);assert.equal(one[0].window.days,10);
  c.pendingEvent={type:'national',year:2034,items:one};c.eventQueue=[{type:'award',year:2034,titles:['타격왕']},{type:'postseason',year:2034,ring:false}];acknowledgeSeasonNational(c,2034);assert.equal(c.pendingEvent.type,'award');assert.equal(c.eventQueue[0].type,'postseason');assert.equal(c.nationalHistory.length,1);assert.equal(restore(c).seasonNationalAcknowledgedYear,2034);
 });
-test('진행 정지는 이적·차출·복귀 순서이고 확인 상태 저장 후에는 지난 팝업을 반복하지 않는다',()=>{
+test('대표팀 차출·복귀는 진행을 멈추지 않고 트레이드 확인만 유지한다',()=>{
  const c=make(),event={name:'아시안게임',selected:true,window:asianGamesWindow(c.year)},candidate={year:c.year,history:[{rosterCalendar:Array(188).fill('1군'),international:[event],league:{playerTrade:{day:70}}}]};
- let stops=seasonPlaybackStops(c,candidate);assert.deepEqual(stops.map(s=>s.type),['trade','national_departure','national']);assert.ok(stops.every(s=>s.step<SEASON_PLAYBACK_STEPS));assert.ok(stops[1].step<stops[2].step);
- c.seasonTradeAcknowledgedYear=c.year;c.seasonNationalDepartureYear=c.year;stops=seasonPlaybackStops(restore(c),candidate);assert.deepEqual(stops.map(s=>s.type),['national']);c.seasonNationalAcknowledgedYear=c.year;assert.deepEqual(seasonPlaybackStops(restore(c),candidate),[]);
+ const stops=seasonPlaybackStops(c,candidate);assert.deepEqual(stops.map(s=>s.type),['trade']);assert.ok(stops[0].step<SEASON_PLAYBACK_STEPS);
+ c.seasonTradeAcknowledgedYear=c.year;assert.deepEqual(seasonPlaybackStops(restore(c),candidate),[]);
+});
+test('아시안게임 결과 팝업은 만들지 않고 구 저장의 팝업만 제거하며 다른 대회·알림은 보존한다',()=>{
+ const c=make();c.nationalDecisions={'2034:아시안게임':'수락'};progress(c,[]);
+ assert.ok(c.history.at(-1).rosterCalendar.includes('대표팀'));assert.ok(c.history.at(-1).international.some(x=>x.name==='아시안게임'&&x.selected));
+ assert.equal([c.pendingEvent,...c.eventQueue].some(e=>e?.type==='national'&&e.items.some(x=>x.name==='아시안게임')),false);
+ const nationalCount=c.nationalHistory.length;c.pendingEvent={type:'national',year:c.year,items:[{name:'아시안게임'},{name:'WBC'}]};c.eventQueue=[{type:'award',year:c.year,titles:['타격왕']}];
+ const loaded=restore(c);assert.deepEqual(loaded.pendingEvent.items,[{name:'WBC'}]);assert.equal(loaded.eventQueue[0].type,'award');assert.equal(loaded.nationalHistory.length,nationalCount);
+ loaded.pendingEvent={type:'national',year:c.year,items:[{name:'아시안게임'}]};const again=restore(loaded);assert.equal(again.pendingEvent.type,'award');assert.equal(again.nationalHistory.length,nationalCount);
 });

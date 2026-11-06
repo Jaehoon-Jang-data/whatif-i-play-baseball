@@ -1,4 +1,4 @@
-import {expectedContribution} from './player-value.js?v=7.23';
+import {expectedContribution} from './player-value.js?v=7.24';
 // The game starts in 2027. Its day-to-date schedule is an approximation, not the KBO fixture list.
 export function seasonDate(year,gameDay,games=144){
   const start=Date.UTC(year,2,28),end=Date.UTC(year,9,7);

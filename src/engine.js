@@ -1,9 +1,9 @@
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.23';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.23';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.24';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.24';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {warSnapshot} from './war.js?v=7.23';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.23';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.23';
+import {warSnapshot} from './war.js?v=7.24';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.24';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.24';
 export const VERSION=7;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -938,7 +938,8 @@ export function progress(c,selected=c.trainingPrograms??c.training,onProgress=nu
   }
   if(c.stage==='대학'&&!military)c.collegeSeasons++;
   const international=military?[]:nationalEvents(c,league,stat);
-  if(international.some(x=>x.selected&&x.name!=='WBC'))queueEvent(c,{type:'national',year:c.year,items:international.filter(x=>x.selected&&x.name!=='WBC')});
+  const nationalNotices=international.filter(x=>x.selected&&!['WBC','아시안게임'].includes(x.name));
+  if(nationalNotices.length)queueEvent(c,{type:'national',year:c.year,items:nationalNotices});
   const row={year:c.year,age:c.age,stage:c.stage,collegeTeam:c.stage==='대학'?c.collegeTeam:null,team:p.team,teamSegments:league?.playerTrade?[{team:league.playerTrade.oldTeam,through:league.playerTrade.date,stat:league.playerTrade.statBefore},{team:league.playerTrade.newTeam,from:league.playerTrade.date,stat:league.playerTrade.statAfter}]:null,role:p.role,position:p.position,stat,minorStat,recentWorkload:{pa14:(league?.players.find(x=>x.id==='user')?.recentWorkload?.pa14||0)+(minorLeague?.players.find(x=>x.id==='user')?.recentWorkload?.pa14||0),estimatedPitches7:(league?.players.find(x=>x.id==='user')?.recentWorkload?.estimatedPitches7||0)+(minorLeague?.players.find(x=>x.id==='user')?.recentWorkload?.estimatedPitches7||0)},league,minorLeague,level,military:military&&!returning,servicePath:military?c.servicePath:null,registeredDays,developmentalConverted,salaryMan,allowanceMan,experience,totalGrowth,
     awards:league?.level==='major'?league.awards.filter(x=>x.winners.includes('user')).map(x=>x.details?.user||x.title):[],report,injury,aBefore,aAfter:[...p.a],training:[...plan.selected],trainingPrograms:[...development.ids],trainingEffects:development.effects,trainingEfficiency:development.efficiency,style:p.type,developmentState:structuredClone(c.trainingState||{}),trust:c.clubTrust,trustChanges:(c.trustHistory||[]).filter(x=>x.year===c.year),overallBefore:overall({...p,a:aBefore}),overall:overall(p),rosterMoves:c.stage!=='프로'?[]:roster.moves,rosterCalendar:c.stage==='프로'?roster.calendar:null,international,tournamentResults:c.stage==='프로'?['WBC','아시안게임','프리미어12'].filter(name=>nationalTournamentYear(c.year,name)).map(name=>tournamentResult(c.seed,c.year,name)):[],optionResults:c.salaryLedger.at(-1)?.optionResults||[]};
   if(c.stage==='프로'&&(!military||returning))row.level=seasonLevel(row);
@@ -1200,6 +1201,7 @@ export function loadCareer(storage=localStorage) {
   repairInvalidCountingAwards(c);
   for(const event of c.eventQueue||[])if(event.titles)event.titles=event.titles.map(canonicalAwardName);
   if(c.pendingEvent?.titles)c.pendingEvent.titles=c.pendingEvent.titles.map(canonicalAwardName);
+  if([c.pendingEvent,...(c.eventQueue||[])].some(e=>e?.type==='national'&&e.year===c.year&&e.items?.some(x=>x.name==='아시안게임')))acknowledgeSeasonNational(c,c.year);
   c.training=availableTraining(c);
   if(c.pendingTraining)c.pendingTraining=availableTraining(c,c.pendingTraining);
   if(!c.retired&&c.phase==='retirement_advice'&&c.pendingEvent?.type==='retirement_advice'&&!retirementAdviceEligible(c)){
