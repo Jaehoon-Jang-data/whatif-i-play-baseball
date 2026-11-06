@@ -82,3 +82,11 @@ test('보관 내보내기·복원은 기록을 유지하고 중복을 만들지 
   const malformed=structuredClone(backup);malformed.entries[1].salaryLedger={};assert.throws(()=>importArchiveExport(target,malformed),/손상/);assert.equal(target.getItem(ARCHIVE_KEY),before);
   const withoutId={...original[0]};delete withoutId.id;const legacy=archiveExport([withoutId]);assert.equal(legacy.entries[0].id,archiveExport([withoutId]).entries[0].id);const legacyDb=storage();legacyDb.setItem(ARCHIVE_KEY,JSON.stringify([withoutId]));assert.equal(importArchiveExport(legacyDb,legacy),1);
 });
+
+test('커리어 점수 없는 새 보관 파일을 복원하고 옛 점수는 읽기·내보내기·저장에서 제거한다',()=>{
+ const c=career();c.careerScore=999999;const legacy=JSON.stringify(c);let raw;saveCareer(c,{setItem:(_,s)=>raw=s});assert.equal('careerScore' in JSON.parse(raw),false);const loaded=loadCareer({getItem:()=>legacy});assert.equal('careerScore' in loaded,false);
+ retire(loaded);assert.equal('careerScore' in loaded,false);const entry=archiveEntry(loaded);assert.equal('score' in entry,false);
+ const old={...entry,score:999999,careerScore:999999,careerWar:{value:999999,known:999,missing:0}},db=storage();db.setItem(ARCHIVE_KEY,JSON.stringify([old]));const entries=archiveEntries(db);assert.equal('score' in entries[0],false);assert.equal('careerScore' in entries[0],false);assert.equal(entries[0].careerWar.value,null);
+ const backup=archiveExport(entries);assert.equal('score' in backup.entries[0],false);const target=storage();assert.equal(importArchiveExport(target,backup),1);assert.equal('score' in JSON.parse(target.getItem(ARCHIVE_KEY))[0],false);
+ assert.equal(importArchiveExport(target,{...backup,entries:[old]}),1);assert.equal('score' in JSON.parse(target.getItem(ARCHIVE_KEY))[0],false);
+});

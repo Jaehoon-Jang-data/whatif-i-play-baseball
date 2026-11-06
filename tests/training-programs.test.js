@@ -13,9 +13,9 @@ test('양 역할에 여섯 프로그램을 제공하고 예전 숫자 중점은 
 test('프로그램별 주효과·보조효과·부담이 다르고 상한 성장량은 다른 능력치로 전이하지 않는다',()=>{
  for(const role of ['bat','pitch']){const c=make(role),ids=PROGRAMS[role].map(p=>p.id),a=programGrowth(c,[ids[0]],10),b=programGrowth(c,[ids[1]],10);assert.notDeepEqual(a.effects,b.effects);const index=a.effects.findIndex(x=>x.applied===Math.max(...a.effects.map(e=>e.applied))),fixed=structuredClone(c);fixed.player.a[index]=fixed.potentialCaps[index];const cap=programGrowth(fixed,[ids[0]],10);assert.equal(cap.effects[index].applied,0);assert.ok(cap.effects[index].blocked>0);for(let i=0;i<6;i++)if(i!==index)assert.equal(cap.effects[i].applied,a.effects[i].applied);}
 });
-test('반복 효율·전환·나이·잠재력·부상 회복 상태를 성장에 반영한다',()=>{
- const c=make(),id='bat-contact',initial=programProfile(c,[id]).efficiency;
- for(let i=0;i<5;i++)completeProgramSeason(c,programGrowth(c,[id],8),null,emptyBat());assert.ok(programProfile(c,[id]).efficiency<initial*.7);assert.ok(programProfile(c,['bat-approach']).efficiency>programProfile(c,[id]).efficiency);c.recoveryState={year:c.year,remainingDays:20};assert.ok(programProfile(c,['bat-approach']).efficiency<1);
+test('반복 횟수 감점 없이 피로·나이·잠재력·부상 회복 상태를 성장에 반영한다',()=>{
+ const c=make(),id='bat-contact';c.trainingState={fatigue:0,repeats:{[id]:8}};assert.equal(programProfile(c,[id]).efficiency,1);assert.equal(programProfile(c,['bat-approach']).efficiency,1);
+ c.recoveryState={year:c.year,remainingDays:20};assert.ok(programProfile(c,['bat-approach']).efficiency<1);
  const young=make(),old=make();old.age=38;assert.ok(programOptions(old).every(p=>p.reason.includes('유지')));const y=progress(young,['bat-contact']),o=progress(old,['bat-contact']);assert.ok(y.totalGrowth>o.totalGrowth);assert.ok(y.aAfter[0]-y.aBefore[0]>o.aAfter[0]-o.aBefore[0]);
  const high=make(),low=make();high.potential=1.2;low.potential=.85;assert.ok(progress(high,['bat-contact']).totalGrowth>progress(low,['bat-contact']).totalGrowth);
 });
@@ -37,4 +37,14 @@ test('수비형 유격수의 예상 기여·심한 타격 부진·경쟁자·피
  const defense={role:'bat',position:'유격수',a:[50,48,53,65,90,80]},weak={...defense,a:[30,30,30,50,55,50]},balanced={...defense,a:Array(6).fill(55)};assert.ok(expectedContribution(defense).score>expectedContribution(balanced).score);assert.ok(expectedContribution(weak).score<50);assert.ok(expectedContribution(defense,{fatigue:70}).score<expectedContribution(defense).score);
  const familiar=make();familiar.adapt=1;const unadapted=rosterPlan(familiar).score;familiar.trainingState={positionFamiliarity:{'유격수':100}};assert.ok(rosterPlan(familiar).score>unadapted);
  const c=make();c.player.a.fill(68);const before=rosterPlan(c).score;c.latest={level:'major',year:2030,teams:[],players:[{...defense,id:'rival',team:0,a:Array(6).fill(92)}]};assert.ok(rosterPlan(c).score<before);assert.ok(rosterPlan(c).calendar.includes('2군'));
+});
+
+test('12개 프로그램 모두 과거 반복 횟수가 실제 성장·기록·선택 표시에 영향을 주지 않는다',()=>{
+ for(const role of ['bat','pitch'])for(const program of PROGRAMS[role]){
+  const fresh=make(role),legacy=structuredClone(fresh);legacy.trainingState={repeats:{[program.id]:8}};
+  assert.deepEqual(programGrowth(legacy,[program.id],8).effects,programGrowth(fresh,[program.id],8).effects);
+  assert.doesNotMatch(programOptionHtml(programOptions(legacy).find(p=>p.id===program.id),true,[]),/반복/);
+  const a=progress(fresh,[program.id]),b=progress(legacy,[program.id]);assert.deepEqual(b.aAfter,a.aAfter);assert.deepEqual(b.stat,a.stat);assert.equal('repeats' in legacy.trainingState,false);
+  assert.equal('repeats' in restore(legacy).trainingState,false);
+ }
 });

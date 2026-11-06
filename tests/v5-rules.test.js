@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {abilityCandidates,createCareer,rosterPlan,progress,nextYear,saveCareer,loadCareer,negotiateSalary,retire,careerScore,teamBudget,coachChallenge,LEVELS,acknowledgeEvent} from '../src/engine.js';
+import {abilityCandidates,createCareer,rosterPlan,progress,nextYear,saveCareer,loadCareer,negotiateSalary,retire,teamBudget,coachChallenge,LEVELS,acknowledgeEvent} from '../src/engine.js';
 
 const config=(seed=1,role='bat',position='중견수')=>({seed,name:'검증 선수',school:'경남고',role,position,type:role==='bat'?'교타형':'제구형',team:0,hand:'우투우타'});
 const pro=(seed=1)=>{const c=createCareer(config(seed));c.stage='프로';c.phase='prepare';c.year=2030;c.age=24;c.reserved=true;c.playerStatus='reserved';c.contract={kind:'reserved',annualMan:12000,left:1};return c;};
@@ -11,7 +11,7 @@ test('부상 상태·이동·등록일수가 같은 188일 기록에서 나온�
 
 test('병역 첫 시즌은 결장하고 둘째 시즌 후반에 복귀한다',()=>{const c=pro(19);c.player.a.fill(90);c.service=2;c.servicePath='regular';const first=progress(c);assert.equal(first.stat.g,0);assert.equal(first.registeredDays,0);while(c.pendingEvent)acknowledgeEvent(c);nextYear(c);const second=progress(c);assert.ok(second.stat.g>0);assert.ok(second.registeredDays>0);assert.equal(second.rosterCalendar[0],'복무');assert.equal(second.rosterCalendar[119],'2군');assert.equal(second.rosterCalendar[138],'1군');});
 
-test('포스트시즌 기록은 정규시즌과 분리되고 저장 후 복구된다',()=>{const c=pro(21);c.player.a.fill(85);const row=progress(c);const before=structuredClone(row.stat),post=structuredClone(row.postseason);assert.deepEqual(row.stat,before);assert.equal(row.postseason.finalRank,row.postseason.champion===row.team?1:row.postseason.finalRank);assert.equal(row.registeredDays,row.rosterCalendar.filter(x=>x==='1군').length);retire(c);const data=new Map();saveCareer(c,{setItem:(k,v)=>data.set(k,v)});const restored=loadCareer({getItem:k=>data.get(k)});assert.deepEqual(restored.history.at(-1).postseason,post);assert.equal(restored.careerScore,careerScore(c));});
+test('포스트시즌 기록은 정규시즌과 분리되고 저장 후 복구된다',()=>{const c=pro(21);c.player.a.fill(85);const row=progress(c);const before=structuredClone(row.stat),post=structuredClone(row.postseason);assert.deepEqual(row.stat,before);assert.equal(row.postseason.finalRank,row.postseason.champion===row.team?1:row.postseason.finalRank);assert.equal(row.registeredDays,row.rosterCalendar.filter(x=>x==='1군').length);retire(c);const data=new Map();saveCareer(c,{setItem:(k,v)=>data.set(k,v)});const restored=loadCareer({getItem:k=>data.get(k)});assert.deepEqual(restored.history.at(-1).postseason,post);assert.deepEqual(restored.careerWar,c.careerWar);assert.equal('careerScore' in restored,false);});
 
 test('재협상 실패에도 최초 구단 제안을 적용한다',()=>{let failed;for(let seed=1;seed<20&&!failed;seed++){const c=pro(seed);c.salaryPending=true;const result=negotiateSalary(c,true);if(!result.accepted)failed={c,result};}assert.ok(failed);assert.equal(failed.result.annualMan,failed.result.baseMan);assert.equal(failed.c.contract.annualMan,failed.result.baseMan);});
 

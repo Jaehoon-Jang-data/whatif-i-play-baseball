@@ -1,5 +1,5 @@
-import {normalizeCreationDraft} from './creation-flow.js?v=7.25';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.25';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.26';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.26';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -7,11 +7,11 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.25';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warNoteHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.25';
-import {programOptionHtml} from './training-ui.js?v=7.25';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.25';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.25';
+} from './engine.js?v=7.26';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.26';
+import {programOptionHtml} from './training-ui.js?v=7.26';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.26';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.26';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -124,7 +124,7 @@ function metrics(stat,role,position,row=null,warLevel='major'){
   const roleStat=position==='마무리'?['sv','세이브']:position==='중간계투'?['hold','홀드']:['w','승'];
   const columns=role==='bat'?[['avg','타율'],['obp','출루율'],['slg','장타율'],['ops','OPS'],['h','안타'],['hr','홈런'],['rbi','타점'],['r','득점'],['sb','도루']]:[['era','ERA'],['whip','WHIP'],['k9','K/9'],['bb9','BB/9'],roleStat,['l','패'],['k','탈삼진'],['g','경기'],['outs','이닝']];
   const prior=row?career.history.filter(x=>x.year<row.year&&x.role===role&&careerComparisonEligible(x)):[],qualified=row&&careerComparisonEligible(row);
-  return `<div class="metrics season-metrics">${columns.map(([key,name],i)=>{const current=statValue(stat,role,key),values=prior.map(x=>statValue(x.stat,role,key)),marker=qualified?careerRecordMarker(key,current,values):'';const high=marker==='CH',worst=marker==='CL';return `${i===4&&war?warMetricHtml(war):''}<div class="${i<4?'rate-stat':'count-stat'}"><span>${name}${high?'<em class="career-high">CH</em>':worst?'<em class="career-low">CL</em>':''}</span><strong>${displayStat(stat,role,key)}</strong></div>`;}).join('')}</div>${war?warNoteHtml(war):''}`;
+  return `<div class="metrics season-metrics">${columns.map(([key,name],i)=>{const current=statValue(stat,role,key),values=prior.map(x=>statValue(x.stat,role,key)),marker=qualified?careerRecordMarker(key,current,values):'';const high=marker==='CH',worst=marker==='CL';return `${i===4&&war?warMetricHtml(war):''}<div class="${i<4?'rate-stat':'count-stat'}"><span>${name}${high?'<em class="career-high">CH</em>':worst?'<em class="career-low">CL</em>':''}</span><strong>${displayStat(stat,role,key)}</strong></div>`;}).join('')}</div>`;
 }
 function color(percent){if(percent===null)return '#9ca3af';const p=percent/100;return p<.5?`rgb(${Math.round(50+p*340)},${Math.round(80+p*290)},240)`:`rgb(235,${Math.round(225-(p-.5)*350)},${Math.round(240-(p-.5)*390)})`;}
 function percentileChart(league,role){
@@ -219,7 +219,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.25',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.26',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -357,7 +357,7 @@ function leaguePage(){
 }
 function story(){const events=career?careerTimeline(career):[];return `${header('커리어 이력')}<section class="panel timeline">${events.length?events.map(x=>`<article><strong>${x.year}</strong><p>${esc(x.text.replace(/(\d+(?:\.\d+)?)백만원/g,(_,n)=>money(Number(n)*100)))}</p></article>`).join(''):'<div class="empty small-empty">기록된 사건 없음</div>'}</section>`;}
 function help(){return `${header('플레이 안내')}<div class="rules-grid">
-<section class="panel prose"><h2>진로 · 훈련</h2><p>훈련 프로그램은 최대 2개를 선택합니다. 같은 루틴을 반복하면 효율이 줄고, 상한에 도달한 능력치는 더 성장하지 않습니다.</p><p>고교 졸업 후 드래프트 또는 대학 진학을 선택합니다. 대학 2학년 수료 후에는 얼리드래프트에 참가할 수 있습니다. 미지명되면 대학에 남습니다.</p><p>출전 기회는 기량·성적·팀 내 경쟁에 따라 달라집니다. 포지션 변경은 적응 기간이 필요합니다.</p></section>
+<section class="panel prose"><h2>진로 · 훈련</h2><p>훈련 프로그램은 최대 2개를 선택합니다. 상한에 도달한 능력치는 더 성장하지 않습니다.</p><p>고교 졸업 후 드래프트 또는 대학 진학을 선택합니다. 대학 2학년 수료 후에는 얼리드래프트에 참가할 수 있습니다. 미지명되면 대학에 남습니다.</p><p>출전 기회는 기량·성적·팀 내 경쟁에 따라 달라집니다. 포지션 변경은 적응 기간이 필요합니다.</p></section>
 <section class="panel prose"><h2>계약 · FA</h2><p>FA 자격은 고졸·얼리드래프트 입단 8시즌, 대학 4시즌 이수 졸업자 7시즌, 재취득 4시즌입니다. 1군 등록 145일을 1시즌으로 인정하며 부족한 등록일은 합산합니다.</p><p>다년계약 중에는 연봉을 재협상하지 않습니다. 계약이 끝나도 FA 자격이 부족하면 소속 구단과 연봉을 협상합니다.</p><p>FA 제안은 보장액과 성과 옵션을 나누어 확인하세요. 옵션은 조건을 달성한 시즌에만 지급됩니다.</p></section>
 <section class="panel prose"><h2>기록 · 수상</h2><p>백분위는 100에 가까울수록 좋은 기록입니다. 자신과 같거나 더 많은 타석·이닝을 소화한 표본 집단과 비교합니다.</p><p>커리어 하이·로우 비교에는 타자 규정타석 50%, 선발 규정이닝 50%, 불펜 규정이닝 25% 이상인 시즌만 포함합니다.</p><p>비율 타이틀은 규정타석·이닝을 채워야 합니다. 골든글러브는 투수 1명, 외야수 3명을 선정합니다.</p></section>
 <section class="panel prose"><h2>병역 · 국가대표</h2><p>상무는 27세 이하·프로 1시즌 이상이면 지원할 수 있으며 탈락할 수도 있습니다. 탈락 후 현역 입대나 다음 해 재지원이 가능합니다.</p><p>복무 기간은 2시즌입니다. 상무는 2군 경기와 훈련에 참가하고, 현역은 첫 시즌 구단 훈련과 공식 출전이 없습니다.</p><p>28세 시즌까지 미필이면 자동 입대합니다. 아시안게임 대표팀으로 우승하면 병역특례를 받습니다. WBC·프리미어12는 특례 대상이 아닙니다.</p><p>대표팀 출전은 거절할 수 있습니다. 아시안게임은 9월 하순 열흘간 차출되며 소속팀 경기에 나서지 않습니다.</p></section>

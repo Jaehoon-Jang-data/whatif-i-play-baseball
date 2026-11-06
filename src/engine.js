@@ -1,9 +1,9 @@
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.25';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.25';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.26';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.26';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {warSnapshot,careerWarSnapshot} from './war.js?v=7.25';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.25';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.25';
+import {warSnapshot,careerWarSnapshot} from './war.js?v=7.26';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.26';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.26';
 export const VERSION=7;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -1075,8 +1075,7 @@ export function freeAgentTryout(c){
   const event={year:c.year,type:'tryout',success,oldTeam:old,newTeam:team,reason:'게임 내 입단 테스트',annualMan:success?minimumSalary(c.year):0};
   if(success){moveTeam(c,team);c.contract=reservedContract(minimumSalary(c.year));c.reserved=true;c.playerStatus='reserved';c.phase='prepare';c.contractHistory.push({year:c.year,team,...c.contract});}else if(c.phase==='free_tryout_choice'||!freeAgentOffers(c).length)retire(c,'재취업 시장 실패');c.transactionHistory.push(event);c.pendingEvent=event;note(c,success?`${TEAMS[team]} 입단 테스트 합격`:'입단 테스트 불합격');return event;
 }
-export function careerScore(c){const rows=c.history.filter(x=>x.stage==='프로'&&!x.military),seasons=Math.max(1,rows.length),s=sumStats(rows.map(x=>x.stat),c.player.role),post=sumStats(rows.map(x=>x.postseason?.stat).filter(Boolean),c.player.role),awards=rows.reduce((n,x)=>n+x.awards.length,0),titles=rows.reduce((n,x)=>n+x.awards.filter(a=>['정규시즌 MVP','신인왕'].includes(canonicalAwardName(a))).length,0),wins=rows.filter(hasChampionshipRing).length;const production=c.player.role==='bat'?Math.min(350,(s.pa/seasons)*.28+(s.h/seasons)*.6):Math.min(350,(s.outs/seasons)*.21+(s.k/seasons)*.65+(s.sv+Math.round(s.hold*.5))/seasons*.9);const participation=Math.min(250,rows.reduce((n,x)=>n+(x.level==='1군 주전'?28:x.level==='1군 준주전'?19:x.level==='1군 백업'?10:2),0));return Math.round(production+participation+awards*12+titles*45+wins*22+post.g*3);}
-export function retire(c,reason='본인 선택') {c.retired=true;c.phase='retired';c.playback=null;c.retirementReason=reason;c.careerScore=careerScore(c);c.careerWar=careerWarSnapshot(c.history);note(c,`${c.age}세 은퇴 · ${reason} · 통산 연봉 ${money(totalSalary(c))}`);}
+export function retire(c,reason='본인 선택') {c.retired=true;c.phase='retired';c.playback=null;c.retirementReason=reason;delete c.careerScore;c.careerWar=careerWarSnapshot(c.history);note(c,`${c.age}세 은퇴 · ${reason} · 통산 연봉 ${money(totalSalary(c))}`);}
 export function decideRetirementAdvice(c,accept){if(c.phase!=='retirement_advice')throw Error('은퇴 권고 단계가 아닙니다.');c.pendingEvent=null;if(accept){retire(c,'은퇴 권고 수락');return;}excludeFromReserve(c,'은퇴 권고 거부 · 다른 구단 제안 대기');c.phase='free_agent';}
 export function totalSalary(c) {return c.salaryLedger.reduce((s,x)=>s+(x.salaryMan||0),0);}
 function reconstructedSigningLedger(c){
@@ -1093,7 +1092,7 @@ export function incomeBreakdown(entry){
   const signingMan=Array.isArray(signing)&&signing.length?signing.reduce((sum,row)=>sum+(row.amountMan||0),0):entry.signingIncome??entry.career?.signingIncome??0;
   return {salaryMan,signingMan,optionMan,allowanceMan,totalMan:salaryMan+signingMan+optionMan+allowanceMan,complete:!(entry.legacySalaryYears||entry.career?.legacySalaryYears)&&ledger.every(row=>row.optionPaidMan!==undefined)};
 }
-export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,teamHistory:careerTeams(c),seasons:c.proYears,score:c.careerScore??careerScore(c),careerWar:careerWarSnapshot(c.history),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,servicePath:row.servicePath,injury:row.injury,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults,teamSegments:row.teamSegments,style:row.style,trainingPrograms:row.trainingPrograms,...warSnapshot(row)})),salaryLedger:structuredClone(c.salaryLedger),signingLedger:structuredClone(c.signingLedger?.length?c.signingLedger:reconstructedSigningLedger(c)),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
+export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,teamHistory:careerTeams(c),seasons:c.proYears,careerWar:careerWarSnapshot(c.history),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,servicePath:row.servicePath,injury:row.injury,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults,teamSegments:row.teamSegments,style:row.style,trainingPrograms:row.trainingPrograms,...warSnapshot(row)})),salaryLedger:structuredClone(c.salaryLedger),signingLedger:structuredClone(c.signingLedger?.length?c.signingLedger:reconstructedSigningLedger(c)),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
 export const ARCHIVE_LIMIT=7;
 export function upsertArchive(entries,c){const entry=archiveEntry(c),next=[...entries],index=next.findIndex(x=>x.id===entry.id);if(next.length>ARCHIVE_LIMIT||index<0&&next.length>=ARCHIVE_LIMIT)throw Error('은퇴 선수 보관은 7명까지 가능합니다. 삭제할 기록을 선택하세요.');if(index<0)next.push(entry);else next[index]=entry;return next;}
 export function archiveSalaryTotal(entry){const ledger=entry.salaryLedger||entry.career?.salaryLedger;return Array.isArray(ledger)?ledger.reduce((sum,row)=>sum+(row.salaryMan||0),0):null;}
@@ -1203,6 +1202,8 @@ export function loadCareer(storage=localStorage) {
   for(const row of c.history){row.awards=row.awards.map(canonicalAwardName);for(const league of [row.league,row.minorLeague])for(const award of league?.awards||[])award.title=canonicalAwardName(award.title);}
   if(c.latest)for(const award of c.latest.awards||[])award.title=canonicalAwardName(award.title);
   repairInvalidCountingAwards(c);
+  delete c.careerScore;if(c.retired)c.careerWar=careerWarSnapshot(c.history);
+  if(c.trainingState)delete c.trainingState.repeats;for(const row of c.history)if(row.developmentState)delete row.developmentState.repeats;
   for(const event of c.eventQueue||[])if(event.titles)event.titles=event.titles.map(canonicalAwardName);
   if(c.pendingEvent?.titles)c.pendingEvent.titles=c.pendingEvent.titles.map(canonicalAwardName);
   if([c.pendingEvent,...(c.eventQueue||[])].some(e=>e?.type==='national'&&e.year===c.year&&e.items?.some(x=>x.name==='아시안게임')))acknowledgeSeasonNational(c,c.year);
@@ -1234,8 +1235,9 @@ function visitStats(row,transform){
   for(const league of [row.league,row.minorLeague])for(const player of league?.players||[])player.stat=transform(player.stat,player.role);
 }
 function packCareerSave(c){
-  const packed=structuredClone(c);
-  for(const row of packed.history)visitStats(row,packStat);
+  const packed=structuredClone(c);delete packed.careerScore;
+  if(packed.trainingState)delete packed.trainingState.repeats;
+  for(const row of packed.history){if(row.developmentState)delete row.developmentState.repeats;visitStats(row,packStat);}
   const latestInHistory=Boolean(packed.latest&&packed.history.at(-1)?.league&&JSON.stringify(packed.latest)===JSON.stringify(packed.history.at(-1).league));
   if(latestInHistory){delete packed.latest;packed._latestInHistory=true;}
   else for(const player of packed.latest?.players||[])player.stat=packStat(player.stat,player.role);

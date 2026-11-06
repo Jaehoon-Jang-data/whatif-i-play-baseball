@@ -1,4 +1,5 @@
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry} from './engine.js?v=7.25';
+import {careerWarSnapshot} from './war.js?v=7.26';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry} from './engine.js?v=7.26';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';
@@ -15,8 +16,15 @@ export function savedCareerSlots(storage){
   });
 }
 
+function normalizeArchive(entry){
+ const normalized={...entry};delete normalized.score;delete normalized.careerScore;
+ if(normalized.career){normalized.career={...normalized.career};delete normalized.career.careerScore;}
+ if(normalized.history||normalized.career?.history)normalized.careerWar=careerWarSnapshot(normalized.history||normalized.career.history);
+ return normalized;
+}
+
 export function archiveEntries(storage){
-  try{const entries=JSON.parse(storage.getItem(ARCHIVE_KEY)||'[]');return Array.isArray(entries)?entries:[];}catch{return [];}
+  try{const entries=JSON.parse(storage.getItem(ARCHIVE_KEY)||'[]');return Array.isArray(entries)?entries.map(normalizeArchive):[];}catch{return [];}
 }
 
 export function retirementArchiveState(entries,career){
@@ -46,9 +54,9 @@ export function replaceArchivedCareer(storage,career,index,expectedId){
 
 export function archiveExport(entries){return {format:ARCHIVE_EXPORT_FORMAT,entries:entries.map(raw=>{
   const entry=raw.career?.player?{...archiveEntry(raw.career),...(raw.id?{id:raw.id}:{})}:raw;
-  if(entry.id)return entry;
+  if(entry.id)return normalizeArchive(entry);
   let hash=2166136261;for(const char of JSON.stringify(entry))hash=Math.imul(hash^char.charCodeAt(0),16777619);
-  return {...entry,id:`legacy-${hash>>>0}`};
+  return normalizeArchive({...entry,id:`legacy-${hash>>>0}`});
 })};}
 
 export function importArchiveExport(storage,data){
@@ -57,9 +65,9 @@ export function importArchiveExport(storage,data){
   for(const entry of data.entries){
     const validStat=stat=>stat&&typeof stat==='object'&&!Array.isArray(stat)&&Number.isFinite(stat.g)&&Object.values(stat).every(Number.isFinite);
     const validLedger=(ledger,keys)=>ledger===undefined||Array.isArray(ledger)&&ledger.every(row=>row&&keys.every(key=>row[key]===undefined||row[key]===null||Number.isFinite(row[key])));
-    if(!entry||typeof entry.id!=='string'||!entry.id||typeof entry.name!=='string'||!['bat','pitch'].includes(entry.role)||!Number.isFinite(entry.score)||!Array.isArray(entry.history)||entry.history.some(row=>!Number.isInteger(row?.year)||!validStat(row.stat)||!['bat','pitch'].includes(row.role)||!Array.isArray(row.awards)||row.minorStat&&!validStat(row.minorStat)||row.postseason?.stat&&!validStat(row.postseason.stat))||!validLedger(entry.salaryLedger,['year','salaryMan','optionPaidMan','allowanceMan'])||!validLedger(entry.signingLedger,['year','amountMan'])||entry.career)throw Error('은퇴 선수 기록이 손상되었습니다.');
+    if(!entry||typeof entry.id!=='string'||!entry.id||typeof entry.name!=='string'||!['bat','pitch'].includes(entry.role)||!Array.isArray(entry.history)||entry.history.some(row=>!Number.isInteger(row?.year)||!validStat(row.stat)||!['bat','pitch'].includes(row.role)||!Array.isArray(row.awards)||row.minorStat&&!validStat(row.minorStat)||row.postseason?.stat&&!validStat(row.postseason.stat))||!validLedger(entry.salaryLedger,['year','salaryMan','optionPaidMan','allowanceMan'])||!validLedger(entry.signingLedger,['year','amountMan'])||entry.career)throw Error('은퇴 선수 기록이 손상되었습니다.');
     const index=entries.findIndex(x=>x.id===entry.id);
-    if(index<0)entries.push(entry);else entries[index]=entry;
+    if(index<0)entries.push(normalizeArchive(entry));else entries[index]=normalizeArchive(entry);
   }
   if(entries.length>ARCHIVE_LIMIT)throw Error('은퇴 선수는 7명까지 보관할 수 있습니다. 기존 기록을 내보내고 정리한 뒤 불러오세요.');
   storage.setItem(ARCHIVE_KEY,JSON.stringify(entries));return entries.length;

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {emptyBat,emptyPitch,simulateSeason,createCareer,archiveEntry,retire,saveCareer,loadCareer} from '../src/engine.js';
 import {leagueWarContext,seasonWAR,warSnapshot,careerWAR,bestWarSeasons,teamWarReport,careerWarSnapshot,compareCareerWAR} from '../src/war.js';
-import {formatWAR,warCareerHtml,warMetricHtml,warNoteHtml,careerWarLabel} from '../src/presentation.js';
+import {formatWAR,warCareerHtml,warMetricHtml,careerWarLabel} from '../src/presentation.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 const bat={...emptyBat(),g:144,pa:600,ab:530,h:160,d:30,t:3,hr:20,bb:65,hbp:3,sf:2,sb:20,cs:5};
 const pitch={...emptyPitch(),g:28,gs:28,outs:540,hr:15,bb:45,k:160,r:75,er:65};
@@ -46,12 +46,12 @@ test('1군 WAR와 트레이드 실제 노출량은 보존하고 2군 WAR 스냅�
 test('구 시즌은 출장 추정으로 계산하되 은퇴 요약만 남은 구 기록은 계산 불가로 구분한다',()=>{
  const traded={...row,teamSegments:[{team:0,stat:{...bat,pa:450}},{team:1,stat:{...bat,pa:150}}]};const c=leagueWarContext(league);near(seasonWAR(traded).diagnostics.parkFactor,1.015);near(value({...traded,league:null,...warSnapshot(traded)}),value(traded));
  const snapshot=warSnapshot(row);near(value({...row,league:null,...snapshot}),value(row));assert.ok(seasonWAR(row).notes.includes('구장·출장 비중 일부 추정'));
- const old={...row,league:undefined};const out=careerWAR([row,old]);assert.equal(out.known,1);assert.equal(out.missing,1);near(out.value,value(row));assert.match(warCareerHtml([old],['가상 팀']),/리그 자료 없는 1시즌 제외/);
+ const old={...row,league:undefined};const out=careerWAR([row,old]);assert.equal(out.known,1);assert.equal(out.missing,1);near(out.value,value(row));assert.match(warCareerHtml([old],['가상 팀']),/1시즌 미기록/);
 });
 test('TOP 3은 표시 0.1 WAR 동률에서 공동 순위·이른 연도를 사용하고 통산과 구분한다',()=>{
  const rs=[2033,2030,2032,2031].map(year=>({...row,year,league:null,warContext:{...leagueWarContext(league),year}}));
  assert.deepEqual(bestWarSeasons(rs).map(x=>[x.row.year,x.rank]),[[2030,1],[2031,1],[2032,1]]);
- const html=warCareerHtml(rs,['가상 팀']);assert.match(html,/통산 WAR/);assert.match(html,/2030년/);assert.doesNotMatch(html,/2033년/);assert.match(warMetricHtml(seasonWAR(row)),/WAR/);assert.match(warNoteHtml(seasonWAR(pRow)),/FIP 기반/);assert.equal(formatWAR(-.01),'0.0');
+ const html=warCareerHtml(rs,['가상 팀']);assert.match(html,/통산 WAR/);assert.match(html,/2030년/);assert.doesNotMatch(html,/2033년/);assert.match(warMetricHtml(seasonWAR(row)),/WAR/);assert.equal(formatWAR(-.01),'0.0');
 });
 test('리그 전체 WAR는 대체 수준 풀과 일치하고 팀별 승수 편차를 진단한다',()=>{
  for(const seed of [3,17,41]){const l=simulateSeason({seed,year:2030}),report=teamWarReport(l),ctx=leagueWarContext(l);near(report.reduce((a,b)=>a+b.war,0),ctx.teamGames/2*1000/2430);assert.ok(report.every(x=>Number.isFinite(x.gap)&&Math.abs(x.gap)<25));}
@@ -84,7 +84,7 @@ test('고교·대학·2군은 과거 WAR 문맥이 남아 있어도 계산하지
 test('통산 WAR는 은퇴·보관·복구 후 일치하고 구 점수·캐시값 대신 시즌 기록으로 정렬한다',()=>{
  const c=createCareer({seed:13,name:'누적 WAR',school:'가상고',role:'bat',position:'유격수',type:'교타형',team:0});c.history=[{...row,league:{...league,awards:[]}},{...row,year:2031,league:null}];retire(c);
  const summary=careerWarSnapshot(c.history);assert.equal(summary.known,1);assert.equal(summary.missing,1);near(summary.value,seasonWAR(row).value);assert.deepEqual(c.careerWar,summary);
- let raw;saveCareer(c,{setItem:(_,v)=>raw=v});const loaded=loadCareer({getItem:()=>raw}),entry=archiveEntry(loaded);assert.deepEqual(entry.careerWar,summary);assert.deepEqual(careerWarSnapshot(entry.history),summary);assert.match(careerWarLabel(entry.history),/확인된 WAR .*1\/2시즌/);
+ let raw;saveCareer(c,{setItem:(_,v)=>raw=v});const loaded=loadCareer({getItem:()=>raw}),entry=archiveEntry(loaded);assert.deepEqual(entry.careerWar,summary);assert.equal('score' in entry,false);assert.deepEqual(careerWarSnapshot(entry.history),summary);assert.match(careerWarLabel(entry.history),/확인된 WAR .*1\/2시즌/);
  const low={id:'low',score:999999,careerWar:{value:99999},history:[{...row,stat:{...bat,h:50,hr:0}}]},high={id:'high',score:0,history:[row]},unknown={id:'unknown',score:9999999,history:[{...row,league:null}]};
  assert.deepEqual([unknown,low,high].sort(compareCareerWAR).map(x=>x.id),['high','low','unknown']);assert.match(careerWarLabel(unknown.history),/WAR —/);
  assert.equal(compareCareerWAR({history:[row]},{career:{history:[row]}}),0);
