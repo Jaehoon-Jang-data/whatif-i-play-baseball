@@ -1,9 +1,9 @@
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.24';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.24';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.25';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.25';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {warSnapshot} from './war.js?v=7.24';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.24';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.24';
+import {warSnapshot,careerWarSnapshot} from './war.js?v=7.25';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.25';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.25';
 export const VERSION=7;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -577,10 +577,14 @@ export function offers(c,preview=false) {
   return [c.player.team,(c.player.team+3)%10,(c.player.team+7)%10].map(team=>{
     const years=c.age>=40?1:c.age>=37?2:c.age>=34?2+Math.floor(r()*2):c.age<=30?5+Math.floor(r()*2):3+Math.floor(r()*3);
     const budget=teamBudget(c.year,team,c),peers=(last?.league?.players||[]).filter(p=>p.team===team&&p.role===c.player.role&&p.position===c.player.position&&p.id!=='user'),rival=peers.length?Math.max(...peers.map(readiness)):55,need=clamp((readiness(c.player)-rival)*.012,-.18,.24);
-    const demand=1.10+(r()-.5)*.18+need+(team===c.player.team?.04:0)+(c.player.position==='포수'||c.player.position==='유격수'?.08:0)-(team!==c.player.team?(grade==='A'?.08:grade==='B'?.04:0):0);
-    const optionRate=team%3===0?0:team%3===1?.30:.12,signingRate=.25+r()*.35,room=budget.roomMan+budget.playerCostMan,annualLimit=Math.max(minimumSalary(c.year),room/(1+optionRate+signingRate/years));
-    const annualFloor=Math.ceil((reservedReference+Math.max(1000,reservedReference*.02))/1000)*1000;
-    const annualMan=Math.max(annualFloor,Math.floor(Math.min(value*demand,annualLimit)/1000)*1000),signingBonusMan=Math.max(0,Math.floor(Math.min(annualMan*signingRate,(room-annualMan)*years)/1000)*1000),optionMan=Math.max(0,Math.floor(Math.min(annualMan*years*optionRate,(room-annualMan)*years-signingBonusMan)/1000)*1000);
+    const demand=1.00+(r()-.5)*.18+need+(team===c.player.team?.04:0)+(c.player.position==='포수'||c.player.position==='유격수'?.08:0)-(team!==c.player.team?(grade==='A'?.08:grade==='B'?.04:0):0);
+    // All-in annual market value is shared by salary, signing bonus and options.
+    // FA status itself does not guarantee a raise over reserved-player salary.
+    const optionRate=team%3===0?0:team%3===1?.30:.12,signingRate=.25+r()*.35,room=budget.roomMan+budget.playerCostMan;
+    const targetCost=Math.max(minimumSalary(c.year),Math.min(value*demand,room));
+    const annualMan=Math.max(minimumSalary(c.year),Math.floor(targetCost/(1+optionRate+signingRate/years)/1000)*1000);
+    const surplus=Math.max(0,(targetCost-annualMan)*years);
+    const signingBonusMan=Math.max(0,Math.floor(Math.min(annualMan*signingRate,surplus)/1000)*1000),optionMan=Math.max(0,Math.floor(Math.min(annualMan*years*optionRate,surplus-signingBonusMan)/1000)*1000);
     if(annualMan>room)return null;
     const guaranteedMan=annualMan*years+signingBonusMan,totalMan=guaranteedMan+optionMan,options=optionMan?[optionRule(c.player.role,c.player.position,optionMan/years)]:[];
     const compensation=grade==='A'?'전년도 연봉 200% + 보호 외 선수 1명(20인) 또는 300%':grade==='B'?'전년도 연봉 100% + 보호 외 선수 1명(25인) 또는 200%':'전년도 연봉 150% · 보상선수 없음';
@@ -1072,7 +1076,7 @@ export function freeAgentTryout(c){
   if(success){moveTeam(c,team);c.contract=reservedContract(minimumSalary(c.year));c.reserved=true;c.playerStatus='reserved';c.phase='prepare';c.contractHistory.push({year:c.year,team,...c.contract});}else if(c.phase==='free_tryout_choice'||!freeAgentOffers(c).length)retire(c,'재취업 시장 실패');c.transactionHistory.push(event);c.pendingEvent=event;note(c,success?`${TEAMS[team]} 입단 테스트 합격`:'입단 테스트 불합격');return event;
 }
 export function careerScore(c){const rows=c.history.filter(x=>x.stage==='프로'&&!x.military),seasons=Math.max(1,rows.length),s=sumStats(rows.map(x=>x.stat),c.player.role),post=sumStats(rows.map(x=>x.postseason?.stat).filter(Boolean),c.player.role),awards=rows.reduce((n,x)=>n+x.awards.length,0),titles=rows.reduce((n,x)=>n+x.awards.filter(a=>['정규시즌 MVP','신인왕'].includes(canonicalAwardName(a))).length,0),wins=rows.filter(hasChampionshipRing).length;const production=c.player.role==='bat'?Math.min(350,(s.pa/seasons)*.28+(s.h/seasons)*.6):Math.min(350,(s.outs/seasons)*.21+(s.k/seasons)*.65+(s.sv+Math.round(s.hold*.5))/seasons*.9);const participation=Math.min(250,rows.reduce((n,x)=>n+(x.level==='1군 주전'?28:x.level==='1군 준주전'?19:x.level==='1군 백업'?10:2),0));return Math.round(production+participation+awards*12+titles*45+wins*22+post.g*3);}
-export function retire(c,reason='본인 선택') {c.retired=true;c.phase='retired';c.playback=null;c.retirementReason=reason;c.careerScore=careerScore(c);note(c,`${c.age}세 은퇴 · ${reason} · 통산 연봉 ${money(totalSalary(c))}`);}
+export function retire(c,reason='본인 선택') {c.retired=true;c.phase='retired';c.playback=null;c.retirementReason=reason;c.careerScore=careerScore(c);c.careerWar=careerWarSnapshot(c.history);note(c,`${c.age}세 은퇴 · ${reason} · 통산 연봉 ${money(totalSalary(c))}`);}
 export function decideRetirementAdvice(c,accept){if(c.phase!=='retirement_advice')throw Error('은퇴 권고 단계가 아닙니다.');c.pendingEvent=null;if(accept){retire(c,'은퇴 권고 수락');return;}excludeFromReserve(c,'은퇴 권고 거부 · 다른 구단 제안 대기');c.phase='free_agent';}
 export function totalSalary(c) {return c.salaryLedger.reduce((s,x)=>s+(x.salaryMan||0),0);}
 function reconstructedSigningLedger(c){
@@ -1089,7 +1093,7 @@ export function incomeBreakdown(entry){
   const signingMan=Array.isArray(signing)&&signing.length?signing.reduce((sum,row)=>sum+(row.amountMan||0),0):entry.signingIncome??entry.career?.signingIncome??0;
   return {salaryMan,signingMan,optionMan,allowanceMan,totalMan:salaryMan+signingMan+optionMan+allowanceMan,complete:!(entry.legacySalaryYears||entry.career?.legacySalaryYears)&&ledger.every(row=>row.optionPaidMan!==undefined)};
 }
-export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,teamHistory:careerTeams(c),seasons:c.proYears,score:c.careerScore??careerScore(c),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,servicePath:row.servicePath,injury:row.injury,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults,teamSegments:row.teamSegments,style:row.style,trainingPrograms:row.trainingPrograms,...warSnapshot(row)})),salaryLedger:structuredClone(c.salaryLedger),signingLedger:structuredClone(c.signingLedger?.length?c.signingLedger:reconstructedSigningLedger(c)),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
+export function archiveEntry(c){return {id:c.archiveId||`${c.seed}-${c.player.name}-${c.year}`,name:c.player.name,role:c.player.role,position:c.player.position,teamHistory:careerTeams(c),seasons:c.proYears,score:c.careerScore??careerScore(c),careerWar:careerWarSnapshot(c.history),history:c.history.map(row=>({year:row.year,age:row.age,role:row.role,position:row.position,stage:row.stage,military:row.military,servicePath:row.servicePath,injury:row.injury,team:row.team,level:row.level,stat:row.stat,minorStat:row.minorStat,postseason:row.postseason?{stat:row.postseason.stat,champion:row.postseason.champion,selected:row.postseason.selected,ring:hasChampionshipRing(row)}:null,awards:row.awards,international:row.international,tournamentResults:row.tournamentResults,teamSegments:row.teamSegments,style:row.style,trainingPrograms:row.trainingPrograms,...warSnapshot(row)})),salaryLedger:structuredClone(c.salaryLedger),signingLedger:structuredClone(c.signingLedger?.length?c.signingLedger:reconstructedSigningLedger(c)),signingIncome:c.signingIncome,legacySalaryYears:c.legacySalaryYears||0};}
 export const ARCHIVE_LIMIT=7;
 export function upsertArchive(entries,c){const entry=archiveEntry(c),next=[...entries],index=next.findIndex(x=>x.id===entry.id);if(next.length>ARCHIVE_LIMIT||index<0&&next.length>=ARCHIVE_LIMIT)throw Error('은퇴 선수 보관은 7명까지 가능합니다. 삭제할 기록을 선택하세요.');if(index<0)next.push(entry);else next[index]=entry;return next;}
 export function archiveSalaryTotal(entry){const ledger=entry.salaryLedger||entry.career?.salaryLedger;return Array.isArray(ledger)?ledger.reduce((sum,row)=>sum+(row.salaryMan||0),0):null;}

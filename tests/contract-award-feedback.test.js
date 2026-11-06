@@ -21,7 +21,7 @@ test('합성 신인왕의 무작위 34세 후보를 제외하고 실제 루키 �
 });
 test('합성 47세 계약은 복리 연봉을 FA 하한으로 승계하지 않고 예산 안에서 단년 제안한다',()=>{
  const c=saved(2056),before=structuredClone(c.contract),os=offers(c);assert.equal(before.annualMan,900000);assert.ok(salaryOffer(c)<20000);assert.equal(os.length,3);
- for(const o of os){assert.equal(o.years,1);assert.ok(o.totalMan<20000);assert.ok(o.annualMan>o.reservedReferenceMan);assert.equal(o.guaranteedMan,o.annualMan*o.years+o.signingBonusMan);assert.equal(o.totalMan,o.guaranteedMan+o.optionMan);assert.ok(o.budget.annualCostMan<=o.budget.roomMan+o.budget.playerCostMan);}
+ for(const o of os){assert.equal(o.years,1);assert.ok(o.totalMan<20000);assert.ok(o.annualMan>=3300);assert.equal(o.guaranteedMan,o.annualMan*o.years+o.signingBonusMan);assert.equal(o.totalMan,o.guaranteedMan+o.optionMan);assert.ok(o.budget.annualCostMan<=o.budget.roomMan+o.budget.playerCostMan);}
  assert.deepEqual(c.contract,before);assert.equal(restore(c).contract.annualMan,before.annualMan,'이전 확정 계약·실제 지급액은 재작성하지 않는다');assert.deepEqual(offers(restore(c)),os);
  assert.equal(teamBudget(2056,0).capMan,teamBudget(2028,0).capMan);
 });

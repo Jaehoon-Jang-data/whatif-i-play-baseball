@@ -73,11 +73,11 @@ test('25세 호성적 선수는 WBC 선발과 아시안게임 미선발이 함�
  assert.ok(nationalInvitation(c,'WBC',stat));assert.equal(nationalInvitation(c,'아시안게임',stat),null);
 });
 
-test('FA 연평균 기본 보장액은 예상 보류 연봉보다 높고 구단별 조건이 다르다',()=>{
+test('FA 제안은 구단별로 다르며 부진 선수에게 보류 연봉 초과를 보장하지 않는다',()=>{
  const c=career(25);c.stage='프로';c.phase='market';c.faDeclared=true;c.year=2030;c.age=29;c.proYears=8;c.contract={kind:'reserved',annualMan:25000};c.history=[{year:2029,stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:140,pa:600,ab:530,h:175,hr:24,bb:58},awards:[]}];
- const rows=offers(c);assert.equal(rows.length,3);assert.ok(rows.every(x=>x.annualMan>x.reservedReferenceMan&&x.guaranteedMan>=x.annualMan*x.years));assert.ok(new Set(rows.map(x=>x.totalMan)).size>1);
+ const rows=offers(c);assert.equal(rows.length,3);assert.ok(rows.every(x=>x.annualMan>=3300&&x.guaranteedMan>=x.annualMan*x.years));assert.ok(new Set(rows.map(x=>x.totalMan)).size>1);
  const highSalary=career(1);highSalary.stage='프로';highSalary.phase='market';highSalary.faDeclared=true;highSalary.year=2030;highSalary.age=36;highSalary.proYears=10;highSalary.contract={kind:'reserved',annualMan:250000};highSalary.history=[{year:2029,stage:'프로',role:'bat',position:'우익수',stat:{...emptyBat(),g:100,pa:300,ab:270,h:55},awards:[]}];
- const boundary=offers(highSalary);assert.ok(boundary.every(x=>x.annualMan>x.reservedReferenceMan));assert.ok(boundary.some(x=>x.optionMan===0)&&boundary.some(x=>x.optionMan>0));
+ const boundary=offers(highSalary);assert.ok(boundary.every(x=>x.guaranteedMan/x.years<x.reservedReferenceMan));assert.ok(rows.some(x=>x.optionMan===0)&&rows.some(x=>x.optionMan>0));assert.ok(boundary.every(x=>x.optionMan>=0));
 });
 
 test('구 저장의 외야 골든글러브 위치 표기는 단일 부문으로 이관된다',()=>{

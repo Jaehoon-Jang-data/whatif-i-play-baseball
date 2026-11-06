@@ -109,3 +109,11 @@ export function teamWarReport(league){
  const replacementRate=.5-500/2430;
  return league.teams.map(t=>({team:t.id,war:values.get(t.id),wins:t.w+.5*n(t.tie),replacementWins:t.g*replacementRate,estimatedWins:t.g*replacementRate+values.get(t.id),gap:t.w+.5*n(t.tie)-(t.g*replacementRate+values.get(t.id))}));
 }
+
+// Persist a compact diagnostic; screens always derive from season records.
+export function careerWarSnapshot(rows){const c=careerWAR(rows);return {value:c.known?c.value:null,known:c.known,missing:c.missing};}
+export function compareCareerWAR(a,b){
+ const x=careerWarSnapshot(a.history||a.career?.history||[]),y=careerWarSnapshot(b.history||b.career?.history||[]);
+ if(x.value===null)return y.value===null?0:1;if(y.value===null)return -1;
+ return Number(y.value.toFixed(1))-Number(x.value.toFixed(1));
+}
