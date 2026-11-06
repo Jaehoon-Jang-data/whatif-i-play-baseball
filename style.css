@@ -34,3 +34,9 @@ main{max-width:1060px;padding-top:38px}.page-title{margin-bottom:26px}.page-titl
 
 .award-badge:has(.award-detail){flex-wrap:wrap}.award-badge .award-detail{flex-basis:100%;border:0;padding:0;overflow-wrap:anywhere}
 .archive-capacity{border:2px solid #d7ab3a}.archive-new{padding:14px;background:#fff8df;border-radius:9px}.archive-choices{list-style:none;padding:0;display:grid;gap:12px}.archive-choices li{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.archive-choices .actions{margin:0;flex-wrap:wrap}.archive-new .actions,.storage-list .actions{flex-wrap:wrap}.header-tools{flex-wrap:wrap}.confirm-dialog .actions{flex-wrap:wrap}@media(max-width:700px){.archive-choices li>span{width:100%}.archive-choices .actions{gap:8px}.archive-choices button{padding:10px 12px}.archive-capacity h2{font-size:21px}}
+
+/* Season WAR and retired peak seasons share the existing mobile card layout. */
+.war-best-list{list-style:none;padding:0;display:grid;gap:12px}
+.war-best-list>li{border:1px solid var(--line,#d8dfec);border-radius:12px;padding:14px}
+.war-best-list>li>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.war-best-list p{margin:6px 0;overflow-wrap:anywhere}
