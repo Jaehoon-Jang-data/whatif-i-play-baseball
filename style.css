@@ -45,3 +45,5 @@ main{max-width:1060px;padding-top:38px}.page-title{margin-bottom:26px}.page-titl
 .program-option>b{font-size:16px;line-height:1.4}.program-option>span{font-size:14px;line-height:1.5}.program-option small{font-size:12px;line-height:1.5;white-space:normal}.program-option .cap-label{color:#c32b35;font-style:normal}.choice-grid .option-tile>small{display:block;font-size:12px;line-height:1.5;margin-top:7px}
 
 .training-grid:has(.program-option){grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.training-grid:has(.program-option){grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.program-option .program-main,.training-legend .program-main{color:#1456b8;font-weight:700}.program-option .program-secondary,.training-legend .program-secondary{color:#1456b8;font-weight:400}.program-option .program-burden,.training-legend .program-burden{color:#b4232d;font-weight:400}.training-legend{font-size:13px}.program-option .program-status{color:#536078}

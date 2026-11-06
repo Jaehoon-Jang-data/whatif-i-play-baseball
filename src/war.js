@@ -1,5 +1,5 @@
-// Simulation WAR v1. These coefficients are game estimates, not fWAR or bWAR.
-export const WAR_VERSION=1;
+// Simulation WAR v2 (v1 archive compatible; recorded pitcher HBP is optional). These coefficients are game estimates, not fWAR or bWAR.
+export const WAR_VERSION=2;
 export const POSITION_RUNS={'포수':12.5,'1루수':-12.5,'2루수':2.5,'3루수':2.5,'유격수':7.5,'좌익수':-7.5,'중견수':2.5,'우익수':-7.5,'지명타자':-17.5};
 const n=x=>Number.isFinite(x)?x:0;
 const sum=(xs,f)=>xs.reduce((a,x)=>a+f(x),0);
@@ -7,7 +7,7 @@ const singles=s=>Math.max(0,n(s.h)-n(s.d)-n(s.t)-n(s.hr));
 const pa=s=>n(s.pa)||n(s.ab)+n(s.bb)+n(s.hbp)+n(s.sf);
 // Relative linear weights. Centering per PA includes the cost of batting outs.
 const batting=s=>.47*singles(s)+.78*n(s.d)+1.09*n(s.t)+1.40*n(s.hr)+.33*n(s.bb)+.35*n(s.hbp)-.27*Math.max(0,pa(s)-n(s.h)-n(s.bb)-n(s.hbp));
-const fipNumerator=s=>13*n(s.hr)+3*n(s.bb)-2*n(s.k);
+const fipNumerator=(s,includeHbp=false)=>13*n(s.hr)+3*(n(s.bb)+(includeHbp?n(s.hbp):0))-2*n(s.k);
 const starterShare=(s,position)=>n(s.g)?Math.min(1,n(s.gs)/s.g):position==='선발'?1:0;
 const pitchingWeight=(s,position,usage)=>Number.isFinite(usage?.starterOuts)?n(usage.starterOuts)+.7*n(usage.reliefOuts):n(s.outs)*(.7+.3*starterShare(s,position));
 function positional(s,position,usage){
@@ -27,6 +27,7 @@ export function leagueWarContext(league){
  const bats=league.players.filter(p=>p.role==='bat'),arms=league.players.filter(p=>p.role==='pitch');
  const battingPa=sum(bats,p=>pa(p.stat)),outs=sum(arms,p=>n(p.stat.outs)),runs=sum(league.teams,t=>n(t.r)),teamGames=sum(league.teams,t=>n(t.g));
  if(!battingPa||!outs||!teamGames)return null;
+ const pitchHbpIncluded=arms.every(p=>Number.isFinite(p.stat.hbp));
  const ip=outs/3,ra9=runs*9/ip,runsPerWin=ra9*1.5+3,csCost=2*runs/outs+.075;
  const opportunities=s=>singles(s)+n(s.bb)+n(s.hbp);
  const br=s=>.2*n(s.sb)-csCost*n(s.cs);
@@ -36,7 +37,7 @@ export function leagueWarContext(league){
   positionPerPa:sum(bats,p=>positional(p.stat,p.position,p.warUsage))/battingPa,
   batParkMean:sum(bats,p=>pa(p.stat)*park(p.stat,'bat',p.warUsage,p.team,league))/battingPa,
   pitchParkMean:sum(arms,p=>n(p.stat.outs)*park(p.stat,'pitch',p.warUsage,p.team,league))/outs,
-  fipConstant:ra9-sum(arms,p=>fipNumerator(p.stat))/ip,
+  pitchHbpIncluded,fipConstant:ra9-sum(arms,p=>fipNumerator(p.stat,pitchHbpIncluded))/ip,
   pitchingWeight:sum(arms,p=>pitchingWeight(p.stat,p.position,p.warUsage)),batReplacementRuns:pool*.57*runsPerWin,pitchReplacementRuns:pool*.43*runsPerWin,
   estimatedExposure:league.players.some(p=>(p.role==='bat'?pa(p.stat):n(p.stat.outs))&&!p.warUsage),
   missingCs:bats.some(p=>!Number.isFinite(p.stat.cs)),missingHbp:bats.some(p=>!Number.isFinite(p.stat.hbp))};
@@ -46,7 +47,7 @@ export function seasonWAR(row,{level='major',context=null}={}){
  const ctx=context||leagueWarContext(league)||(minor?row.minorWarContext:row.warContext);
  const unavailable=reason=>({version:WAR_VERSION,value:null,reason,notes:[reason]});
  if(row.military)return unavailable('군 복무 시즌 제외');
- if(!ctx||ctx.version!==WAR_VERSION)return unavailable('해당 시즌 리그 자료 없음');
+ if(!ctx||![1,WAR_VERSION].includes(ctx.version))return unavailable('해당 시즌 리그 자료 없음');
  if(ctx.year!==undefined&&row.year!==undefined&&ctx.year!==row.year)return unavailable('시즌 리그 연도 불일치');
  const role=row.role,usage=league?.players?.find(p=>p.id===(row.playerId??row.id??'user')&&p.role===role)?.warUsage||(minor?row.minorWarUsage:row.warUsage);
  const volume=role==='bat'?pa(s):n(s.outs),parkLeague=league||{teams:Object.entries(ctx.parkFactors||{}).map(([id,park])=>({id:Number(id),park}))};
@@ -69,12 +70,12 @@ export function seasonWAR(row,{level='major',context=null}={}){
   components.replacement=ctx.batReplacementRuns*volume/ctx.battingPa;
   diagnostics={pa:volume,parkFactor:factor};
  }else if(role==='pitch'){
-  method='FIP 계열 기록 기반';notes.push('피사구 미기록 · 수비·레버리지 별도 미반영');
-  const ip=volume/3,fip=ip?fipNumerator(s)/ip+ctx.fipConstant:ctx.ra9;
+  method='FIP 계열 기록 기반';const includeHbp=ctx.pitchHbpIncluded===true&&Number.isFinite(s.hbp);notes.push(`${includeHbp?'피사구 반영':'피사구 미기록'} · 수비·레버리지 별도 미반영`);
+  const ip=volume/3,fip=ip?fipNumerator(s,includeHbp)/ip+ctx.fipConstant:ctx.ra9;
   components.pitching=(ctx.ra9-fip)*ip/9;
   components.park=(factor-ctx.pitchParkMean)*ctx.ra9*ip/9;
   components.replacement=ctx.pitchReplacementRuns*pitchingWeight(s,row.position,usage)/ctx.pitchingWeight;
-  diagnostics={ip,fip,ra9:ip?n(s.r)*9/ip:null,era:ip?n(s.er)*9/ip:null,starterShare:volume&&Number.isFinite(usage?.starterOuts)?usage.starterOuts/volume:starterShare(s,row.position),parkFactor:factor};
+  diagnostics={ip,fip,includeHbp,contextVersion:ctx.version,ra9:ip?n(s.r)*9/ip:null,era:ip?n(s.er)*9/ip:null,starterShare:volume&&Number.isFinite(usage?.starterOuts)?usage.starterOuts/volume:starterShare(s,row.position),parkFactor:factor};
  }else return unavailable('선수 역할 미기록');
  // No offensive or defensive exposure means no value.
  if(!volume&&!(role==='bat'&&sum(Object.values(usage?.positionOuts||{}),n)))for(const key of Object.keys(components))components[key]=0;

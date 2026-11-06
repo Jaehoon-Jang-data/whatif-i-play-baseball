@@ -21,7 +21,7 @@ test('반복 효율·전환·나이·잠재력·부상 회복 상태를 성장�
 });
 test('복구·중단 선택·실제 성장과 화면 선택은 같은 프로그램 ID를 사용한다',()=>{
  const c=make('pitch');c.trainingPrograms=['pitch-breaking','pitch-command'];c.pendingTrainingPrograms=[...c.trainingPrograms];const loaded=restore(c);assert.deepEqual(loaded.trainingPrograms,c.trainingPrograms);assert.deepEqual(loaded.pendingTrainingPrograms,c.trainingPrograms);const row=progress(loaded,loaded.pendingTrainingPrograms);assert.deepEqual(row.trainingPrograms,c.trainingPrograms);assert.equal(loaded.pendingTrainingPrograms,undefined);assert.ok(row.trainingEffects[4].applied>row.trainingEffects[0].applied);assert.ok(loaded.trainingState.repertoire.mastery<30);assert.deepEqual(restore(loaded).trainingState,loaded.trainingState);
- const html=programOptionHtml(programOptions(c)[2],true,['구속','제구','구위','체력','변화구','위기관리']);assert.match(html,/data-program="pitch-breaking"/);assert.match(html,/aria-pressed="true"/);assert.match(html,/적응 기간/);
+ const html=programOptionHtml(programOptions(c)[2],true,['구속','제구','구위','체력','변화구','위기관리']);assert.match(html,/data-program="pitch-breaking"/);assert.match(html,/aria-pressed="true"/);assert.match(html,/미숙련 구종.*변화구 실전 효과 감소/);
 });
 test('컨디셔닝은 위험을 완만하게 줄이되 부상을 보장하지 않고 피로·이력도 반영한다',()=>{
  let heavy=0,recovery=0;for(let seed=1;seed<=1200;seed++){const c=make('pitch');c.seed=seed;c.trainingPrograms=['pitch-power'];heavy+=+!!injuryForecast(c);c.trainingPrograms=['pitch-condition'];recovery+=+!!injuryForecast(c);}assert.ok(recovery>0&&heavy>recovery);const c=make('pitch');c.trainingState={fatigue:70};assert.ok(programProfile(c,['pitch-power']).riskAdjustment>programProfile(make('pitch'),['pitch-power']).riskAdjustment);

@@ -1,5 +1,5 @@
 // Conservative ability-based projections for selection; these are not measured defensive WAR.
-import {POSITION_RUNS} from './war.js?v=7.19';
+import {POSITION_RUNS} from './war.js?v=7.20';
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export function expectedContribution(p,{stat=p.stat,fatigue=p.fatigue||0,adapt=0,strategy='중립'}={}){
  const a=p.a||Array(6).fill(50);let batting=0,running=0,defense=0,position=0,pitching=0,innings=0,score;

@@ -56,3 +56,13 @@ test('TOP 3은 표시 0.1 WAR 동률에서 공동 순위·이른 연도를 사�
 test('리그 전체 WAR는 대체 수준 풀과 일치하고 팀별 승수 편차를 진단한다',()=>{
  for(const seed of [3,17,41]){const l=simulateSeason({seed,year:2030}),report=teamWarReport(l),ctx=leagueWarContext(l);near(report.reduce((a,b)=>a+b.war,0),ctx.teamGames/2*1000/2430);assert.ok(report.every(x=>Number.isFinite(x.gap)&&Math.abs(x.gap)<25));}
 });
+
+test('피사구는 리그·선수 모두 기록된 경우만 FIP에 반영하고 v1 문맥을 보존한다',()=>{
+ const l=structuredClone(league);l.awards=[];for(const p of l.players.filter(p=>p.role==='pitch'))p.stat.hbp=10;
+ const r={...pRow,league:l,stat:{...pitch,hbp:10}},base=seasonWAR(r),extra=seasonWAR({...r,stat:{...r.stat,hbp:15}});
+ assert.equal(base.diagnostics.includeHbp,true);near(base.value-extra.value,3*5/9/base.runsPerWin);
+ const ctx=leagueWarContext(league),v1={...ctx,version:1};delete v1.pitchHbpIncluded;
+ near(seasonWAR({...pRow,league:null,warContext:v1}).value,seasonWAR(pRow).value);
+ assert.equal(seasonWAR({...pRow,league:null,warContext:{...ctx,version:99}}).value,null);
+ const c=createCareer({seed:2,name:'피사구 보존',school:'가상고',role:'pitch',position:'선발',type:'제구형',team:0});c.history=[r];let raw;saveCareer(c,{setItem:(_,s)=>raw=s});near(seasonWAR(loadCareer({getItem:()=>raw}).history[0]).value,base.value);
+});
