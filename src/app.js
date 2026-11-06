@@ -1,16 +1,16 @@
-import {seasonWAR,careerWAR} from './war.js?v=7.18';
+import {seasonWAR,careerWAR} from './war.js?v=7.19';
 import {
-  TEAMS,KEYS,TITLES,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,trainingPlan,availableTraining,rosterPlan,coachChallenge,springEvaluation,careerScore,decideRetirementAdvice,
+  TEAMS,KEYS,TITLES,PROGRAMS,programSelection,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,careerScore,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
   percentileReport,money,totalSalary,faStatus,draftAssessment,collegeEarlyStatus,enterCollege,
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.18';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warNoteHtml,warCareerHtml,formatWAR} from './presentation.js?v=7.18';
-import {trainingOptionHtml} from './training-ui.js';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.18';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.18';
+} from './engine.js?v=7.19';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warNoteHtml,warCareerHtml,formatWAR} from './presentation.js?v=7.19';
+import {programOptionHtml} from './training-ui.js?v=7.19';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.19';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.19';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -89,7 +89,7 @@ function creation(){
     <label>응원 구단<select name="team">${TEAMS.map((t,i)=>`<option value="${i}" ${p?.team===i?'selected':''}>${t}</option>`).join('')}</select></label>
   </div><div class="actions"><button class="primary" type="submit">능력치 후보 확인 →</button></div></form></section>`;
   if(setup.step==='candidates')return `${header('능력치 후보 3명',`${esc(p.name)} · 2027년 · 18세`)}<div class="candidate-grid">${setup.candidates.map((candidate,i)=>`<button class="candidate ${setup.selected===i?'selected':''}" data-candidate="${i}" aria-pressed="${setup.selected===i}"><span class="candidate-index">0${i+1}</span><strong>${esc(candidate.type)}</strong><span class="candidate-overall">OVR ${overall({role:p.role,position:p.position||positions(p.role)[0],a:candidate.a}).toFixed(1)}</span>${candidate.a.map((n,j)=>`<span class="candidate-skill"><span>${KEYS[p.role][j]}</span><i><b style="width:${n}%"></b></i><em>${n}</em></span>`).join('')}</button>`).join('')}</div><div class="actions setup-actions">${btn('선택한 후보로 계속 →','candidate-next','primary',setup.selected===null)}${btn('기본 정보 수정','setup-profile','secondary')}</div>`;
-  return `${header('성장 방향 결정',`${esc(p.name)} · 2027년 · 18세`)}<section class="panel setup-card"><div class="section-title"><h2>포지션</h2><span>선수 유형 · ${esc(setup.candidates[setup.selected].type)}</span></div><div class="choice-grid">${positions(p.role).map(x=>`<button class="option-tile ${(setup.position||p.position||positions(p.role)[0])===x?'selected':''}" data-position="${esc(x)}">${esc(x)}</button>`).join('')}</div><h2>고교 집중 육성</h2><p>최대 2개 능력치를 선택하세요.</p><div class="choice-grid">${KEYS[p.role].map((x,i)=>`<button class="option-tile ${setup.focus.includes(i)?'selected':''}" data-focus="${i}">${x} <strong>${setup.candidates[setup.selected].a[i]}</strong></button>`).join('')}</div><div class="actions">${btn('선수 생성 완료 →','start')}${btn('후보로 돌아가기','setup-candidates','secondary')}</div></section>`;
+  return `${header('성장 방향 결정',`${esc(p.name)} · 2027년 · 18세`)}<section class="panel setup-card"><div class="section-title"><h2>포지션</h2><span>선수 유형 · ${esc(setup.candidates[setup.selected].type)}</span></div><div class="choice-grid">${positions(p.role).map(x=>`<button class="option-tile ${(setup.position||p.position||positions(p.role)[0])===x?'selected':''}" data-position="${esc(x)}">${esc(x)}</button>`).join('')}</div><h2>고교 훈련 프로그램</h2><p>최대 2개 프로그램을 선택하세요.</p><div class="choice-grid">${PROGRAMS[p.role].map(x=>`<button class="option-tile ${programSelection(p.role,setup.focus).includes(x.id)?'selected':''}" data-focus="${x.id}"><b>${x.name}</b><small>주효과 ${x.main} · 보조 ${x.support}</small><small>부담 ${x.burden}</small></button>`).join('')}</div><div class="actions">${btn('선수 생성 완료 →','start')}${btn('후보로 돌아가기','setup-candidates','secondary')}</div></section>`;
 }
 function awardSummaryHtml(rows){const entries=awardSummary(rows);return entries.length?entries.map(x=>awardBadgeHtml(x.name,`${x.count}회: ${x.years.join(', ')}`)).join(''):'<p>주요 타이틀 없음</p>';}
 function archivePanel(){
@@ -157,12 +157,11 @@ function salaryPanel(){
   return `<section class="panel salary-panel"><div class="salary-content">${summary}</div>${actions}</section>`;
 }
 function trainingPanel(){
-  const c=career,plan=trainingPlan(availableTraining(c));
-  const task=c.coachChallenge?.year===c.year?`<div class="coach-task"><strong>코치 성장 과제</strong><span>${KEYS[c.player.role][c.coachChallenge.index]} ${c.coachChallenge.target.toFixed(1)} 달성 시 다음 시즌 출전 기회 확대</span></div>`:'';
-  return `<section class="panel training-panel"><div class="section-title"><h2>훈련 중점</h2><span>${c.servicePath==='regular'&&c.service===2?'현역 복무 중 선택 불가':`${plan.selected.length} / 2개 선택`}</span></div>${task}${c.servicePath==='regular'&&c.service===2?'<p>현역 복무 중에는 구단 훈련을 진행하지 않습니다.</p>':`<div class="training-grid">${KEYS[c.player.role].map((name,i)=>trainingOptionHtml(name,i,c.player.a[i],c.potentialCaps?.[i],plan.selected.includes(i),plan.hoursEach)).join('')}</div>`}<div class="training-footer">${btn('시즌 진행 화면으로','begin-season','primary',busy)}</div></section>`;
+  const c=career,plan=programProfile(c),task=c.coachChallenge?.year===c.year?`<div class="coach-task"><strong>코치 성장 과제</strong><span>${KEYS[c.player.role][c.coachChallenge.index]} ${c.coachChallenge.target.toFixed(1)} 달성 시 다음 시즌 출전 기회 확대</span></div>`:'';
+  return `<section class="panel training-panel"><div class="section-title"><h2>훈련 프로그램</h2><span>${c.servicePath==='regular'&&c.service===2?'현역 복무 중 선택 불가':`${plan.ids.length} / 2개 선택`}</span></div>${task}${c.servicePath==='regular'&&c.service===2?'<p>현역 복무 중에는 구단 훈련을 진행하지 않습니다.</p>':`<div class="training-grid">${programOptions(c).map(p=>programOptionHtml(p,plan.ids.includes(p.id),KEYS[c.player.role])).join('')}</div>`}${c.trainingState?.repertoire?`<p>개발 구종 · ${esc(c.trainingState.repertoire.name)} · ${Math.round(c.trainingState.repertoire.mastery)}% 숙련</p>`:''}<div class="training-footer">${btn('시즌 진행 화면으로','begin-season','primary',busy)}</div></section>`;
 }
 function rosterStateClass(state){return state==='1군'?'state-major':state==='2군'?'state-minor':state==='복무'||state==='상무'?'state-service':state==='재활군'?'state-rehab':'state-neutral';}
-function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage==='고교'?'고교야구':'대학야구';return `<section class="panel season-gate"><h2>${league} ${c.year}년 시즌</h2><p>포지션: ${esc(c.player.position)}</p><p>주력 분야: ${availableTraining(c).map(i=>KEYS[c.player.role][i]).join(' · ')||'선택 없음'}</p>${c.stage==='프로'?`<p class="opening-roster">개막 로스터: <b>${rosterPlan(c).opening}</b></p>`:''}<div class="actions">${btn('시즌 진행','simulate')}${btn('준비로 돌아가기','back-prepare','secondary')}</div></section>`;}
+function seasonPanel(){const c=career,league=c.stage==='프로'?'KBO':c.stage==='고교'?'고교야구':'대학야구';return `<section class="panel season-gate"><h2>${league} ${c.year}년 시즌</h2><p>포지션: ${esc(c.player.position)}</p><p>주력 분야: ${programProfile(c).ids.map(id=>PROGRAMS[c.player.role].find(p=>p.id===id).name).join(' · ')||'선택 없음'}</p>${c.stage==='프로'?`<p class="opening-roster">개막 로스터: <b>${rosterPlan(c).opening}</b></p>`:''}<div class="actions">${btn('시즌 진행','simulate')}${btn('준비로 돌아가기','back-prepare','secondary')}</div></section>`;}
 function playbackPanel(){
   const c=career,calendar=playback.calendar??(c.stage==='프로'?rosterPlan(c,injuryForecast(c)).calendar:null),percent=Math.round(playback.step/playback.limit*100),day=Math.floor((calendar?.length||188)*playback.step/playback.limit+1e-7);
   const months=c.stage==='프로'?['4월','5월','6월','7월','8월','9월','10월']:c.stage==='고교'?['전반기','황금사자기','후반기','청룡기','대통령배','봉황대기']:['U-리그','대통령기','전국선수권','왕중왕전'];
@@ -216,16 +215,16 @@ function startSeasonCalculation(){
   const fail=error=>{if(calculationId!==seasonCalculationId)return;cancelAnimationFrame(playbackFrame);playbackFrame=null;career.playback=null;playback=null;busy=false;persist();render();message(error.message||String(error));};
   const calculated=candidate=>{if(calculationId!==seasonCalculationId)return;candidate.playback=null;pendingSeasonCandidate=candidate;if(career.seasonTradeAcknowledgedYear===career.year)playback.displayTeam=candidate.player.team;playback.computing=false;playback.calendar=candidate.history.at(-1)?.rosterCalendar??null;render();continueSeasonPlayback();};
   if(typeof Worker==='undefined'){
-    setTimeout(()=>{try{const candidate=structuredClone(career);progress(candidate,career.pendingTraining||career.training);calculated(candidate);}catch(error){fail(error);}},0);return;
+    setTimeout(()=>{try{const candidate=structuredClone(career);progress(candidate,career.pendingTrainingPrograms??career.pendingTraining??career.trainingPrograms??career.training);calculated(candidate);}catch(error){fail(error);}},0);return;
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.18',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.19',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
     worker.onerror=event=>{worker.terminate();fail(Error(event.message||'시즌 계산 실패'));};
-    worker.postMessage({career,training:career.pendingTraining||career.training});
+    worker.postMessage({career,training:career.pendingTrainingPrograms??career.pendingTraining??career.trainingPrograms??career.training});
   }catch(error){worker?.terminate();fail(error);}
 }
 function preparePanel(){
@@ -358,7 +357,7 @@ function leaguePage(){
 }
 function story(){const events=career?careerTimeline(career):[];return `${header('커리어 이력')}<section class="panel timeline">${events.length?events.map(x=>`<article><strong>${x.year}</strong><p>${esc(x.text.replace(/(\d+(?:\.\d+)?)백만원/g,(_,n)=>money(Number(n)*100)))}</p></article>`).join(''):'<div class="empty small-empty">기록된 사건 없음</div>'}</section>`;}
 function help(){return `${header('플레이 안내')}<div class="rules-grid">
-<section class="panel prose"><h2>진로 · 훈련</h2><p>훈련 중점은 최대 2개입니다. 상한에 도달한 능력치는 선택할 수 없습니다.</p><p>고교 졸업 후 드래프트 또는 대학 진학을 선택합니다. 대학 2학년 수료 후에는 얼리드래프트에 참가할 수 있습니다. 미지명되면 대학에 남습니다.</p><p>출전 기회는 기량·성적·팀 내 경쟁에 따라 달라집니다. 포지션 변경은 적응 기간이 필요합니다.</p></section>
+<section class="panel prose"><h2>진로 · 훈련</h2><p>훈련 프로그램은 최대 2개를 선택합니다. 같은 루틴을 반복하면 효율이 줄고, 상한에 도달한 능력치는 더 성장하지 않습니다.</p><p>고교 졸업 후 드래프트 또는 대학 진학을 선택합니다. 대학 2학년 수료 후에는 얼리드래프트에 참가할 수 있습니다. 미지명되면 대학에 남습니다.</p><p>출전 기회는 기량·성적·팀 내 경쟁에 따라 달라집니다. 포지션 변경은 적응 기간이 필요합니다.</p></section>
 <section class="panel prose"><h2>계약 · FA</h2><p>FA 자격은 고졸·얼리드래프트 입단 8시즌, 대학 4시즌 이수 졸업자 7시즌, 재취득 4시즌입니다. 1군 등록 145일을 1시즌으로 인정하며 부족한 등록일은 합산합니다.</p><p>다년계약 중에는 연봉을 재협상하지 않습니다. 계약이 끝나도 FA 자격이 부족하면 소속 구단과 연봉을 협상합니다.</p><p>FA 제안은 보장액과 성과 옵션을 나누어 확인하세요. 옵션은 조건을 달성한 시즌에만 지급됩니다.</p></section>
 <section class="panel prose"><h2>기록 · 수상</h2><p>백분위는 100에 가까울수록 좋은 기록입니다. 자신과 같거나 더 많은 타석·이닝을 소화한 표본 집단과 비교합니다.</p><p>커리어 하이·로우 비교에는 타자 규정타석 50%, 선발 규정이닝 50%, 불펜 규정이닝 25% 이상인 시즌만 포함합니다.</p><p>비율 타이틀은 규정타석·이닝을 채워야 합니다. 골든글러브는 투수 1명, 외야수 3명을 선정합니다.</p></section>
 <section class="panel prose"><h2>병역 · 국가대표</h2><p>상무는 27세 이하·프로 1시즌 이상이면 지원할 수 있으며 탈락할 수도 있습니다. 탈락 후 현역 입대나 다음 해 재지원이 가능합니다.</p><p>복무 기간은 2시즌입니다. 상무는 2군 경기와 훈련에 참가하고, 현역은 첫 시즌 구단 훈련과 공식 출전이 없습니다.</p><p>28세 시즌까지 미필이면 자동 입대합니다. 아시안게임 대표팀으로 우승하면 병역특례를 받습니다. WBC·프리미어12는 특례 대상이 아닙니다.</p><p>대표팀 출전은 거절할 수 있습니다. 아시안게임은 9월 하순 열흘간 차출되며 소속팀 경기에 나서지 않습니다.</p></section>
@@ -368,16 +367,16 @@ function render(){const content=view==='archive'?archivePanel():playback?playbac
 function bind(){
   document.querySelectorAll('[data-view]').forEach(el=>el.onclick=e=>{e.preventDefault();if(playback){message('진행 중인 시즌을 먼저 확인하세요.');return;}navigate(el.dataset.view);});
   document.querySelectorAll('[data-action]').forEach(el=>el.onclick=()=>act(el.dataset.action));
-  document.querySelectorAll('[data-training]').forEach(el=>el.onclick=()=>{const i=Number(el.dataset.training),selected=availableTraining(career);if(el.disabled||career.player.a[i]>=career.potentialCaps[i])return;if(selected.includes(i))selected.splice(selected.indexOf(i),1);else{if(selected.length===2){message('최대 2개까지 선택할 수 있습니다.');return;}selected.push(i);}career.training=selected;persist();render();});
+  document.querySelectorAll('[data-program]').forEach(el=>el.onclick=()=>{if(el.disabled)return;const id=el.dataset.program,selected=programProfile(career).ids;if(selected.includes(id))selected.splice(selected.indexOf(id),1);else{if(selected.length===2){message('최대 2개 프로그램을 선택하세요.');return;}selected.push(id);}career.trainingPrograms=selected;persist();render();});
   document.querySelectorAll('[data-candidate]').forEach(el=>el.onclick=()=>{setup.selected=Number(el.dataset.candidate);saveSetup();render();});
   document.querySelectorAll('[data-position]').forEach(el=>el.onclick=()=>{setup.position=el.dataset.position;setup.profile.position=setup.position;saveSetup();render();});
-  document.querySelectorAll('[data-focus]').forEach(el=>el.onclick=()=>{const i=Number(el.dataset.focus);setup.focus=setup.focus.includes(i)?setup.focus.filter(x=>x!==i):setup.focus.length<2?[...setup.focus,i]:[setup.focus[1],i];saveSetup();render();});
+  document.querySelectorAll('[data-focus]').forEach(el=>el.onclick=()=>{const i=el.dataset.focus;setup.focus=programSelection(setup.profile.role,setup.focus);setup.focus=setup.focus.includes(i)?setup.focus.filter(x=>x!==i):setup.focus.length<2?[...setup.focus,i]:[setup.focus[1],i];saveSetup();render();});
   document.querySelectorAll('[data-record-mode]').forEach(el=>el.onclick=()=>{recordMode=el.dataset.recordMode;render();});
   document.querySelectorAll('[data-result-level]').forEach(el=>el.onclick=()=>{resultLevel=el.dataset.resultLevel;render();});
   const year=$('#season-select');if(year)year.onchange=()=>{chosenYear=year.value;resultLevel='auto';render();};
   const form=$('#new-form');if(form){
     form.querySelector('[name="role"]').onchange=()=>{const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';if(setup.candidates&&p.role!==setup.profile?.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');render();return;}p.team=Number(p.team);p.position=positions(p.role)[0];setup.profile={...setup.profile,...p};setup.position=p.position;saveSetup();render();};
-    form.onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';p.team=Number(p.team);p.name=p.name.trim();p.school=p.school.trim();if(!p.name||!p.school){message('이름과 학교 이름을 입력하세요.');return;}if(setup.candidates&&p.role!==setup.profile.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');return;}p.seed=setup.profile?.seed||Math.floor(Math.random()*4294967295);p.position=p.position||setup.position||positions(p.role)[0];if(!setup.candidates||setup.position!==p.position){setup.candidates=abilityCandidates(p.role,p.seed,p.position);setup.selected=null;}setup.profile=p;setup.selected??=null;setup.position=p.position;setup.focus??=[0];setup.step='candidates';saveSetup();render();};
+    form.onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';p.team=Number(p.team);p.name=p.name.trim();p.school=p.school.trim();if(!p.name||!p.school){message('이름과 학교 이름을 입력하세요.');return;}if(setup.candidates&&p.role!==setup.profile.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');return;}p.seed=setup.profile?.seed||Math.floor(Math.random()*4294967295);p.position=p.position||setup.position||positions(p.role)[0];if(!setup.candidates||setup.position!==p.position){setup.candidates=abilityCandidates(p.role,p.seed,p.position);setup.selected=null;}if(setup.profile?.role!==p.role)setup.focus=[PROGRAMS[p.role][0].id];setup.profile=p;setup.selected??=null;setup.position=p.position;setup.focus??=[0];setup.step='candidates';saveSetup();render();};
   }
   $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(archiveState().needsChoice)throw Error('은퇴 기록의 보관·삭제를 먼저 선택하세요.');const raw=await file.text(),data=JSON.parse(raw);if(data?.format===ARCHIVE_EXPORT_FORMAT){if(!await confirmChoice('은퇴 기록을 보관 목록에 복원합니다. 같은 선수의 보관 기록은 이 파일로 갱신합니다.'))return;importArchiveExport(localStorage,data);view='archive';render();message('은퇴 보관 기록 복원 완료');return;}const incoming=loadCareer({getItem:()=>raw});if(career&&!await confirmChoice('현재 커리어를 불러온 파일로 바꿉니다. 기존 기록을 보관하려면 먼저 내보내세요.'))return;seasonCalculationId++;cancelAnimationFrame(playbackFrame);pendingSeasonCandidate=null;busy=false;career=incoming;activeSaveKey=null;playback=restoredPlayback(career);view='club';chosenYear=null;resultLevel='auto';const saved=persist();render();message(saved?'불러오기 완료':'불러오기는 완료됐지만 자동 저장에 실패했습니다. 보관·저장에서 저장 공간을 정리하세요.');if(playback&&!playback.preview)startSeasonCalculation();}catch(err){message(`불러오기 실패: ${err.message}`);}};
 }
@@ -397,7 +396,7 @@ async function act(action){
     if(action==='setup-profile'){setup.step='profile';saveSetup();render();return;}
     if(action==='setup-candidates'){setup.step='candidates';saveSetup();render();return;}
     if(action==='candidate-next'){if(setup.selected===null)throw Error('후보를 선택하세요.');setup.step='focus';saveSetup();render();return;}
-    if(action==='start'){if(setup.step!=='focus'||setup.selected===null)return;const p=setup.profile,picked=setup.candidates[setup.selected],position=setup.position||positions(p.role)[0];if(p.hand==='좌투좌타'&&['포수','2루수','3루수','유격수'].includes(position))throw Error('좌투 선수는 1루수·외야수·지명타자를 선택하세요.');career=createCareer({...p,position,type:picked.type});career.player.a=[...picked.a];career.potentialCaps=skillCaps(career.player.a,career.seed,career.potential,p.role);career.training=availableTraining(career,[...setup.focus]);career.archiveId=crypto.randomUUID();localStorage.removeItem(SETUP_KEY);persist();render();return;}
+    if(action==='start'){if(setup.step!=='focus'||setup.selected===null)return;const p=setup.profile,picked=setup.candidates[setup.selected],position=setup.position||positions(p.role)[0];if(p.hand==='좌투좌타'&&['포수','2루수','3루수','유격수'].includes(position))throw Error('좌투 선수는 1루수·외야수·지명타자를 선택하세요.');career=createCareer({...p,position,type:picked.type});career.player.a=[...picked.a];career.potentialCaps=skillCaps(career.player.a,career.seed,career.potential,p.role);career.trainingPrograms=programSelection(p.role,setup.focus);career.training=[];career.archiveId=crypto.randomUUID();localStorage.removeItem(SETUP_KEY);persist();render();return;}
     if(!career)return;
     if(career.pendingEvent&&!['ack-event','retirement-accept','retirement-decline','national-accept','national-decline'].includes(action))throw Error('주요 이벤트를 먼저 확인하세요.');
     if(action==='national-accept'||action==='national-decline'){decideNationalInvitation(career,action==='national-accept');persist();render();return;}
@@ -417,7 +416,7 @@ async function act(action){
     else if(action==='trade-request')requestTrade(career);
     else if(action==='trade-accept'||action==='trade-decline')decideTradeOffer(career,action==='trade-accept');
     if(action==='simulate'||action.startsWith('rehab:')){
-      if(action==='simulate'&&injuryForecast(career)&&!career.rehabChoice){career.pendingTraining=[...career.training];startInjuryPreview();return;}
+      if(action==='simulate'&&injuryForecast(career)&&!career.rehabChoice){career.pendingTrainingPrograms=[...programProfile(career).ids];startInjuryPreview();return;}
       if(action.startsWith('rehab:'))career.rehabChoice=action.split(':')[1];
       startSeasonCalculation();return;
     }else if(action==='next'){nextYear(career);resultLevel='auto';}

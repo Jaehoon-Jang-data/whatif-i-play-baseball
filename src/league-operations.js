@@ -1,3 +1,4 @@
+import {expectedContribution} from './player-value.js?v=7.19';
 // The game starts in 2027. Its day-to-date schedule is an approximation, not the KBO fixture list.
 export function seasonDate(year,gameDay,games=144){
   const start=Date.UTC(year,2,28),end=Date.UTC(year,9,7);
@@ -27,7 +28,7 @@ export function clubStrategy(team,players,remaining){
   return {kind:winNow?'윈나우':'리빌딩',winRate,remaining,averageAge,prospectCount,strength,contendScore};
 }
 export function selectClubRoster(players,limits,strategy){
-  const score=p=>p.a.reduce((n,x)=>n+x,0)/p.a.length+(strategy==='리빌딩'?(p.age<=24?5:0):p.age>=29&&p.age<=35?3:0)+(p.stat?.g?Math.min(3,p.stat.g/35):0);
+  const score=p=>expectedContribution(p,{strategy}).score;
   const bats=players.filter(p=>p.role==='bat').sort((a,b)=>score(b)-score(a)||a.id.localeCompare(b.id));
   const arms=players.filter(p=>p.role==='pitch').sort((a,b)=>score(b)-score(a)||a.id.localeCompare(b.id));
   const batCount=limits.registered>=34?19:16,pitchCount=limits.registered-batCount;

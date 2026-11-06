@@ -40,3 +40,8 @@ main{max-width:1060px;padding-top:38px}.page-title{margin-bottom:26px}.page-titl
 .war-best-list>li{border:1px solid var(--line,#d8dfec);border-radius:12px;padding:14px}
 .war-best-list>li>div{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .war-best-list p{margin:6px 0;overflow-wrap:anywhere}
+
+.program-option{align-items:stretch;text-align:left;gap:8px;padding:14px;min-width:0}
+.program-option>b{font-size:16px;line-height:1.4}.program-option>span{font-size:14px;line-height:1.5}.program-option small{font-size:12px;line-height:1.5;white-space:normal}.program-option .cap-label{color:#c32b35;font-style:normal}.choice-grid .option-tile>small{display:block;font-size:12px;line-height:1.5;margin-top:7px}
+
+.training-grid:has(.program-option){grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:600px){.training-grid:has(.program-option){grid-template-columns:repeat(2,minmax(0,1fr))}}
