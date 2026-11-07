@@ -1,5 +1,6 @@
-import {normalizeCreationDraft} from './creation-flow.js?v=7.27';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.27';
+import {decodeStoredJSON} from './storage-codec.js?v=7.28';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.28';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.28';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -7,16 +8,16 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.27';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.27';
-import {programOptionHtml} from './training-ui.js?v=7.27';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.27';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.27';
+} from './engine.js?v=7.28';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.28';
+import {programOptionHtml} from './training-ui.js?v=7.28';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.28';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.28';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const validViews=['club','records','league','story','archive','help'];
-let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null,pendingSeasonCandidate=null,seasonCalculationId=0;
+let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',archiveReadError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null,pendingSeasonCandidate=null,seasonCalculationId=0;
 const primarySave=localStorage.getItem(SAVE_KEY);
 let activeSaveKey=primarySave===SAVE_TOMBSTONE?null:primarySave?SAVE_KEY:LEGACY_SAVE_KEYS.find(key=>localStorage.getItem(key))||null;
 let startingSeed=Math.floor(Math.random()*2147483646)+1;
@@ -41,7 +42,7 @@ const latest=()=>career?.history.at(-1);
 function message(text){$('#notice').textContent=text;$('#notice').classList.add('show');setTimeout(()=>$('#notice').classList.remove('show'),4500);}
 function navigate(target){view=target;if(location.hash.slice(1)!==target)history.pushState(null,'',`#${target}`);render();window.scrollTo(0,0);}
 window.addEventListener('popstate',()=>{view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club';render();});
-const archives=()=>archiveEntries(localStorage);
+const archives=()=>{try{const entries=archiveEntries(localStorage);archiveReadError='';return entries;}catch(error){archiveReadError=error.message;return [];}};
 const archiveState=()=>retirementArchiveState(archives(),career);
 function downloadExport(payload){
   if(!payload){message('내보낼 저장 기록이 없습니다.');return;}
@@ -51,6 +52,7 @@ function downloadExport(payload){
 function currentExport(){
   if(career)return {data:career,filename:`charari-naega-kiunda-${career.year}.json`};
   const entries=archives();if(entries.length)return {data:archiveExport(entries),filename:'charari-naega-kiunda-retired-records.json'};
+  if(archiveReadError&&localStorage.getItem(ARCHIVE_KEY))return {raw:localStorage.getItem(ARCHIVE_KEY),filename:'charari-naega-kiunda-archive-recovery.json'};
   const slot=savedCareerSlots(localStorage)[0];return slot?{raw:localStorage.getItem(slot.key),filename:'charari-naega-kiunda-saved-record.json'}:null;
 }
 function archivedExport(entry){return {data:archiveExport([entry]),filename:`charari-naega-kiunda-retired-${entry.name}.json`};}
@@ -60,7 +62,8 @@ function archiveCapacityPanel(){
   return `<section class="panel archive-capacity" aria-label="은퇴 기록 보관 선택"><h2>은퇴 선수 보관 ${entries.length} / ${ARCHIVE_LIMIT}명</h2><p>새로 은퇴한 ${esc(career.player.name)}의 기록을 보관하려면 기존 기록 ${state.excess+1}개를 삭제해야 합니다. 내보내기로 기록을 보관한 뒤 삭제할 선수를 선택하세요.</p><div class="archive-new"><strong>${esc(career.player.name)} · 새 은퇴 선수 · ${esc(careerWarLabel(career.history))}</strong><div class="actions">${btn('내 기록 내보내기','export','secondary')}${btn('이 선수 기록 삭제','discard-retired','text')}</div></div><ul class="archive-choices">${entries.map((entry,index)=>`<li><span><b>${esc(entry.name)}</b> · ${esc(entry.position)} · ${entry.seasons??'?'}시즌 · <strong>${esc(careerWarLabel(entry.history||entry.career?.history||[]))}</strong></span><div class="actions">${btn('내보내기',`export-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}${btn(state.excess?'이 기록 삭제':'이 기록 대신 새 선수 보관',`replace-archive:${index}:${encodeURIComponent(entry.id||'')}`,'secondary')}</div></li>`).join('')}</ul></section>`;
 }
 
-function persist(){try{if(career.retired&&!career.archiveId)career.archiveId=`${career.seed}-${career.player.name}-${career.year}`;saveCareer(career);activeSaveKey=SAVE_KEY;if(career.retired)storeRetiredCareer(localStorage,career);saveError='';return true;}catch(e){saveError=e?.name==='QuotaExceededError'?'자동 저장 공간이 부족합니다. 보관·저장에서 불필요한 저장을 삭제하거나 JSON을 내보내세요.':'자동 저장 실패. 저장 파일을 내보내세요.';message(saveError);return false;}}
+function persist(){let currentSaved=false;try{if(career.retired&&!career.archiveId)career.archiveId=`${career.seed}-${career.player.name}-${career.year}`;saveCareer(career);currentSaved=true;activeSaveKey=SAVE_KEY;if(career.retired)storeRetiredCareer(localStorage,career);saveError='';return true;}catch(e){saveError=currentSaved?`현재 선수는 저장됐지만 은퇴 보관에 실패했습니다. ${e?.name==='QuotaExceededError'?'보관·저장에서 저장 공간을 정리하세요.':e.message||'보관 원본을 내보내세요.'}`:e?.name==='QuotaExceededError'?'자동 저장 공간이 부족합니다. 보관·저장에서 불필요한 저장을 삭제하거나 JSON을 내보내세요.':'자동 저장 실패. 저장 파일을 내보내세요.';message(saveError);return false;}}
+
 function clearCurrentCareer(){career=null;activeSaveKey=null;playback=null;pendingSeasonCandidate=null;chosenYear=null;resultLevel='auto';saveError='';}
 function confirmChoice(text,exportFile=currentExport()){return new Promise(resolve=>{
   const dialog=document.createElement('dialog');dialog.className='confirm-dialog';dialog.setAttribute('aria-label','선택 확인');
@@ -73,9 +76,9 @@ function header(title,subtitle='',right=''){return `<div class="page-title"><div
 function shell(content){
   const c=career,p=c?.player,nav=[['club','선수'],['records','기록'],['league','리그'],['story','이력'],['archive','보관·저장'],['help','플레이 안내']];
 
-  return `<header class="site-header"><a class="brand" href="#" data-view="club"><span aria-hidden="true">⚾</span>차라리 내가 키운다</a><nav aria-label="주 메뉴">${nav.map(([key,label])=>`<button data-view="${key}" class="${view===key?'active':''}" ${view===key?'aria-current="page"':''}>${label}</button>`).join('')}</nav><div class="header-tools"><span class="save-state">${saveError?'저장 오류':c?'자동 저장':'선수 생성'}</span>${btn('저장 파일 내보내기','export','text',!c&&!archives().length&&!savedCareerSlots(localStorage).length)}<label class="file-label">불러오기<input type="file" id="import" accept=".json,application/json"></label></div></header>
+  return `<header class="site-header"><a class="brand" href="#" data-view="club"><span aria-hidden="true">⚾</span>차라리 내가 키운다</a><nav aria-label="주 메뉴">${nav.map(([key,label])=>`<button data-view="${key}" class="${view===key?'active':''}" ${view===key?'aria-current="page"':''}>${label}</button>`).join('')}</nav><div class="header-tools"><span class="save-state">${saveError||archiveReadError?'저장 오류':c?'자동 저장':'선수 생성'}</span>${btn('저장 파일 내보내기','export','text',!c&&!archives().length&&!savedCareerSlots(localStorage).length&&!localStorage.getItem(ARCHIVE_KEY))}<label class="file-label">불러오기<input type="file" id="import" accept=".json,application/json"></label></div></header>
   ${c?`<section class="player-bar" aria-label="선수 상태"><div><strong>${esc(p.name)}</strong><span>${c.age}세</span><span>${c.year}년</span></div><div><b>${esc(c.playerStatus==='free_agent'?'소속 없음':c.stage==='프로'?TEAMS[playback?.displayTeam??p.team]:c.stage==='고교'?p.school:c.collegeTeam||'대학 야구부')}</b><span>${esc(p.position)}${c.developmental?' · 육성선수':''}</span></div><div class="health"><span>구단 신뢰도 <b>${playback?.displayTeam!==undefined?70:c.clubTrust??70}/100</b></span>${c.stage==='프로'&&c.playerStatus!=='free_agent'?`<span>${c.salaryPending&&!(c.contract?.kind==='fa'&&c.contract.left>0)?'연봉 협상 대기':c.contract?.kind==='fa'&&c.contract.left>0?`FA · ${c.contract.left}년 남음`:`연봉 ${money(c.contract?.annualMan||0)}`}</span>`:''}</div></section>`:''}
-  <main>${saveError?`<div class="alert" role="alert">${esc(saveError)}</div>`:''}${archiveCapacityPanel()}${content}<div class="global-actions">${btn('은퇴 결정','retire','secondary',!c||c.retired||!!playback)}${btn('새 선수 시작','reset','secondary',archiveState().needsChoice||!!playback)}</div></main>`;
+  <main>${saveError?`<div class="alert" role="alert">${esc(saveError)}</div>`:''}${archiveReadError?`<div class="alert" role="alert">${esc(archiveReadError)} ${btn('보관 원본 내보내기','export-archive-raw','secondary')}</div>`:''}${archiveCapacityPanel()}${content}<div class="global-actions">${btn('은퇴 결정','retire','secondary',!c||c.retired||!!playback)}${btn('새 선수 시작','reset','secondary',archiveState().needsChoice||!!playback)}</div></main>`;
 }
 function eventReason(reason){return publicReason(reason).replace(/(?:최근 (?:경기력|성적)|(?:불펜|선발진) 최고 전력|주전 전력|\S+ 경쟁 전력) \d+(?:\.\d+)?(?:점)?(?: · |\. )?/g,'').replace(/ · $/,'').replace(/^스토브리그 보류 명단 평가 · /,'');}
 function abilityList(player,before=null){return `<p><b>오버롤 ${overall(player).toFixed(1)}</b></p><div class="ability-list">${player.a.map((n,i)=>{const capped=player.potentialCaps?.[i]!==undefined&&n>=player.potentialCaps[i];return `<div class="${capped?'cap-reached':''}"><span>${KEYS[player.role][i]}</span><div class="ability-track"><i style="width:${n}%"></i></div><b>${Number(n.toFixed(1))}</b>${before?`<small class="${n>=before[i]?'up':'down'}">${n>before[i]?'+':''}${Number((n-before[i]).toFixed(1))}</small>`:''}${capped?`<small>상한 ${player.potentialCaps[i]}</small>`:''}</div>`;}).join('')}</div>`;}
@@ -219,7 +222,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.27',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.28',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -363,7 +366,7 @@ function help(){return `${header('플레이 안내')}<div class="rules-grid">
 <section class="panel prose"><h2>병역 · 국가대표</h2><p>상무는 27세 이하·프로 1시즌 이상이면 지원할 수 있으며 탈락할 수도 있습니다. 탈락 후 현역 입대나 다음 해 재지원이 가능합니다.</p><p>복무 기간은 2시즌입니다. 상무는 2군 경기와 훈련에 참가하고, 현역은 첫 시즌 구단 훈련과 공식 출전이 없습니다.</p><p>28세 시즌까지 미필이면 자동 입대합니다. 아시안게임 대표팀으로 우승하면 병역특례를 받습니다. WBC·프리미어12는 특례 대상이 아닙니다.</p><p>대표팀 출전은 거절할 수 있습니다. 아시안게임은 9월 하순 열흘간 차출되며 소속팀 경기에 나서지 않습니다.</p></section>
 <section class="panel prose"><h2>저장 · 은퇴</h2><p>진행 상황은 자동 저장됩니다. 내보낸 JSON 파일은 불러오기로 복원할 수 있습니다.</p><p>은퇴 선수는 7명까지 보관합니다. 자리가 가득 차면 새 기록을 삭제하거나 기존 기록을 골라 교체합니다. 삭제 전에 필요한 기록을 내보내세요.</p><p>총수입은 받은 연봉·계약금·지급 옵션·군 보류수당의 합계입니다. 미지급 옵션과 남은 계약액은 제외합니다.</p></section></div>`;}
 function tidyResultLogs(){const root=$('.result-summary');if(!root)return;const nodes=[...root.children].filter(x=>x.classList.contains('report-list')||x.tagName==='DETAILS'||x.textContent.startsWith('구단 신뢰도 변경:'));if(!nodes.length)return;const details=document.createElement('details');details.className='season-log';details.innerHTML='<summary>상세 로그</summary>';nodes.forEach(x=>details.append(x));root.append(details);}
-function render(){const content=view==='archive'?archivePanel():playback?playbackPanel():career?.pendingEvent?majorEvent():view==='club'?club():view==='records'?records():view==='league'?leaguePage():view==='story'?story():help();$('#app').innerHTML=shell(content);tidyResultLogs();bind();}
+function render(){archives();const content=view==='archive'?archivePanel():playback?playbackPanel():career?.pendingEvent?majorEvent():view==='club'?club():view==='records'?records():view==='league'?leaguePage():view==='story'?story():help();$('#app').innerHTML=shell(content);tidyResultLogs();bind();}
 function bind(){
   document.querySelectorAll('[data-view]').forEach(el=>el.onclick=e=>{e.preventDefault();if(playback){message('진행 중인 시즌을 먼저 확인하세요.');return;}navigate(el.dataset.view);});
   document.querySelectorAll('[data-action]').forEach(el=>el.onclick=()=>act(el.dataset.action));
@@ -378,7 +381,7 @@ function bind(){
     form.querySelector('[name="role"]').onchange=()=>{const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';if(setup.candidates&&p.role!==setup.profile?.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');render();return;}p.team=Number(p.team);p.position=positions(p.role)[0];setup.profile={...setup.profile,...p};setup.position=p.position;saveSetup();render();};
     form.onsubmit=e=>{e.preventDefault();const p=Object.fromEntries(new FormData(form));p.role=p.role==='투수'?'pitch':'bat';p.team=Number(p.team);p.name=p.name.trim();p.school=p.school.trim();if(!p.name||!p.school){message('이름과 학교 이름을 입력하세요.');return;}if(setup.candidates&&p.role!==setup.profile.role){message('후보 생성 후 선수 구분은 변경할 수 없습니다.');return;}p.seed=setup.profile?.seed||Math.floor(Math.random()*4294967295);p.position=p.position||setup.position||positions(p.role)[0];if(!setup.candidates||setup.position!==p.position){setup.candidates=abilityCandidates(p.role,p.seed,p.position);setup.selected=null;}setup.profile=p;setup.selected??=null;setup.position=p.position;setup.step='candidates';saveSetup();render();};
   }
-  $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(archiveState().needsChoice)throw Error('은퇴 기록의 보관·삭제를 먼저 선택하세요.');const raw=await file.text(),data=JSON.parse(raw);if(data?.format===ARCHIVE_EXPORT_FORMAT){if(!await confirmChoice('은퇴 기록을 보관 목록에 복원합니다. 같은 선수의 보관 기록은 이 파일로 갱신합니다.'))return;importArchiveExport(localStorage,data);view='archive';render();message('은퇴 보관 기록 복원 완료');return;}const incoming=loadCareer({getItem:()=>raw});if(career&&!await confirmChoice('현재 커리어를 불러온 파일로 바꿉니다. 기존 기록을 보관하려면 먼저 내보내세요.'))return;seasonCalculationId++;cancelAnimationFrame(playbackFrame);pendingSeasonCandidate=null;busy=false;career=incoming;activeSaveKey=null;playback=restoredPlayback(career);view='club';chosenYear=null;resultLevel='auto';const saved=persist();render();message(saved?'불러오기 완료':'불러오기는 완료됐지만 자동 저장에 실패했습니다. 보관·저장에서 저장 공간을 정리하세요.');if(playback&&!playback.preview)startSeasonCalculation();}catch(err){message(`불러오기 실패: ${err.message}`);}};
+  $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(archiveState().needsChoice)throw Error('은퇴 기록의 보관·삭제를 먼저 선택하세요.');const raw=await file.text();let data=decodeStoredJSON(raw);if(Array.isArray(data))data={format:ARCHIVE_EXPORT_FORMAT,entries:data};if(data?.format===ARCHIVE_EXPORT_FORMAT){if(!await confirmChoice('은퇴 기록을 보관 목록에 복원합니다. 같은 선수의 보관 기록은 이 파일로 갱신합니다.'))return;importArchiveExport(localStorage,data);view='archive';render();message('은퇴 보관 기록 복원 완료');return;}const incoming=loadCareer({getItem:()=>raw});if(career&&!await confirmChoice('현재 커리어를 불러온 파일로 바꿉니다. 기존 기록을 보관하려면 먼저 내보내세요.'))return;seasonCalculationId++;cancelAnimationFrame(playbackFrame);pendingSeasonCandidate=null;busy=false;career=incoming;activeSaveKey=null;playback=restoredPlayback(career);view='club';chosenYear=null;resultLevel='auto';const saved=persist();render();message(saved?'불러오기 완료':'불러오기는 완료됐지만 자동 저장에 실패했습니다. 보관·저장에서 저장 공간을 정리하세요.');if(playback&&!playback.preview)startSeasonCalculation();}catch(err){message(`불러오기 실패: ${err.message}`);}};
 }
 async function act(action){
   if(busy&&!action.startsWith('export'))return;
@@ -386,6 +389,7 @@ async function act(action){
     if(validViews.includes(action)){navigate(action);return;}
     if(action.startsWith('delete-save:')){const key=action.slice('delete-save:'.length),slot=savedCareerSlots(localStorage).find(item=>item.key===key);if(!slot)throw Error('삭제할 저장 항목이 없습니다.');const active=key===activeSaveKey;if(!await confirmChoice(`${slot.label} · ${slot.name}${slot.year?` · ${slot.year}년`:''}을 삭제합니다.${active?' 현재 진행 중인 선수도 닫힙니다.':''} 필요한 기록은 먼저 내보내세요.`))return;removeCareerSlot(localStorage,key);if(active){localStorage.setItem(SAVE_KEY,SAVE_TOMBSTONE);clearCurrentCareer();}else if(career&&saveError)persist();else saveError='';render();message('저장 항목을 삭제했습니다.');return;}
     if(action.startsWith('delete-archive:')){const index=Number(action.slice('delete-archive:'.length)),entry=archives()[index];if(!entry)throw Error('삭제할 은퇴 선수 기록이 없습니다.');const currentArchiveId=career?.archiveId||`${career?.seed}-${career?.player?.name}-${career?.year}`,active=Boolean(career?.retired&&entry.id&&entry.id===currentArchiveId);if(!await confirmChoice(`${entry.name}의 은퇴 보관 기록을 삭제합니다.${active?' 현재 자동 저장된 같은 선수도 삭제합니다.':archiveState().pending?' 빈자리에 새 은퇴 선수 기록을 보관합니다.':''} 필요한 기록은 먼저 내보내세요.`,archivedExport(entry)))return;if(archiveState().pending){replaceArchivedCareer(localStorage,career,index,entry.id);persist();render();return;}removeArchivedEntry(localStorage,index,entry.id);if(active){if(activeSaveKey)removeCareerSlot(localStorage,activeSaveKey);localStorage.setItem(SAVE_KEY,SAVE_TOMBSTONE);clearCurrentCareer();}else if(career&&(career.retired||saveError))persist();else saveError='';render();message('은퇴 선수 기록을 삭제했습니다.');return;}
+    if(action==='export-archive-raw'){downloadExport({raw:localStorage.getItem(ARCHIVE_KEY),filename:'charari-naega-kiunda-archive-recovery.json'});return;}
     if(action==='export'){downloadExport(currentExport());return;}
     if(action.startsWith('export-save:')){const key=action.slice('export-save:'.length);if(!savedCareerSlots(localStorage).some(x=>x.key===key))throw Error('내보낼 저장 항목이 없습니다.');downloadExport({raw:localStorage.getItem(key),filename:'charari-naega-kiunda-saved-record.json'});return;}
     if(action.startsWith('export-archive:')){const [,rawIndex,rawId]=action.split(':'),entry=archives()[Number(rawIndex)];if(!entry||(entry.id||'')!==decodeURIComponent(rawId))throw Error('보관 기록이 변경됐습니다.');downloadExport(archivedExport(entry));return;}

@@ -1,9 +1,10 @@
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.27';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.27';
+import {decodeStoredJSON,writeStoredJSON} from './storage-codec.js?v=7.28';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.28';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.28';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {warSnapshot,careerWarSnapshot} from './war.js?v=7.27';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.27';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.27';
+import {warSnapshot,careerWarSnapshot} from './war.js?v=7.28';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.28';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.28';
 export const VERSION=7;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -321,6 +322,7 @@ export const LEVELS = ['2군','1군 백업','1군 준주전','1군 주전'];
 export const SAVE_KEY = 'charari-naega-kiunda-v7';
 export const SAVE_TOMBSTONE = '{"deleted":true}';
 export const LEGACY_SAVE_KEYS = ['charari-naega-kiunda-v6','charari-naega-kiunda-v5','charari-naega-kiunda-v4','diamond-days-v2', 'diamond-days-v1'];
+export const STORAGE_RELATED_KEYS=[SAVE_KEY,...LEGACY_SAVE_KEYS,...LEGACY_SAVE_KEYS.map(key=>`${key}-archive`),'charari-naega-kiunda-careers'];
 export function money(man=0) {
   if (!Number.isFinite(man)) return '미기록';
   const amount=Math.round(man);return Math.abs(amount)<10000 ? `${amount}만원` : `${(displayedMoneyMan(amount)/10000).toFixed(1)}억`;
@@ -1199,7 +1201,7 @@ function repairBlockedPositionBonus(c){
 export function loadCareer(storage=localStorage) {
   const current=storage.getItem(SAVE_KEY);if(current===SAVE_TOMBSTONE)return null;
   const raw=current||LEGACY_SAVE_KEYS.map(key=>storage.getItem(key)).find(Boolean);if(!raw)return null;
-  const old=JSON.parse(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');unpackCareerSave(old);validateCareer(old);const c=migrateCareer(old);c.signingLedger??=reconstructedSigningLedger(c);normalizeServiceState(c);normalizeNationalExemptions(c);repairBlockedPositionBonus(c);c.trainingPrograms=programProfile(c,c.trainingPrograms??availableTraining(c)).ids;c.player.type=playingStyle({...c.player,battedBall:c.latest?.players?.find(p=>p.id==='user')?.battedBall},c.history.at(-1)?.stat,c.trainingState);
+  const old=decodeStoredJSON(raw);if(![1,2,3,4,5,6,VERSION].includes(old?.version))throw Error('지원하지 않는 저장 버전입니다.');unpackCareerSave(old);validateCareer(old);const c=migrateCareer(old);c.signingLedger??=reconstructedSigningLedger(c);normalizeServiceState(c);normalizeNationalExemptions(c);repairBlockedPositionBonus(c);c.trainingPrograms=programProfile(c,c.trainingPrograms??availableTraining(c)).ids;c.player.type=playingStyle({...c.player,battedBall:c.latest?.players?.find(p=>p.id==='user')?.battedBall},c.history.at(-1)?.stat,c.trainingState);
   for(const row of c.history){row.awards=row.awards.map(canonicalAwardName);for(const league of [row.league,row.minorLeague])for(const award of league?.awards||[])award.title=canonicalAwardName(award.title);}
   if(c.latest)for(const award of c.latest.awards||[])award.title=canonicalAwardName(award.title);
   repairInvalidCountingAwards(c);
@@ -1251,4 +1253,4 @@ function unpackCareerSave(c){
   else for(const player of c.latest?.players||[])player.stat=unpackStat(player.stat,player.role);
   delete c._latestInHistory;delete c._saveFormat;
 }
-export function saveCareer(c,storage=localStorage) {validateCareer(c);storage.setItem(SAVE_KEY,JSON.stringify(packCareerSave(c)));}
+export function saveCareer(c,storage=localStorage) {validateCareer(c);writeStoredJSON(storage,SAVE_KEY,packCareerSave(c),STORAGE_RELATED_KEYS);}

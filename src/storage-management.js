@@ -1,5 +1,6 @@
-import {careerWarSnapshot} from './war.js?v=7.27';
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry} from './engine.js?v=7.27';
+import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.28';
+import {careerWarSnapshot} from './war.js?v=7.28';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.28';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';
@@ -11,7 +12,7 @@ export function savedCareerSlots(storage){
     const raw=storage.getItem(key);
     if(!raw||raw===SAVE_TOMBSTONE)return [];
     let career;
-    try{career=JSON.parse(raw);}catch{return [{key,label:key===SAVE_KEY?'현재 자동 저장':'이전 저장',name:'읽을 수 없는 저장',year:null,bytes:new Blob([raw]).size}];}
+    try{career=storedJSONPreview(raw);}catch{return [{key,label:key===SAVE_KEY?'현재 자동 저장':'이전 저장',name:'읽을 수 없는 저장',year:null,bytes:new Blob([raw]).size}];}
     return [{key,label:key===SAVE_KEY?'현재 자동 저장':key.endsWith('-archive')?'이전 버전 백업':'구버전 자동 저장',name:career?.player?.name||'이름 미기록',year:career?.year??null,archiveId:career?.archiveId??null,bytes:new Blob([raw]).size}];
   });
 }
@@ -24,7 +25,9 @@ function normalizeArchive(entry){
 }
 
 export function archiveEntries(storage){
-  try{const entries=JSON.parse(storage.getItem(ARCHIVE_KEY)||'[]');return Array.isArray(entries)?entries.map(normalizeArchive):[];}catch{return [];}
+ const raw=storage.getItem(ARCHIVE_KEY);if(!raw)return [];
+ try{const entries=decodeStoredJSON(raw);if(!Array.isArray(entries))throw Error('shape');return entries.map(normalizeArchive);}
+ catch{throw Error('은퇴 보관 기록을 읽을 수 없습니다. 보관 원본을 내보내 보존하세요.');}
 }
 
 export function retirementArchiveState(entries,career){
@@ -38,7 +41,7 @@ export function storeRetiredCareer(storage,career){
   const entries=archiveEntries(storage);
   if(!career?.retired)return false;
   if(retirementArchiveState(entries,career).needsChoice)return false;
-  storage.setItem(ARCHIVE_KEY,JSON.stringify(upsertArchive(entries,career)));return true;
+  writeStoredJSON(storage,ARCHIVE_KEY,upsertArchive(entries,career),STORAGE_RELATED_KEYS);return true;
 }
 
 export function replaceArchivedCareer(storage,career,index,expectedId){
@@ -48,7 +51,7 @@ export function replaceArchivedCareer(storage,career,index,expectedId){
   entries.splice(index,1);
   const next=entries.length<ARCHIVE_LIMIT?upsertArchive(entries,career):entries;
   // One atomic storage write: a quota failure must not erase the selected record.
-  storage.setItem(ARCHIVE_KEY,JSON.stringify(next));
+  writeStoredJSON(storage,ARCHIVE_KEY,next,STORAGE_RELATED_KEYS);
   return retirementArchiveState(next,career);
 }
 
@@ -70,14 +73,14 @@ export function importArchiveExport(storage,data){
     if(index<0)entries.push(normalizeArchive(entry));else entries[index]=normalizeArchive(entry);
   }
   if(entries.length>ARCHIVE_LIMIT)throw Error('은퇴 선수는 7명까지 보관할 수 있습니다. 기존 기록을 내보내고 정리한 뒤 불러오세요.');
-  storage.setItem(ARCHIVE_KEY,JSON.stringify(entries));return entries.length;
+  writeStoredJSON(storage,ARCHIVE_KEY,entries,STORAGE_RELATED_KEYS);return entries.length;
 }
 
 export function removeArchivedEntry(storage,index,expectedId){
   const entries=archiveEntries(storage);
   if(!Number.isInteger(index)||index<0||index>=entries.length||entries[index]?.id!==expectedId)throw Error('삭제할 은퇴 선수 기록이 변경됐습니다.');
   const [removed]=entries.splice(index,1);
-  if(entries.length)storage.setItem(ARCHIVE_KEY,JSON.stringify(entries));else storage.removeItem(ARCHIVE_KEY);
+  if(entries.length)writeStoredJSON(storage,ARCHIVE_KEY,entries,STORAGE_RELATED_KEYS);else storage.removeItem(ARCHIVE_KEY);
   return removed;
 }
 
