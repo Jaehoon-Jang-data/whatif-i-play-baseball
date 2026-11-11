@@ -1,4 +1,4 @@
-import {progress} from './engine.js?v=7.29';
+import {progress} from './engine.js?v=7.30';
 
 self.onmessage=event=>{
   const {career,training}=event.data;

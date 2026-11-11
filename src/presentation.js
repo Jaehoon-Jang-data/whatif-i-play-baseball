@@ -1,5 +1,6 @@
-import {careerWAR,bestWarSeasons} from './war.js?v=7.29';
-import {canonicalAwardName} from './engine.js?v=7.29';
+import {careerWAR,bestWarSeasons} from './war.js?v=7.30';
+import {canonicalAwardName} from './engine.js?v=7.30';
+import {recordAchievements} from './record-achievements.js?v=7.30';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function awardBadgesHtml(titles){
@@ -8,6 +9,11 @@ export function awardBadgesHtml(titles){
 export function awardBadgeHtml(raw,detail=''){
   const title=canonicalAwardName(raw).split(' · ').join('·');
   return `<span class="award-badge"><b>${escapeHtml(title)}</b>${detail?`<small class="award-detail">${escapeHtml(detail)}</small>`:''}</span>`;
+}
+export function recordBadgesHtml(history,row){
+  const records=recordAchievements(history,row);
+  if(!records.length)return '';
+  return `<section class="record-achievements" aria-label="달성 기록"><div class="record-heading"><b>달성 기록</b><span>1군 정규시즌</span></div><div class="awards record-badges">${records.map(record=>`<span class="award-badge record-badge"><b>${escapeHtml(record.label)}</b></span>`).join('')}</div></section>`;
 }
 export function noAppearanceText(row){
   if(row.military)return `${row.servicePath==='athletic'?'상무':'현역'} 복무 · 공식 경기 기록 없음`;
