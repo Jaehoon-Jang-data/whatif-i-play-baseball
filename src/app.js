@@ -1,6 +1,6 @@
-import {decodeStoredJSON} from './storage-codec.js?v=7.28';
-import {normalizeCreationDraft} from './creation-flow.js?v=7.28';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.28';
+import {decodeStoredJSON} from './storage-codec.js?v=7.29';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.29';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.29';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -8,11 +8,11 @@ import {
   runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.28';
-import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.28';
-import {programOptionHtml} from './training-ui.js?v=7.28';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.28';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.28';
+} from './engine.js?v=7.29';
+import {awardBadgeHtml,awardBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.29';
+import {programOptionHtml} from './training-ui.js?v=7.29';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.29';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.29';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -222,7 +222,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.28',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.29',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -356,7 +356,7 @@ function leaguePage(){
   const selector=`<label class="season-selector">시즌<select id="season-select">${career.history.map(x=>`<option value="${x.year}" ${x.year===row.year?'selected':''}>${x.year} · ${x.stage}${x.military?' / 복무':''}</option>`).join('')}</select></label>`;
   if(!league)return header('리그','',selector)+`<div class="empty">${esc(noAppearanceText(row))}</div>`;
   const teamRows=standings(league);
-  return `${header('리그 기록',`${league.year}년 · ${league.level==='amateur'?'소속팀':'팀당'} ${league.teams.find(t=>t.id===row.team)?.g??league.games}경기`,selector)}${levelTabs(row)}<section class="panel"><h2>팀 순위</h2>${row.postseason&&league.level==='major'?`<div class="post-ranks"><strong>정규시즌 ${row.postseason.regularRank}위</strong><strong>최종 ${row.postseason.finalRank}위</strong></div><h3>${TEAMS[row.postseason.champion]} · 한국시리즈 우승</h3>`:''}<div class="table-scroll"><table><thead><tr><th>순위</th><th>구단</th><th>경기</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>득점</th><th>실점</th></tr></thead><tbody>${teamRows.map(t=>`<tr class="${t.id===row.team?'mine':''}"><th>${t.rank}</th><td>${esc(t.name)}</td><td>${t.g}</td><td>${t.w}</td><td>${t.l}</td><td>${t.tie}</td><td>${t.pct.toFixed(3)}</td><td>${t.r}</td><td>${t.ra}</td></tr>`).join('')}</tbody></table></div></section>${selected?percentileChart(league,row.role):''}${selected?`<section class="panel"><h2>${league.level==='major'?'타이틀 · 수비 기록 순위':'기록 순위'} · ${row.role==='bat'?'타자':'투수'}</h2>${leaderboards(league,row.role)}</section>`:''}${league.level==='major'?`<section class="panel"><h2>수상 후보</h2><div class="vote-grid">${league.awards.filter(x=>x.candidates&&(!x.title.startsWith('베스트글러브')||x.title.endsWith(row.position))).map(x=>`<article><h3>${x.title}</h3>${x.candidates.map((a,i)=>`<p><span>${i+1}. ${esc(league.players.find(p=>p.id===a.id)?.name)}</span>${x.title==='신인왕'&&a.sampleEligible===false?'<b>출전량 부족</b>':''}</p>${(()=>{const p=league.players.find(p=>p.id===a.id);return p?`<small class="candidate-stat">${p.role==='bat'?`${p.stat.pa}타석 · OPS ${rates(p.stat,'bat').ops.toFixed(3)} · ${p.stat.hr}홈런 · ${p.stat.rbi}타점`:`${displayStat(p.stat,'pitch','outs')}이닝 · ERA ${rates(p.stat,'pitch').era.toFixed(2)} · ${p.stat.sv}세이브`}</small>`:'';})()}`).join('')}</article>`).join('')}</div></section>`:''}`;
+  return `${header('리그 기록',`${league.year}년 · ${league.level==='amateur'?'소속팀':'팀당'} ${league.teams.find(t=>t.id===row.team)?.g??league.games}경기`,selector)}${levelTabs(row)}<section class="panel"><h2>팀 순위</h2>${row.postseason&&league.level==='major'?`<div class="post-ranks"><strong>정규시즌 ${row.postseason.regularRank}위</strong><strong>최종 ${row.postseason.finalRank}위</strong></div><h3>${TEAMS[row.postseason.champion]} · 한국시리즈 우승</h3>`:''}<div class="table-scroll"><table><thead><tr><th>순위</th><th>구단</th><th>경기</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>득점</th><th>실점</th></tr></thead><tbody>${teamRows.map(t=>`<tr class="${t.id===row.team?'mine':''}"><th>${t.rank}</th><td>${esc(t.name)}</td><td>${t.g}</td><td>${t.w}</td><td>${t.l}</td><td>${t.tie}</td><td>${t.pct.toFixed(3)}</td><td>${t.r}</td><td>${t.ra}</td></tr>`).join('')}</tbody></table></div></section>${selected?percentileChart(league,row.role):''}${selected?`<section class="panel"><h2>${league.level==='major'?'타이틀 · 수비 기록 순위':'기록 순위'} · ${row.role==='bat'?'타자':'투수'}</h2>${leaderboards(league,row.role)}</section>`:''}${league.level==='major'?`<section class="panel"><h2>수상 후보</h2><div class="vote-grid">${league.awards.filter(x=>x.candidates&&(!x.title.startsWith('베스트글러브')||x.title.endsWith(row.position))).map(x=>`<article><h3>${x.title}</h3>${x.candidates.map((a,i)=>`<p><span>${i+1}. ${esc(league.players.find(p=>p.id===a.id)?.name)}</span>${x.title==='신인왕'&&a.sampleEligible===false?'<b>출전량 부족</b>':x.title==='신인왕'&&a.valueEligible===false?'<b>수상 기준 미달</b>':''}</p>${(()=>{const p=league.players.find(p=>p.id===a.id);return p?`<small class="candidate-stat">${Number.isFinite(a.war)?`WAR ${formatWAR(a.war)} · `:''}${p.role==='bat'?`${p.stat.pa}타석 · OPS ${rates(p.stat,'bat').ops.toFixed(3)} · ${p.stat.hr}홈런 · ${p.stat.rbi}타점`:`${displayStat(p.stat,'pitch','outs')}이닝 · ERA ${rates(p.stat,'pitch').era.toFixed(2)} · ${p.stat.sv}세이브`}</small>`:'';})()}`).join('')}</article>`).join('')}</div></section>`:''}`;
 }
 function story(){const events=career?careerTimeline(career):[];return `${header('커리어 이력')}<section class="panel timeline">${events.length?events.map(x=>`<article><strong>${x.year}</strong><p>${esc(x.text.replace(/(\d+(?:\.\d+)?)백만원/g,(_,n)=>money(Number(n)*100)))}</p></article>`).join(''):'<div class="empty small-empty">기록된 사건 없음</div>'}</section>`;}
 function help(){return `${header('플레이 안내')}<div class="rules-grid">

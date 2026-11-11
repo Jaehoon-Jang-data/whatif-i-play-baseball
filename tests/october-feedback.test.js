@@ -45,7 +45,7 @@ test('첨부 2044 지명타자 골든글러브는 실제 후보·OPS·점수와 
  const league={year:2044,level:'major',games:144,teams:Array.from({length:10},(_,id)=>({id,g:144,w:72})),players:fixture.dh.players};
  const result=awards(league).find(x=>x.title==='골든글러브 · 지명타자');assert.deepEqual(result.winners,['user']);
  assert.equal(result.candidates.length,2);assert.ok(Math.abs(result.candidates[0].score-.6053941992183983)<1e-12);
- assert.deepEqual(result,fixture.dh.award);
+ assert.deepEqual({...result,candidates:result.candidates.map(({id,score})=>({id,score}))},fixture.dh.award);assert.ok(result.candidates.every(x=>x.war===null&&x.warPrimary===false));
 });
 
 test('장기 AI 로스터는 은퇴·신인 보충 뒤에도 타격 포지션을 유지한다',()=>{

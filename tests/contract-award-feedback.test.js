@@ -1,3 +1,4 @@
+import {leagueWarContext,seasonWAR} from '../src/war.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -6,10 +7,12 @@ const fixture=JSON.parse(readFileSync(new URL('./fixtures/contract-award-feedbac
 const expand=l=>({...structuredClone(l),players:l.players.map(row=>Object.fromEntries(fixture.playerFields.filter((k,i)=>row[i]!==null).map(k=>[k,structuredClone(row[fixture.playerFields.indexOf(k)])])))});
 const saved=year=>{const f=fixture.cases[year].career,c=Object.assign(createCareer(f.player),structuredClone(f));c.history.at(-1).league=expand(fixture.leagues[f.leagueYear]);c.latest=c.history.at(-1).league;return c;};
 const restore=c=>{let raw;saveCareer(c,{setItem:(_,v)=>raw=v});return loadCareer({getItem:()=>raw});};
-test('합성 우수 투수 3개 시즌은 투타 공통 평가에서 MVP 경쟁력을 갖는다',()=>{
- for(const year of [2033,2034,2041]){const c=saved(year),l=c.latest,computed=awards(l);assert.deepEqual(computed.find(x=>x.title==='정규시즌 MVP').winners,['user']);assert.deepEqual(c.history.at(-1).awards,fixture.cases[year].career.history.at(-1).awards);}
- const l=saved(2041).latest,p=l.players.find(x=>x.id==='user');p.stat.er=100;assert.notDeepEqual(awards(l).find(x=>x.title==='정규시즌 MVP').winners,['user']);
- const batter=l.players.find(x=>x.role==='bat'&&x.stat.pa>500);Object.assign(batter.stat,{h:300,ab:600,pa:700,d:55,t:5,hr:65,bb:95});assert.deepEqual(awards(l).find(x=>x.title==='정규시즌 MVP').winners,[batter.id]);
+test('투타 MVP는 WAR를 주기준으로 삼고 우수 FIP 투수·압도적 타격의 기여를 반영한다',()=>{
+ for(const year of [2033,2034,2041]){const c=saved(year),l=c.latest,computed=awards(l),ctx=leagueWarContext(l),war=p=>seasonWAR({...p,year:l.year},{context:ctx}).value,winner=l.players.find(p=>p.id===computed.find(x=>x.title==='정규시즌 MVP').winners[0]);assert.ok(war(winner)>=Math.max(...l.players.map(war))-.1000001);assert.deepEqual(c.history.at(-1).awards,fixture.cases[year].career.history.at(-1).awards);
+  const user=l.players.find(p=>p.id==='user');Object.assign(user.stat,{hr:3,bb:15,k:350});assert.deepEqual(awards(l).find(x=>x.title==='정규시즌 MVP').winners,['user']);
+ }
+ const l=saved(2041).latest,p=l.players.find(p=>p.id==='user');Object.assign(p.stat,{er:100,hr:60,bb:100,k:50});assert.notDeepEqual(awards(l).find(x=>x.title==='정규시즌 MVP').winners,['user']);
+ const batter=l.players.find(p=>p.role==='bat'&&p.stat.pa>500);Object.assign(batter.stat,{h:300,ab:600,pa:700,d:55,t:5,hr:65,bb:95});assert.deepEqual(awards(l).find(x=>x.title==='정규시즌 MVP').winners,[batter.id]);
 });
 test('합성 신인왕의 무작위 34세 후보를 제외하고 실제 루키 성적을 비교한다',()=>{
  const c=saved(2028),old=c.latest.awards.find(x=>x.title==='신인왕');assert.equal(c.latest.players.find(p=>p.id===old.winners[0]).age,34);
