@@ -28,15 +28,15 @@ export function programSelection(role,selection){
 export function selectedPrograms(c,selection=c.trainingPrograms??c.training??[0]){return programSelection(c.player.role,selection);}
 export function programProfile(c,selection){
  const ids=selectedPrograms(c,selection),programs=ids.map(id=>PROGRAMS[c.player.role].find(p=>p.id===id)),state=c.trainingState||{},last=c.history?.filter(x=>x.role===c.player.role).at(-1);
- let load=programs.length?programs.reduce((n,p)=>n+p.load,0)/programs.length:0,recovery=programs.some(p=>p.recovery);
+ const recovery=programs.some(p=>p.recovery);
  const volume=c.player.role==='bat'?((last?.stat?.pa||0)+(last?.minorStat?.pa||0)*.7)/650:((last?.stat?.outs||0)+(last?.minorStat?.outs||0)*.7)/(c.player.position==='선발'?540:210);
  // Offseason dissipates most carry-over fatigue; annual volume is only a workload proxy.
  const recent=last?.recentWorkload,shortLoad=c.player.role==='bat'?(recent?.pa14||0)/60:(recent?.estimatedPitches7||0)/75;
  const fatigue=limit((state.fatigue||0)*.35+Math.max(0,volume-.8)*12+Math.max(0,shortLoad-1)*8,0,60);
  const active=programs.filter(p=>p.recovery||p.weights.some((w,i)=>w>=.3&&c.player.a[i]<(c.potentialCaps?.[i]??95))),disabled=programs.filter(p=>!active.includes(p)).map(p=>p.id);
- load=active.length?active.reduce((n,p)=>n+p.load,0)/active.length:0;
+ const load=active.length?active.reduce((n,p)=>n+p.load,0)/active.length:0;
  const efficiency=(1-fatigue/170)*(c.recoveryState?.year===c.year?.8:1);
- return {ids:active.map(p=>p.id),disabled,programs:active,load:active.length?load:0,recovery,efficiency,fatigue,volume,recentWorkload:recent??null,
+ return {ids:active.map(p=>p.id),disabled,programs:active,load,recovery,efficiency,fatigue,volume,recentWorkload:recent??null,
   riskAdjustment:load*.028+fatigue*.00065+Math.max(0,volume-1)*.025-(recovery?.018:0),recoveryFactor:recovery?.9:1};
 }
 export function programOptions(c){return PROGRAMS[c.player.role].map(p=>{const profile=programProfile(c,[p.id]),mainIndices=p.weights.map((w,i)=>({w,i})).filter(x=>x.w>=2).map(x=>x.i),capped=mainIndices.filter(i=>c.player.a[i]>=(c.potentialCaps?.[i]??95));let reason=p.recovery&&(profile.fatigue>=5||c.injuries>0)?'부하·부상 이력 관리':p.id==='bat-field'&&['포수','유격수','중견수'].includes(c.player.position)?'수비 부담이 큰 포지션':p.id==='pitch-endurance'&&c.player.position==='선발'?'선발 이닝 소화 보완':mainIndices.some(i=>c.player.a[i]<55)?'현재 약점 보완':({'bat-contact':'타석 전반의 안정성','bat-power':'장타 기여 확대','bat-approach':'출루와 타석 판단 보완','bat-field':'포지션 적응 보완','bat-running':'도루·주루 기회 확대','bat-condition':'회복력 유지','pitch-power':'빠른 공 경쟁력 강화','pitch-command':'볼넷 억제 보완','pitch-breaking':'변화구 보완','pitch-endurance':'긴 이닝 소화 보완','pitch-bullpen':'짧은 이닝 집중력','pitch-condition':'견제와 회복력 보완'}[p.id]);if(c.age>=38)reason=p.recovery?'회복과 기량 유지':'기량 유지 중심 · 성장 제한';else if(c.recoveryState?.year===c.year)reason='복귀 단계 · 강도 조절';return {...p,enabled:profile.ids.length>0,capped,reason,status:c.age>=38?'기술 성장 제한':c.recoveryState?.year===c.year?'재활 중 · 성장 효율 감소':'',efficiency:profile.efficiency};});}

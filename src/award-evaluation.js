@@ -1,4 +1,4 @@
-import {leagueWarContext,seasonWAR} from './war.js?v=7.30';
+import {leagueWarContext,seasonWAR} from './war.js?v=7.31';
 
 export const AWARD_MODEL_VERSION=1;
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));

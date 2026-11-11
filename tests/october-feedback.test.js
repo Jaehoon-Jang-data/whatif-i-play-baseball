@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {abilityCandidates,amateurAvailability,awards,createCareer,draftAssessment,emptyBat,emptyPitch,finishDraft,injuryForecast,loadCareer,money,nationalSelectionChance,nextYear,overall,progress,prospectProfile,publicReason,releaseAssessment,retirementAdviceEligible,rosterPlan,saveCareer,simulateSeason,visibleSalaryChange,waiverCheck} from '../src/engine.js';
+import {abilityCandidates,amateurAvailability,awards,createCareer,draftAssessment,emptyPitch,finishDraft,injuryForecast,loadCareer,money,nationalSelectionChance,nextYear,overall,progress,prospectProfile,publicReason,releaseAssessment,retirementAdviceEligible,rosterPlan,saveCareer,simulateSeason,visibleSalaryChange,waiverCheck} from '../src/engine.js';
 import {awardBadgesHtml,noAppearanceText} from '../src/presentation.js';
 
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/october-feedback.json',import.meta.url)));

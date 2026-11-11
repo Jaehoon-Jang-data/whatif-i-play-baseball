@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCareer,rookieSigningBonus,minimumSalary,emptyBat,emptyPitch,salaryOffer,simulateSeason,positionOffer,progress,nextYear,resolvePositionOffer,acknowledgeEvent,awards,awardLine,careerRecordMarker,militaryOpportunities,nationalTournamentYear,tournamentResult,decideNationalInvitation,nationalEvents,saveCareer,loadCareer} from '../src/engine.js';
+import {createCareer,rookieSigningBonus,minimumSalary,emptyBat,emptyPitch,salaryOffer,simulateSeason,positionOffer,progress,nextYear,resolvePositionOffer,awards,awardLine,careerRecordMarker,militaryOpportunities,nationalTournamentYear,tournamentResult,decideNationalInvitation,nationalEvents,saveCareer,loadCareer} from '../src/engine.js';
 
 const make=(seed,role='bat',position=role==='bat'?'우익수':'선발')=>{const c=createCareer({seed,name:'검증',school:'검증고',team:0,role,position,type:role==='bat'?'교타형':'변화구형'});c.stage='프로';c.phase='prepare';c.year=2030;c.age=25;c.proYears=4;c.served=true;c.contract={kind:'reserved',annualMan:5000,left:0};return c;};
 

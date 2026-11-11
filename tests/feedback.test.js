@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCareer,progress,nextYear,collegeEarlyStatus,runDraft,requestTrade,decideTradeOffer,rosterPlan,visibleSalaryChange,simulateSeason,standings,loadCareer,saveCareer,ranking,qualification} from '../src/engine.js';
+import {createCareer,progress,collegeEarlyStatus,runDraft,requestTrade,decideTradeOffer,rosterPlan,visibleSalaryChange,simulateSeason,standings,loadCareer,saveCareer,ranking,qualification} from '../src/engine.js';
 const config=(seed=1,role='bat',position='유격수')=>({seed,name:'검증 선수',school:'검증고',role,position,type:role==='bat'?'수비형':'선발형',team:0});
 const professional=(seed=1)=>{const c=createCareer(config(seed));c.stage='프로';c.phase='prepare';c.proYears=3;c.age=24;c.contract={kind:'reserved',annualMan:18000,left:0};c.salaryPending=true;return c;};
 test('고교 팀 경기와 개인 경기, 선발 등판을 분리하고 대회별 기록 합계가 맞는다',()=>{for(const role of ['bat','pitch'])for(const seed of [1,2,3,4,5]){const c=createCareer(config(seed,role,role==='bat'?'유격수':'선발')),row=progress(c),team=row.league.teams.find(t=>t.id===row.team);assert.ok(team.g>=14);assert.equal(team.g,Object.values(team.competitions).reduce((n,x)=>n+x.g,0));assert.ok(row.stat.g<=team.g);if(role==='pitch'){assert.equal(row.stat.gs,row.stat.g);assert.ok(row.stat.gs<team.g);}else{assert.ok(row.stat.pa>=row.stat.g);assert.equal(row.minorStat.g,0);assert.deepEqual(row.rosterMoves,[]);}}});

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster} from '../src/league-operations.js';
+import {tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster} from '../src/league-operations.js';
 import {createCareer,developmentalEligibility,simulateSeason,emptyBat,nationalSelectionChance,nationalInvitation,offers,canonicalAwardName,progress,saveCareer,loadCareer,automaticTradeChance,requestTrade,rng,injuryForecast} from '../src/engine.js';
 
 const career=(seed=1)=>createCareer({seed,name:'검증',school:'검증고',team:0,role:'bat',position:'우익수',type:'교타형'});

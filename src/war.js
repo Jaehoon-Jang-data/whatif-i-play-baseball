@@ -97,7 +97,7 @@ export function careerWAR(rows){
 }
 export function bestWarSeasons(rows){
  const entries=careerWAR(rows).seasons.filter(x=>x.war.value!==null).sort((a,b)=>Number(b.war.value.toFixed(1))-Number(a.war.value.toFixed(1))||a.row.year-b.row.year);
- return entries.slice(0,3).map((x,i)=>({...x,rank:entries.findIndex(y=>Number(y.war.value.toFixed(1))===Number(x.war.value.toFixed(1)))+1}));
+ return entries.slice(0,3).map(x=>({...x,rank:entries.findIndex(y=>Number(y.war.value.toFixed(1))===Number(x.war.value.toFixed(1)))+1}));
 }
 export function teamWarReport(league){
  const ctx=leagueWarContext(league);if(!ctx)return [];

@@ -1,6 +1,6 @@
 import test from'node:test';import assert from'node:assert/strict';
 import{simulateSeason,awards,createCareer,emptyPitch,emptyBat,refreshCurrentAwards,saveCareer,loadCareer,archiveEntry,awardSummary}from'../src/engine.js';
-import{createAwardEvaluation,goldenGloveEligible,rookieAwardEligibility,AWARD_MODEL_VERSION}from'../src/award-evaluation.js';
+import{goldenGloveEligible,rookieAwardEligibility,AWARD_MODEL_VERSION}from'../src/award-evaluation.js';
 import{leagueWarContext,seasonWAR}from'../src/war.js';
 const league=simulateSeason({seed:83,year:2030,player:{name:'수상 검증',role:'pitch',position:'선발',team:0,a:Array(6).fill(65),rookie:true,rookieYear:2030,priorPa:0,priorOuts:0,opportunity:.6}});
 const war=(l,p)=>seasonWAR({...p,year:l.year},{context:leagueWarContext(l)}).value;

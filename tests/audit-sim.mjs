@@ -1,4 +1,4 @@
-import {createCareer,progress,overall,simulateSeason,rates,postseasonResult,secondaryDraftEligible} from '../src/engine.js';
+import {createCareer,progress,overall,simulateSeason,rates,postseasonResult} from '../src/engine.js';
 
 const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
 const p90=a=>[...a].sort((x,y)=>x-y)[Math.floor(a.length*.9)];

@@ -1,11 +1,11 @@
-import {AWARD_MODEL_VERSION,createAwardEvaluation,rookieAwardEligibility,goldenGloveEligible} from './award-evaluation.js?v=7.30';
-import {decodeStoredJSON,writeStoredJSON} from './storage-codec.js?v=7.30';
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.30';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.30';
+import {AWARD_MODEL_VERSION,createAwardEvaluation,rookieAwardEligibility,goldenGloveEligible} from './award-evaluation.js?v=7.31';
+import {decodeStoredJSON,writeStoredJSON} from './storage-codec.js?v=7.31';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.31';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.31';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {warSnapshot,careerWarSnapshot} from './war.js?v=7.30';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.30';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.30';
+import {warSnapshot,careerWarSnapshot} from './war.js?v=7.31';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.31';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.31';
 export const VERSION=7;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -603,12 +603,6 @@ export function sign(c,offer) {
   moveTeam(c,offer.team);c.contract={...offer,startYear:c.year,endYear:c.year+offer.years-1};c.lastContract={year:c.year,oldTeam,...c.contract};c.faCount++;c.faCycleStart=c.year;c.faDeclared=false;c.reserved=true;c.playerStatus='reserved';c.salaryPending=false;c.salaryDecision=null;c.signingIncome+=offer.signingBonusMan;(c.signingLedger??=[]).push({year:c.year,team:offer.team,kind:'fa',amountMan:offer.signingBonusMan});c.phase='contract_result';
   (c.contractHistory??=[]).push({year:c.year,...c.contract});
   note(c,`${TEAMS[offer.team]} FA 계약 · ${offer.years}년 최대 ${money(offer.totalMan)} · 보장 ${money(offer.guaranteedMan)} · 연봉 ${money(offer.annualMan)}`);
-}
-function renewSalary(c) {
-  const old=c.contract?.annualMan||MIN_SALARY;
-  const annual=salaryOffer(c);
-  c.contract=reservedContract(annual);c.reserved=true;c.playerStatus='reserved';
-  note(c,`${TEAMS[c.player.team]} 보류 유지 · 연봉 ${money(old)} → ${money(annual)}`);
 }
 export function deferFA(c) {
   if(c.phase!=='fa_choice')throw Error('현재 FA 선언 시점이 아닙니다.');

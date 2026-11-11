@@ -1,18 +1,18 @@
-import {decodeStoredJSON} from './storage-codec.js?v=7.30';
-import {normalizeCreationDraft} from './creation-flow.js?v=7.30';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.30';
+import {decodeStoredJSON} from './storage-codec.js?v=7.31';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.31';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.31';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
-  injuryForecast,progress,nextYear,resolvePositionOffer,rates,emptyBat,emptyPitch,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
-  percentileReport,money,totalSalary,faStatus,draftAssessment,collegeEarlyStatus,enterCollege,
-  runDraft,beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
-  positionOffer,changePosition,sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
-  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,teamBudget,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,canonicalAwardName,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,archiveSalaryTotal,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.30';
-import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.30';
-import {programOptionHtml} from './training-ui.js?v=7.30';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.30';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.30';
+  injuryForecast,progress,nextYear,resolvePositionOffer,rates,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
+  percentileReport,money,totalSalary,faStatus,draftAssessment,enterCollege,
+  beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
+  sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
+  overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,careerTimeline,careerTeams,acknowledgeSeasonNational
+} from './engine.js?v=7.31';
+import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.31';
+import {programOptionHtml} from './training-ui.js?v=7.31';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.31';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.31';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -20,7 +20,6 @@ const validViews=['club','records','league','story','archive','help'];
 let career=null,view=validViews.includes(location.hash.slice(1))?location.hash.slice(1):'club',busy=false,saveError='',archiveReadError='',recordMode='major',resultLevel='auto',chosenYear=null,playback=null,playbackFrame=null,pendingSeasonCandidate=null,seasonCalculationId=0;
 const primarySave=localStorage.getItem(SAVE_KEY);
 let activeSaveKey=primarySave===SAVE_TOMBSTONE?null:primarySave?SAVE_KEY:LEGACY_SAVE_KEYS.find(key=>localStorage.getItem(key))||null;
-let startingSeed=Math.floor(Math.random()*2147483646)+1;
 try {career=loadCareer();} catch(e) {saveError=e.message;}
 function restoredPlayback(c){
   const saved=c?.playback;
@@ -36,7 +35,6 @@ const saveSetup=()=>{setup=normalizeCreationDraft(setup);localStorage.setItem(SE
 const positions=role=>role==='bat'?['포수','1루수','2루수','3루수','유격수','좌익수','중견수','우익수','지명타자']:['선발','중간계투','마무리'];
 const btn=(label,action,variant='primary',disabled=false)=>`<button type="button" class="${variant}" data-action="${action}" ${disabled?'disabled':''}>${label}</button>`;
 const options=(items,value)=>items.map(x=>`<option value="${esc(x)}" ${value===x?'selected':''}>${esc(x)}</option>`).join('');
-const fresh=role=>role==='bat'?emptyBat():emptyPitch();
 const teamName=(row)=>row.stage==='프로'?TEAMS[row.team]:row.stage==='고교'?career.player.school:row.collegeTeam||'대학 야구부';
 const latest=()=>career?.history.at(-1);
 function message(text){$('#notice').textContent=text;$('#notice').classList.add('show');setTimeout(()=>$('#notice').classList.remove('show'),4500);}
@@ -222,7 +220,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.30',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.31',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -289,7 +287,6 @@ function majorEvent(){const e=career.pendingEvent;if(!e)return '';
   if(e.type==='spring_evaluation'){title='스프링캠프 평가';content=`<p>${esc(e.text)}</p>`;}
   if(e.type==='military'){title=e.outcome==='합격'?'상무 선발 및 복무 시작':e.outcome==='탈락'?'상무 선발 탈락':'현역 복무 시작';content=`<p>${esc(e.outcome)} · ${e.path==='athletic'?'상무':'현역'}${e.path==='athletic'&&career.lastSangmuResult?` · ${career.lastSangmuResult.rank}/${career.lastSangmuResult.total}위`:''}</p><p>${e.outcome==='탈락'?'현역 입대 또는 다음 해 재지원을 선택할 수 있습니다.':'2시즌 복무 후 선수 생활로 복귀합니다.'}</p>`;}
   if(e.type==='discharge'){title='병역 복무 완료';content=`<p>${e.path==='athletic'?'상무':'현역'} 복무를 마치고 소속 구단으로 복귀합니다.</p>`;}
-  if(e.type==='position_result'){title='보직·포지션 변경 결과';content=`<p>${esc(e.from)} → ${esc(e.to)}</p>`;}
   if(e.type==='trade'){title=e.outcome==='거절'?'트레이드 요청 거절':e.outcome==='보류'?'트레이드 요청 보류':`${TEAMS[e.newTeam]} 입단`;content=`<p>${TEAMS[e.oldTeam]}${e.newTeam!==e.oldTeam?` → ${TEAMS[e.newTeam]}`:''}</p>${eventReason(e.reason)?`<p>${esc(eventReason(e.reason))}</p>`:''}`;}
   if(e.type==='join'){title=`${TEAMS[e.team]} 입단`;content=`<p>${esc(e.reason||'프로 입단')}</p>`;}
   if(e.type==='salary'){title='연봉 협상 결과';content=`<p>${e.renegotiated?e.accepted?'재협상 성공':'재협상 실패 · 최초 제안 적용':'구단 제안 수락'}</p><p>기존 ${money(e.oldMan)} → 확정 ${money(e.annualMan)}</p>`;}

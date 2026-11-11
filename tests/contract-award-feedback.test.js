@@ -2,7 +2,7 @@ import {leagueWarContext,seasonWAR} from '../src/war.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createCareer,awards,offers,salaryOffer,negotiateSalary,automaticTradeChance,nationalSelectionChance,nationalInvitation,saveCareer,loadCareer,emptyPitch,money,visibleSalaryChange,settleSalary,teamBudget,simulateSeason,rng} from '../src/engine.js';
+import {createCareer,awards,offers,salaryOffer,negotiateSalary,automaticTradeChance,nationalSelectionChance,saveCareer,loadCareer,emptyPitch,money,visibleSalaryChange,settleSalary,teamBudget,simulateSeason,rng} from '../src/engine.js';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/contract-award-feedback.json',import.meta.url)));
 const expand=l=>({...structuredClone(l),players:l.players.map(row=>Object.fromEntries(fixture.playerFields.filter((k,i)=>row[i]!==null).map(k=>[k,structuredClone(row[fixture.playerFields.indexOf(k)])])))});
 const saved=year=>{const f=fixture.cases[year].career,c=Object.assign(createCareer(f.player),structuredClone(f));c.history.at(-1).league=expand(fixture.leagues[f.leagueYear]);c.latest=c.history.at(-1).league;return c;};

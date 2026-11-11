@@ -44,7 +44,7 @@ test('1군 WAR와 트레이드 실제 노출량은 보존하고 2군 WAR 스냅�
  }
 });
 test('구 시즌은 출장 추정으로 계산하되 은퇴 요약만 남은 구 기록은 계산 불가로 구분한다',()=>{
- const traded={...row,teamSegments:[{team:0,stat:{...bat,pa:450}},{team:1,stat:{...bat,pa:150}}]};const c=leagueWarContext(league);near(seasonWAR(traded).diagnostics.parkFactor,1.015);near(value({...traded,league:null,...warSnapshot(traded)}),value(traded));
+ const traded={...row,teamSegments:[{team:0,stat:{...bat,pa:450}},{team:1,stat:{...bat,pa:150}}]};near(seasonWAR(traded).diagnostics.parkFactor,1.015);near(value({...traded,league:null,...warSnapshot(traded)}),value(traded));
  const snapshot=warSnapshot(row);near(value({...row,league:null,...snapshot}),value(row));assert.ok(seasonWAR(row).notes.includes('구장·출장 비중 일부 추정'));
  const old={...row,league:undefined};const out=careerWAR([row,old]);assert.equal(out.known,1);assert.equal(out.missing,1);near(out.value,value(row));assert.match(warCareerHtml([old],['가상 팀']),/1시즌 미기록/);
 });

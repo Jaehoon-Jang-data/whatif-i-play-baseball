@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCareer,simulateSeason,emptyBat,emptyPitch,ranking,awards,rosterPlan,percentileReport,qualification,skillCaps,progress,archetype,positionOffer,moveTeam,requestTrade,injuryForecast,offers,negotiateSalary,rates} from '../src/engine.js';
+import {createCareer,simulateSeason,emptyBat,emptyPitch,ranking,awards,rosterPlan,percentileReport,qualification,progress,archetype,positionOffer,moveTeam,requestTrade,injuryForecast,offers,negotiateSalary} from '../src/engine.js';
 const config=(seed,role='bat',position='유격수')=>({seed,name:'검증',school:'검증고',team:0,role,position,type:role==='bat'?'교타형':'변화구형'});
 const pro=(seed=1,role='bat',position='유격수')=>{const c=createCareer(config(seed,role,position));c.stage='프로';c.phase='prepare';c.year=2030;c.age=29;c.proYears=4;c.served=true;c.reserved=true;c.contract={kind:'reserved',annualMan:5000,left:0};return c;};
 test('도루 시도·성공·실패는 원기록과 투수 아웃에 일치하고 팀 분포가 KBO 범위에 근접한다',()=>{

@@ -17,7 +17,13 @@ export function assignBullpenRoles(pitchers,score=p=>p.a.reduce((n,x)=>n+x,0)/p.
   return roles;
 }
 export function chooseBullpenPitcher({pitchers,roles,workloads,usedIds,day,inning,lead,seasonStart,score,random}){
-  const pool=pitchers.filter(p=>!usedIds.has(p.id)&&p.stat.g-(p.stat.gs||0)<75&&reliefAvailability(workloads.get(p.id),day).available&&reliefAvailability(workloads.get(p.id),day).weeklyPitches+(roles.get(p.id)==='롱릴리프'||!['필승조','마무리'].includes(roles.get(p.id))&&inning<=6?35:20)<=100);
+  const availability=new Map();
+  const pool=pitchers.filter(p=>{
+    if(usedIds.has(p.id)||!(p.stat.g-(p.stat.gs||0)<75))return false;
+    const rest=reliefAvailability(workloads.get(p.id),day);
+    availability.set(p.id,rest);
+    return rest.available&&rest.weeklyPitches+(roles.get(p.id)==='롱릴리프'||!['필승조','마무리'].includes(roles.get(p.id))&&inning<=6?35:20)<=100;
+  });
   if(!pool.length)return null;
   const closer=inning>=8&&lead>=1&&lead<=3,high=inning>=6&&lead>=0&&lead<=3||inning>=7&&lead===-1;
   let preferred,reason;
@@ -29,7 +35,7 @@ export function chooseBullpenPitcher({pitchers,roles,workloads,usedIds,day,innin
     if(maintenance.length){preferred=maintenance;reason='점검 등판';}
     else{preferred=pool.filter(p=>p.position!=='마무리');if(!preferred.length)preferred=pool;reason='가용 투수 대체';}
   }
-  const grade=p=>score(p)-Math.max(0,reliefAvailability(workloads.get(p.id),day).weeklyPitches-45)*.15-(workloads.get(p.id)?.at(-1)?.day===day-1?8:0)+(inning<=5&&roles.get(p.id)==='롱릴리프'?18:0);
+  const grade=p=>score(p)-Math.max(0,availability.get(p.id).weeklyPitches-45)*.15-(workloads.get(p.id)?.at(-1)?.day===day-1?8:0)+(inning<=5&&roles.get(p.id)==='롱릴리프'?18:0);
   preferred.sort((a,b)=>grade(b)-grade(a)||a.id.localeCompare(b.id));
   const top=preferred.slice(0,high||closer?1:Math.min(3,preferred.length));
   return {pitcher:top[Math.floor(random()*top.length)],reason};
