@@ -1,6 +1,6 @@
-import {decodeStoredJSON} from './storage-codec.js?v=7.31';
-import {normalizeCreationDraft} from './creation-flow.js?v=7.31';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.31';
+import {decodeStoredJSON} from './storage-codec.js?v=7.32';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.32';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.32';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -8,11 +8,11 @@ import {
   beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.31';
-import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.31';
-import {programOptionHtml} from './training-ui.js?v=7.31';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.31';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.31';
+} from './engine.js?v=7.32';
+import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.32';
+import {programOptionHtml} from './training-ui.js?v=7.32';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.32';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.32';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -124,7 +124,7 @@ function metrics(stat,role,position,row=null,warLevel='major'){
   row??=career?.history.find(x=>x.stat===stat&&x.stage==='프로');
   const roleStat=position==='마무리'?['sv','세이브']:position==='중간계투'?['hold','홀드']:['w','승'];
   const columns=role==='bat'?[['avg','타율'],['obp','출루율'],['slg','장타율'],['ops','OPS'],['h','안타'],['hr','홈런'],['rbi','타점'],['r','득점'],['sb','도루']]:[['era','ERA'],['whip','WHIP'],['k9','K/9'],['bb9','BB/9'],roleStat,['l','패'],['k','탈삼진'],['g','경기'],['outs','이닝']];
-  const prior=row?career.history.filter(x=>x.year<row.year&&x.role===role&&careerComparisonEligible(x)):[],qualified=row&&careerComparisonEligible(row);
+  const prior=row?career.history.filter(x=>x.year<row.year&&x.role===role&&careerComparisonEligible(x)):[],qualified=warLevel==='major'&&row&&careerComparisonEligible(row);
   return `<div class="metrics season-metrics">${columns.map(([key,name],i)=>{const current=statValue(stat,role,key),values=prior.map(x=>statValue(x.stat,role,key)),marker=qualified?careerRecordMarker(key,current,values):'';const high=marker==='CH',worst=marker==='CL';return `${i===4&&war?warMetricHtml(war):''}<div class="${i<4?'rate-stat':'count-stat'}"><span>${name}${high?'<em class="career-high">CH</em>':worst?'<em class="career-low">CL</em>':''}</span><strong>${displayStat(stat,role,key)}</strong></div>`;}).join('')}</div>`;
 }
 function color(percent){if(percent===null)return '#9ca3af';const p=percent/100;return p<.5?`rgb(${Math.round(50+p*340)},${Math.round(80+p*290)},240)`:`rgb(235,${Math.round(225-(p-.5)*350)},${Math.round(240-(p-.5)*390)})`;}
@@ -220,7 +220,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.31',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.32',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };
@@ -285,7 +285,7 @@ function majorEvent(){const e=career.pendingEvent;if(!e)return '';
   if(e.type==='postseason'){title=e.ring?'한국시리즈 우승!':'포스트시즌 결과';content=`<p>정규시즌 ${e.regularRank}위 → 최종 ${e.finalRank}위</p><p>${e.selected?'포스트시즌 로스터 선발':'포스트시즌 로스터 미선발'}</p>`;}
   if(e.type==='award'){title='개인 타이틀 수상';content=awardBadgesHtml(e.titles);}
   if(e.type==='spring_evaluation'){title='스프링캠프 평가';content=`<p>${esc(e.text)}</p>`;}
-  if(e.type==='military'){title=e.outcome==='합격'?'상무 선발 및 복무 시작':e.outcome==='탈락'?'상무 선발 탈락':'현역 복무 시작';content=`<p>${esc(e.outcome)} · ${e.path==='athletic'?'상무':'현역'}${e.path==='athletic'&&career.lastSangmuResult?` · ${career.lastSangmuResult.rank}/${career.lastSangmuResult.total}위`:''}</p><p>${e.outcome==='탈락'?'현역 입대 또는 다음 해 재지원을 선택할 수 있습니다.':'2시즌 복무 후 선수 생활로 복귀합니다.'}</p>`;}
+  if(e.type==='military'){title=e.outcome==='합격'?'상무 선발 및 복무 시작':e.outcome==='탈락'?'상무 선발 탈락':'현역 복무 시작';content=`<p>${esc(e.outcome)} · ${e.path==='athletic'?'상무':'현역'}</p><p>${e.outcome==='탈락'?'현역 입대 또는 다음 해 재지원을 선택할 수 있습니다.':'2시즌 복무 후 선수 생활로 복귀합니다.'}</p>`;}
   if(e.type==='discharge'){title='병역 복무 완료';content=`<p>${e.path==='athletic'?'상무':'현역'} 복무를 마치고 소속 구단으로 복귀합니다.</p>`;}
   if(e.type==='trade'){title=e.outcome==='거절'?'트레이드 요청 거절':e.outcome==='보류'?'트레이드 요청 보류':`${TEAMS[e.newTeam]} 입단`;content=`<p>${TEAMS[e.oldTeam]}${e.newTeam!==e.oldTeam?` → ${TEAMS[e.newTeam]}`:''}</p>${eventReason(e.reason)?`<p>${esc(eventReason(e.reason))}</p>`:''}`;}
   if(e.type==='join'){title=`${TEAMS[e.team]} 입단`;content=`<p>${esc(e.reason||'프로 입단')}</p>`;}

@@ -24,7 +24,7 @@ function park(s,role,usage,team,league){
 }
 export function leagueWarContext(league){
  if(!league?.players?.length||!league.teams?.length||(league.level&&league.level!=='major'))return null;
- const bats=league.players.filter(p=>p.role==='bat'),arms=league.players.filter(p=>p.role==='pitch');
+ const bats=league.players.filter(p=>p.role==='bat'&&pa(p.stat)>0),arms=league.players.filter(p=>p.role==='pitch'&&n(p.stat.outs)>0);
  const battingPa=sum(bats,p=>pa(p.stat)),outs=sum(arms,p=>n(p.stat.outs)),runs=sum(league.teams,t=>n(t.r)),teamGames=sum(league.teams,t=>n(t.g));
  if(!battingPa||!outs||!teamGames)return null;
  const pitchHbpIncluded=arms.every(p=>Number.isFinite(p.stat.hbp));
@@ -32,7 +32,7 @@ export function leagueWarContext(league){
  const opportunities=s=>singles(s)+n(s.bb)+n(s.hbp);
  const br=s=>.2*n(s.sb)-csCost*n(s.cs);
  const pool=1000/2430*(teamGames/2);
- return {version:WAR_VERSION,year:league.year,level:league.level,parkFactors:Object.fromEntries(league.teams.map(t=>[t.id,t.park??1])),battingPa,outs,runs,teamGames,ra9,runsPerWin,runsPerPa:runs/battingPa,
+ return {version:WAR_VERSION,year:league.year,level:league.level,referencePopulation:{level:'major',batters:bats.length,pitchers:arms.length,battingPa,outs,minorIncluded:false},parkFactors:Object.fromEntries(league.teams.map(t=>[t.id,t.park??1])),battingPa,outs,runs,teamGames,ra9,runsPerWin,runsPerPa:runs/battingPa,
   battingPerPa:sum(bats,p=>batting(p.stat))/battingPa,brPerOpportunity:sum(bats,p=>br(p.stat))/Math.max(1,sum(bats,p=>opportunities(p.stat))),csCost,
   positionPerPa:sum(bats,p=>positional(p.stat,p.position,p.warUsage))/battingPa,
   batParkMean:sum(bats,p=>pa(p.stat)*park(p.stat,'bat',p.warUsage,p.team,league))/battingPa,

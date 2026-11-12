@@ -42,6 +42,6 @@ test('합성 핵심 선수의 자동 트레이드 확률은 비주전보다 훨�
 test('합성 대표팀 판단은 2030년의 전년 기록과 서로 다른 추첨이며 나이·연차 경계를 구분한다',()=>{
  const c=saved(2031),source=c.selectionSource;Object.assign(c,{year:2030,age:21,proYears:2,latest:expand(source.league)});c.player={...c.player,a:source.player.a};c.history=c.history.filter(r=>r.year<2030);
  const wbc=nationalSelectionChance(c,'WBC',source.stat),ag=nationalSelectionChance(c,'아시안게임',source.stat);assert.ok(wbc.chance>0&&ag.chance>0);assert.equal(ag.category,'연령·연차 대상');assert.ok(rng(c.seed+2030*997)()<wbc.chance);assert.ok(rng(c.seed+2030*997+61)()>ag.chance);assert.equal(c.nationalDecisions['2030:WBC'],'수락');assert.equal(c.nationalDecisions['2030:아시안게임'],'미선발');
- c.age=30;c.proYears=4;assert.equal(nationalSelectionChance(c,'아시안게임',source.stat).chance,0);c.proYears=3;assert.equal(nationalSelectionChance(c,'아시안게임',source.stat).category,'연령·연차 대상');
+ c.age=30;c.proYears=4;c.history=[];assert.equal(nationalSelectionChance(c,'아시안게임',source.stat).chance,0);c.proYears=3;assert.equal(nationalSelectionChance(c,'아시안게임',source.stat).category,'연령·연차 대상');
  assert.deepEqual(restore(saved(2031)).nationalDecisions,saved(2031).nationalDecisions);
 });

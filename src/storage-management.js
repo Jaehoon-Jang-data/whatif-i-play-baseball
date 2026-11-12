@@ -1,6 +1,6 @@
-import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.31';
-import {careerWarSnapshot} from './war.js?v=7.31';
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.31';
+import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.32';
+import {careerWarSnapshot} from './war.js?v=7.32';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.32';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';
