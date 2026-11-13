@@ -7,7 +7,7 @@ const clearEvents=c=>{while(c.pendingEvent)acknowledgeEvent(c);};
 const finishYear=c=>{nextYear(c);if(c.phase==='position_choice')resolvePositionOffer(c,false);clearEvents(c);};
 
 test('2년 FA 계약은 0/2, 1/2, 만료 순서로 진행하고 협상을 계약 중 막는다',()=>{
-  const c=career(31);c.phase='market';c.faDeclared=true;const offer=offers(c)[0];assert.equal(offer.years,2);sign(c,offer);
+  const c=career(31);c.player.a.fill(80);c.phase='market';c.faDeclared=true;const offer=offers(c)[0];assert.equal(offer.years,2);sign(c,offer);
   assert.deepEqual(faContractTerm(c),{years:2,elapsed:0,remaining:2,active:true});assert.equal(c.salaryPending,false);c.phase='prepare';
   let saved;saveCareer(c,{setItem:(_,value)=>saved=value});const restored=loadCareer({getItem:()=>saved});assert.deepEqual(faContractTerm(restored),faContractTerm(c));assert.equal(restored.salaryPending,false);
   const stale=JSON.parse(saved);stale.salaryPending=true;assert.equal(loadCareer({getItem:()=>JSON.stringify(stale)}).salaryPending,false);

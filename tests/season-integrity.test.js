@@ -16,13 +16,12 @@ test('23세 신인왕과 저연차 선수는 한 시즌 부진만으로 보류 �
   assert.match(releaseAssessment(c).reason,/부진 3시즌.*경쟁.*34세/);
 });
 
-test('포스트시즌 제출 때 2군·재활군은 제외하고 1군 등록 복귀 선수는 포함한다',()=>{
-  const row={role:'bat',stat:{...emptyBat(),g:90,pa:320},rosterCalendar:[...Array(170).fill('1군'),...Array(18).fill('2군')]};
-  assert.equal(postseasonRosterAssessment(row).selected,false);
-  assert.match(postseasonRosterAssessment(row).reason,/2군/);
-  row.rosterCalendar[187]='재활군';assert.match(postseasonRosterAssessment(row).reason,/부상/);
-  row.rosterCalendar[187]='1군';assert.equal(postseasonRosterAssessment(row).selected,true);
-  row.rosterCalendar=Array(188).fill('2군');assert.equal(postseasonRosterAssessment(row).selected,false);
+test('포스트시즌은 직전 2군 여부와 관계없이 자격·건강·성적을 평가한다',()=>{
+ const row={year:2030,stage:'프로',role:'bat',position:'유격수',stat:{...emptyBat(),g:90,pa:320,ab:290,h:90,bb:30},aAfter:Array(6).fill(70),rosterCalendar:Array(188).fill('2군')};
+ assert.equal(postseasonRosterAssessment(row).selected,true);assert.equal(postseasonRosterAssessment(row).eligibility.eligible,true);
+ row.rosterCalendar[187]='재활군';assert.match(postseasonRosterAssessment(row).reason,/부상/);
+ row.rosterCalendar[187]='1군';assert.equal(postseasonRosterAssessment(row).selected,true);
+ row.military=true;assert.equal(postseasonRosterAssessment(row).selected,false);
 });
 
 test('세이브 0개 선수는 타이틀을 받지 않으며 장기 리그의 선발·마무리 보직은 유지된다',()=>{

@@ -22,8 +22,8 @@ test('능력별 상한, 선수 유형 전환, 나이별 보직 제안',()=>{
  const p=pro(8,'pitch','선발');p.age=35;p.player.a=[70,70,70,48,70,70];assert.equal(positionOffer(p).target,'중간계투');assert.match(positionOffer(p).reason,/체력/);
  const b=pro(9);b.age=35;b.player.a=[70,70,70,70,40,70];assert.ok(['1루수','좌익수','우익수','지명타자'].includes(positionOffer(b).target));assert.match(positionOffer(b).reason,/경쟁 전력/);
 });
-test('구단 전력과 성적은 트레이드 수락률·FA 금액에 영향을 주고 이적 시 신뢰도가 초기화된다',()=>{
- const low=pro(11),star=structuredClone(low);low.player.a.fill(52);star.player.a.fill(86);low.clubTrust=star.clubTrust=90;assert.ok(requestTrade(low).chance>requestTrade(star).chance);moveTeam(star,1);assert.equal(star.clubTrust,70);
+test('구단 전력과 성적은 트레이드 수락률·FA 금액에 영향을 주고 이적 시 피로도는 유지된다',()=>{
+ const low=pro(11),star=structuredClone(low);low.player.a.fill(52);star.player.a.fill(86);low.clubTrust=star.clubTrust=90;assert.ok(requestTrade(low).chance>requestTrade(star).chance);moveTeam(star,1);assert.equal(star.health.fatigue,low.health.fatigue);
  const fa=pro(3);fa.phase='market';fa.faDeclared=true;fa.age=28;fa.history=[{stage:'프로',role:'bat',position:'유격수',stat:{...emptyBat(),g:140,pa:600,ab:530,h:175,hr:25,bb:60},league:{players:[{id:'rival',team:3,role:'bat',position:'유격수',a:[95,95,95,95,95,95]},{id:'weak',team:7,role:'bat',position:'유격수',a:[40,40,40,40,40,40]}]}}];const x=offers(fa);assert.equal(x.length,3);assert.ok(x.some(o=>o.years>=5));assert.ok(x.some(o=>o.optionMan===0));assert.ok(x.some(o=>o.optionMan>0));assert.ok(x.find(o=>o.team===7).need>x.find(o=>o.team===3).need);assert.ok(x.find(o=>o.team===7).annualMan>x.find(o=>o.team===3).annualMan);
 });
 test('고교 부상은 성인보다 낮고 승률왕은 10승으로 규정이닝 미달도 가능하다',()=>{
@@ -34,13 +34,13 @@ test('v6 저장 키와 도루 원기록·상한 이관',async()=>{
  const {loadCareer,saveCareer}=await import('../src/engine.js');
  const c=pro(21);progress(c);const old=structuredClone(c);old.version=6;delete old.potentialCaps;
  for(const row of old.history){if(row.role==='bat'){delete row.stat.sba;delete row.stat.cs;if(row.minorStat){delete row.minorStat.sba;delete row.minorStat.cs;}}for(const league of [row.league,row.minorLeague])for(const p of league?.players||[])if(p.role==='bat'){delete p.stat.sba;delete p.stat.cs;}}
- const raw=JSON.stringify(old),restored=loadCareer({getItem:key=>key==='charari-naega-kiunda-v6'?raw:null});assert.equal(restored.version,7);assert.equal(restored.history[0].stat.sba,restored.history[0].stat.sb);assert.equal(restored.history[0].stat.cs,0);assert.ok(restored.potentialCaps.every((v,i)=>v>=restored.player.a[i]));let saved;saveCareer(restored,{setItem:(_,value)=>saved=value});assert.equal(JSON.parse(saved).version,7);
+ const raw=JSON.stringify(old),restored=loadCareer({getItem:key=>key==='charari-naega-kiunda-v6'?raw:null});assert.equal(restored.version,8);assert.equal(restored.history[0].stat.sba,restored.history[0].stat.sb);assert.equal(restored.history[0].stat.cs,0);assert.ok(restored.potentialCaps.every((v,i)=>v>=restored.player.a[i]));let saved;saveCareer(restored,{setItem:(_,value)=>saved=value});assert.equal(JSON.parse(saved).version,8);
 });
 test('강한 포지션 경쟁자는 준수한 선수를 강등시킬 수 있고 호성적 연봉은 유의미하게 오른다',()=>{
  const c=pro(7);c.player.a.fill(68);c.history=[{stage:'프로',role:'bat',position:'유격수',stat:{...emptyBat(),g:140,pa:600,ab:520,h:175,d:30,hr:25,bb:65,sf:5}}];
  const oldSalary=c.contract.annualMan;c.salaryPending=true;assert.ok(negotiateSalary(c).annualMan>oldSalary+3000);
  const alone=rosterPlan(c);c.latest={year:2029,players:[{id:'rival',team:0,role:'bat',position:'유격수',a:Array(6).fill(92)}]};const crowded=rosterPlan(c);assert.ok(crowded.score<alone.score);assert.ok(crowded.moves.some(x=>x.from==='1군'&&x.to==='2군'&&x.reason.includes('경쟁')));c.player.a.fill(90);assert.ok(!rosterPlan(c).moves.some(x=>x.from==='1군'&&x.to==='2군'));
 });
-test('실제 FA 이적도 새 구단 신뢰도 70에서 시작한다',async()=>{
- const {sign}=await import('../src/engine.js');const c=pro(44);c.clubTrust=24;c.phase='market';c.faDeclared=true;c.age=28;const away=offers(c).find(x=>x.team!==c.player.team);sign(c,away);assert.equal(c.player.team,away.team);assert.equal(c.clubTrust,70);assert.equal(c.trustHistory.at(-1).reason,'새 구단 신뢰도 초기화');
+test('실제 FA 이적도 신체 피로를 초기화하지 않는다',async()=>{
+ const {sign}=await import('../src/engine.js');const c=pro(44);c.clubTrust=24;c.phase='market';c.faDeclared=true;c.age=28;const away=offers(c).find(x=>x.team!==c.player.team);sign(c,away);assert.equal(c.player.team,away.team);assert.equal(c.health.fatigue,0);
 });

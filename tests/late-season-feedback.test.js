@@ -21,7 +21,7 @@ test('포스트시즌은 최근 부진·같은 포지션 경쟁을 반영하고 
  const bad={...row(2034),stat:{...emptyBat(),g:30,pa:42,ab:39,h:6,bb:3},aAfter:Array(6).fill(65),rosterCalendar:Array(188).fill('1군')};
  const rival={id:'rival',team:0,role:'bat',position:'중견수',a:Array(6).fill(70),stat:{...emptyBat(),g:110,pa:450,ab:400,h:120,bb:50,d:20,hr:12}};bad.league={players:[rival]};assert.equal(postseasonRosterAssessment(bad).selected,false);assert.match(postseasonRosterAssessment(bad).reason,/부진/);
  bad.aAfter[4]=85;bad.aAfter[5]=85;assert.equal(postseasonRosterAssessment(bad).selected,true);assert.match(postseasonRosterAssessment(bad).reason,/수비/);
- bad.rosterCalendar[187]='2군';assert.equal(postseasonRosterAssessment(bad).selected,false);bad.rosterCalendar[187]='재활군';assert.equal(postseasonRosterAssessment(bad).selected,false);
+ bad.rosterCalendar[187]='2군';assert.equal(postseasonRosterAssessment(bad).selected,true);bad.rosterCalendar[187]='재활군';assert.equal(postseasonRosterAssessment(bad).selected,false);
 });
 test('아시안게임은 9월 하순 열흘만 차출하고 이후 원래 구단 상태로 복귀한다',()=>{
  for(const year of [2030,2034,2038]){const c=make();c.year=year;c.player.a.fill(90);c.nationalDecisions={[`${year}:아시안게임`]:'수락'};const plan=rosterPlan(c),window=asianGamesWindow(year),days=plan.calendar.flatMap((state,i)=>state==='대표팀'?[i]:[]);assert.equal(days.length,10);assert.equal(seasonDate(year,days[0],188),window.start);assert.equal(seasonDate(year,days.at(-1),188),window.end);assert.equal(plan.calendar[days.at(-1)+1],'1군');assert.equal(plan.calendar[187],'1군');assert.ok(plan.moves.some(x=>x.reason==='대표팀 복귀'));

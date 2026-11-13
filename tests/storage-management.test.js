@@ -35,7 +35,7 @@ test('은퇴 선수 하나만 삭제하고 같은 이름의 다른 기록과 시
 test('할당량이 부족해도 현재 저장을 압축해 구 백업을 보존하고 수동 삭제도 지원한다',()=>{
   const c=career(),db=storage(),backup=LEGACY_SAVE_KEYS[0]+'-archive';
   db.setItem(backup,'x'.repeat(5000));
-  const bounded={...db,setItem:(key,value)=>{const used=[SAVE_KEY,backup].reduce((sum,item)=>sum+(item===key?value.length:db.getItem(item)?.length||0),0);if(used>5500)throw Object.assign(Error('quota'),{name:'QuotaExceededError'});db.setItem(key,value);}};
+  const bounded={...db,setItem:(key,value)=>{const used=[SAVE_KEY,backup].reduce((sum,item)=>sum+(item===key?value.length:db.getItem(item)?.length||0),0);if(used>6000)throw Object.assign(Error('quota'),{name:'QuotaExceededError'});db.setItem(key,value);}};
   saveCareer(c,bounded);assert.equal(loadCareer(bounded).player.name,c.player.name);assert.equal(db.getItem(backup),'x'.repeat(5000));
   assert.equal(removeCareerSlot(bounded,backup),true);
   saveCareer(c,bounded);

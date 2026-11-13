@@ -1,3 +1,4 @@
+import {fatigue as currentFatigue,trainingIntensity,completeSeasonHealth} from './health.js?v=7.33';
 // Program coefficients, fatigue and injury modifiers are game design, not medical prescriptions.
 const limit=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const PROGRAMS={
@@ -27,15 +28,15 @@ export function programSelection(role,selection){
 }
 export function selectedPrograms(c,selection=c.trainingPrograms??c.training??[0]){return programSelection(c.player.role,selection);}
 export function programProfile(c,selection){
- const ids=selectedPrograms(c,selection),programs=ids.map(id=>PROGRAMS[c.player.role].find(p=>p.id===id)),state=c.trainingState||{},last=c.history?.filter(x=>x.role===c.player.role).at(-1);
+ const ids=selectedPrograms(c,selection),programs=ids.map(id=>PROGRAMS[c.player.role].find(p=>p.id===id)),last=c.history?.filter(x=>x.role===c.player.role).at(-1);
  const recovery=programs.some(p=>p.recovery);
  const volume=c.player.role==='bat'?((last?.stat?.pa||0)+(last?.minorStat?.pa||0)*.7)/650:((last?.stat?.outs||0)+(last?.minorStat?.outs||0)*.7)/(c.player.position==='선발'?540:210);
  // Offseason dissipates most carry-over fatigue; annual volume is only a workload proxy.
- const recent=last?.recentWorkload,shortLoad=c.player.role==='bat'?(recent?.pa14||0)/60:(recent?.estimatedPitches7||0)/75;
- const fatigue=limit((state.fatigue||0)*.35+Math.max(0,volume-.8)*12+Math.max(0,shortLoad-1)*8,0,60);
+ const recent=last?.recentWorkload;
+ const fatigue=currentFatigue(c),intensity=trainingIntensity(c);
  const active=programs.filter(p=>p.recovery||p.weights.some((w,i)=>w>=.3&&c.player.a[i]<(c.potentialCaps?.[i]??95))),disabled=programs.filter(p=>!active.includes(p)).map(p=>p.id);
- const load=active.length?active.reduce((n,p)=>n+p.load,0)/active.length:0;
- const efficiency=(1-fatigue/170)*(c.recoveryState?.year===c.year?.8:1);
+ const load=(active.length?active.reduce((n,p)=>n+p.load,0)/active.length:0)+intensity.load;
+ const efficiency=intensity.growth*(1-fatigue/170)*(c.recoveryState?.year===c.year?.8:1);
  return {ids:active.map(p=>p.id),disabled,programs:active,load,recovery,efficiency,fatigue,volume,recentWorkload:recent??null,
   riskAdjustment:load*.028+fatigue*.00065+Math.max(0,volume-1)*.025-(recovery?.018:0),recoveryFactor:recovery?.9:1};
 }
@@ -47,11 +48,11 @@ export function programGrowth(c,selection,totalGrowth){
  for(let i=0;i<6;i++){const cap=c.potentialCaps?.[i]??95,room=Math.max(0,cap-c.player.a[i]),technical=limit(.55+(cap-c.player.a[i])/25,.55,1.15),gain=totalGrowth*weights[i]/9*profile.efficiency*technical,applied=Math.min(room,gain);effects.push({index:i,planned:gain,applied,blocked:gain-applied,cost:totalGrowth?cost[i]:0});}
  return {...profile,effects};
 }
-export function completeProgramSeason(c,profile,injury,stat,minorStat={}){
+export function completeProgramSeason(c,profile,injury,stat,minorStat={},recent=null,observedFatigue=null){
  const state=c.trainingState??={fatigue:0,durability:0,runningJudgment:0,pickoff:0,positionFamiliarity:{}};delete state.repeats;
 
  const volume=c.player.role==='bat'?((stat?.pa||0)+(minorStat.pa||0)*.7)/650:((stat?.outs||0)+(minorStat.outs||0)*.7)/(c.player.position==='선발'?540:210);state.workload={year:c.year,volume,pa:stat?.pa||0,outs:stat?.outs||0};
- state.fatigue=limit(profile.fatigue*.3+Math.max(0,profile.load)*18+Math.max(0,volume-1)*12+(injury?8:0)-(profile.recovery?10:0),0,80);
+ state.fatigue=completeSeasonHealth(c,profile,injury,stat,minorStat,recent,observedFatigue);
  state.durability=limit((state.durability||0)*.9+(profile.recovery?2.5:0),0,12);
  if(profile.ids.includes('bat-running'))state.runningJudgment=limit((state.runningJudgment||0)+1.2*profile.efficiency,0,8);
  if(profile.ids.includes('pitch-condition'))state.pickoff=limit((state.pickoff||0)+1.3*profile.efficiency,0,8);

@@ -1,0 +1,395 @@
+{
+  "baselineCommit": "5ab77b5",
+  "sourceSha256": "5def4e105fe6541d0d5b449bd97679609b87a909dbc4cda00df271f065858c76",
+  "samples": {
+    "seeds": [
+      3,
+      17
+    ],
+    "roles": [
+      "유격수",
+      "선발",
+      "중간계투"
+    ],
+    "intensities": [
+      "recovery",
+      "standard",
+      "high"
+    ],
+    "years": 4,
+    "seasonsPerEngine": 72,
+    "description": "동일 초기 기량·프로 2년차. 매년 구단 제안 수락. 이적·FA·군복무를 제외한 통제 표본; 각 상태 전이는 회귀 테스트로 별도 확인."
+  },
+  "engines": {
+    "after": {
+      "summary": {
+        "seasons": 72,
+        "injuries": 15,
+        "meanSalary": 12715.277777777777,
+        "raises": 38,
+        "freezes": 24,
+        "cuts": 10,
+        "meanFatigue": 24.405804436304447,
+        "entryErrors": 0,
+        "selectedFromMinor": 10
+      },
+      "currentOfferMan": 16000,
+      "attached": [
+        {
+          "year": 2029,
+          "w": 5,
+          "ip": 72,
+          "era": 5.25,
+          "oldMan": 3300,
+          "offerMan": 8400,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2030,
+          "w": 5,
+          "ip": 61,
+          "era": 3.540983606557377,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2031,
+          "w": 6,
+          "ip": 42,
+          "era": 4.5,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2033,
+          "w": 3,
+          "ip": 15,
+          "era": 3,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 1211
+        },
+        {
+          "year": 2034,
+          "w": 6,
+          "ip": 114,
+          "era": 5.7631578947368425,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2035,
+          "w": 11,
+          "ip": 135,
+          "era": 3.6,
+          "oldMan": 3300,
+          "offerMan": 17000,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2036,
+          "w": 13,
+          "ip": 150,
+          "era": 4.62,
+          "oldMan": 3300,
+          "offerMan": 15000,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2037,
+          "w": 11,
+          "ip": 114,
+          "era": 2.763157894736842,
+          "oldMan": 3300,
+          "offerMan": 16000,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2038,
+          "w": 9,
+          "ip": 136,
+          "era": 4.5661764705882355,
+          "oldMan": 3300,
+          "offerMan": 14000,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2039,
+          "w": 7,
+          "ip": 150,
+          "era": 4.56,
+          "oldMan": 3300,
+          "offerMan": 16000,
+          "actualPaidMan": 3300
+        }
+      ],
+      "risk": [
+        {
+          "age": 19,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 191
+        },
+        {
+          "age": 19,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 209
+        },
+        {
+          "age": 19,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 235
+        },
+        {
+          "age": 27,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 198
+        },
+        {
+          "age": 27,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 219
+        },
+        {
+          "age": 27,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 242
+        },
+        {
+          "age": 39,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 229
+        },
+        {
+          "age": 39,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 245
+        },
+        {
+          "age": 39,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 282
+        }
+      ],
+      "training": [
+        {
+          "intensity": "recovery",
+          "seasons": 24,
+          "meanFatigue": 9.329069597069596,
+          "meanSixSkillNetChange": 6.204166666666665,
+          "injurySeasons": 3
+        },
+        {
+          "intensity": "standard",
+          "seasons": 24,
+          "meanFatigue": 24.257213675213677,
+          "meanSixSkillNetChange": 8.0375,
+          "injurySeasons": 6
+        },
+        {
+          "intensity": "high",
+          "seasons": 24,
+          "meanFatigue": 39.63113003663003,
+          "meanSixSkillNetChange": 9.154166666666667,
+          "injurySeasons": 6
+        }
+      ]
+    },
+    "before": {
+      "summary": {
+        "seasons": 72,
+        "injuries": 18,
+        "meanSalary": 4804.166666666667,
+        "raises": 18,
+        "freezes": 51,
+        "cuts": 3,
+        "meanFatigue": 7.304116256284341,
+        "entryErrors": null,
+        "selectedFromMinor": 0
+      },
+      "currentOfferMan": 3300,
+      "attached": [
+        {
+          "year": 2029,
+          "w": 5,
+          "ip": 72,
+          "era": 5.25,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2030,
+          "w": 5,
+          "ip": 61,
+          "era": 3.540983606557377,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2031,
+          "w": 6,
+          "ip": 42,
+          "era": 4.5,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2033,
+          "w": 3,
+          "ip": 15,
+          "era": 3,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 1211
+        },
+        {
+          "year": 2034,
+          "w": 6,
+          "ip": 114,
+          "era": 5.7631578947368425,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2035,
+          "w": 11,
+          "ip": 135,
+          "era": 3.6,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2036,
+          "w": 13,
+          "ip": 150,
+          "era": 4.62,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2037,
+          "w": 11,
+          "ip": 114,
+          "era": 2.763157894736842,
+          "oldMan": 3300,
+          "offerMan": 3400,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2038,
+          "w": 9,
+          "ip": 136,
+          "era": 4.5661764705882355,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        },
+        {
+          "year": 2039,
+          "w": 7,
+          "ip": 150,
+          "era": 4.56,
+          "oldMan": 3300,
+          "offerMan": 3300,
+          "actualPaidMan": 3300
+        }
+      ],
+      "risk": [
+        {
+          "age": 19,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 209
+        },
+        {
+          "age": 19,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 209
+        },
+        {
+          "age": 19,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 209
+        },
+        {
+          "age": 27,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 219
+        },
+        {
+          "age": 27,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 219
+        },
+        {
+          "age": 27,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 219
+        },
+        {
+          "age": 39,
+          "intensity": "recovery",
+          "samples": 1200,
+          "injuries": 236
+        },
+        {
+          "age": 39,
+          "intensity": "standard",
+          "samples": 1200,
+          "injuries": 236
+        },
+        {
+          "age": 39,
+          "intensity": "high",
+          "samples": 1200,
+          "injuries": 236
+        }
+      ],
+      "training": [
+        {
+          "intensity": "recovery",
+          "seasons": 24,
+          "meanFatigue": 7.304116256284341,
+          "meanSixSkillNetChange": 8.012500000000001,
+          "injurySeasons": 6
+        },
+        {
+          "intensity": "standard",
+          "seasons": 24,
+          "meanFatigue": 7.304116256284341,
+          "meanSixSkillNetChange": 8.012500000000001,
+          "injurySeasons": 6
+        },
+        {
+          "intensity": "high",
+          "seasons": 24,
+          "meanFatigue": 7.304116256284341,
+          "meanSixSkillNetChange": 8.012500000000001,
+          "injurySeasons": 6
+        }
+      ]
+    }
+  }
+}

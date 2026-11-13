@@ -1,6 +1,6 @@
-import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.32';
-import {careerWarSnapshot} from './war.js?v=7.32';
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.32';
+import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.33';
+import {careerWarSnapshot} from './war.js?v=7.33';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.33';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';
@@ -18,8 +18,9 @@ export function savedCareerSlots(storage){
 }
 
 function normalizeArchive(entry){
- const normalized={...entry};delete normalized.score;delete normalized.careerScore;
- if(normalized.career){normalized.career={...normalized.career};delete normalized.career.careerScore;}
+ const normalized={...entry};delete normalized.score;delete normalized.careerScore;delete normalized.clubTrust;delete normalized.trustHistory;
+ if(normalized.career){normalized.career={...normalized.career};delete normalized.career.careerScore;delete normalized.career.clubTrust;delete normalized.career.trustHistory;}
+ for(const row of normalized.history||normalized.career?.history||[]){delete row.trust;delete row.trustChanges;}
  if(normalized.history||normalized.career?.history)normalized.careerWar=careerWarSnapshot(normalized.history||normalized.career.history);
  return normalized;
 }

@@ -46,3 +46,5 @@ main{max-width:1060px;padding-top:38px}.page-title{margin-bottom:26px}.page-titl
 .state-national{background:#9168c4}
 
 .record-achievements{margin-top:16px;padding-top:14px;border-top:1px solid #d7e7ef}.record-heading{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:13px;color:#245c79}.record-heading span{font-size:12px;color:#536c7c}.record-achievements .record-badges{margin-top:9px}.record-badges>.record-badge{background:#dff3ff;color:#145b82}
+
+.training-health{display:flex;flex-wrap:wrap;gap:10px 24px;margin:12px 0}.intensity-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.intensity-grid button{display:flex;flex-direction:column;gap:5px;padding:10px;text-align:left}.intensity-grid button span{font-size:.8rem;font-weight:400}.intensity-grid button.selected{border-color:var(--accent,#58a6ff);outline:2px solid #58a6ff}.training-health b{margin-left:5px}@media(max-width:560px){.intensity-grid{grid-template-columns:1fr}.intensity-grid button{display:grid;grid-template-columns:90px 1fr}.intensity-grid button span:last-child{grid-column:2}}
