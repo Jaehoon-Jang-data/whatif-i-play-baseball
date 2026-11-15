@@ -1,6 +1,6 @@
-import {careerWAR,bestWarSeasons} from './war.js?v=7.33';
-import {canonicalAwardName} from './engine.js?v=7.33';
-import {recordAchievements} from './record-achievements.js?v=7.33';
+import {careerWAR,bestWarSeasons} from './war.js?v=7.34';
+import {canonicalAwardName} from './engine.js?v=7.34';
+import {recordAchievements} from './record-achievements.js?v=7.34';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function awardBadgesHtml(titles){

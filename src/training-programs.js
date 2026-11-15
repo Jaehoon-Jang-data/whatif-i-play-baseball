@@ -1,4 +1,4 @@
-import {fatigue as currentFatigue,trainingIntensity,completeSeasonHealth} from './health.js?v=7.33';
+import {fatigue as currentFatigue,trainingIntensity,completeSeasonHealth} from './health.js?v=7.34';
 // Program coefficients, fatigue and injury modifiers are game design, not medical prescriptions.
 const limit=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const PROGRAMS={

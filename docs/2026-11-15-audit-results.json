@@ -1,0 +1,519 @@
+{
+  "baseline": "7ca19b2",
+  "sha256": {
+    "pitcher": "449537d00f57d2b70c66f4ee4cad57a08d878d6106d37d4e0b7d6cff290093a3",
+    "defender": "f1a7b13b44ba1ed3034f7962dffd86511826cfd5850e9be1e6e288bd8be645c4"
+  },
+  "engines": {
+    "after": {
+      "originalSourceQuotes": [
+        {
+          "team": 3,
+          "years": 6,
+          "totalMan": 738000,
+          "guaranteedMan": 738000,
+          "annualMan": 116000,
+          "optionMan": 0
+        },
+        {
+          "team": 6,
+          "years": 6,
+          "totalMan": 689000,
+          "guaranteedMan": 689000,
+          "annualMan": 107000,
+          "optionMan": 0
+        },
+        {
+          "team": 0,
+          "years": 6,
+          "totalMan": 657000,
+          "guaranteedMan": 657000,
+          "annualMan": 100000,
+          "optionMan": 0
+        }
+      ],
+      "quotes": [
+        {
+          "kind": "source",
+          "n": 300,
+          "meanTotal": 641373.3333333334,
+          "min": 511000,
+          "max": 775000,
+          "meanGuarantee": 641373.3333333334,
+          "errors": 0
+        },
+        {
+          "kind": "old",
+          "n": 300,
+          "meanTotal": 58690,
+          "min": 51000,
+          "max": 66000,
+          "meanGuarantee": 58690,
+          "errors": 0
+        },
+        {
+          "kind": "low-volume",
+          "n": 300,
+          "meanTotal": 28360,
+          "min": 21000,
+          "max": 38000,
+          "meanGuarantee": 28360,
+          "errors": 0
+        },
+        {
+          "kind": "poor",
+          "n": 300,
+          "meanTotal": 109113.33333333333,
+          "min": 85000,
+          "max": 134000,
+          "meanGuarantee": 109113.33333333333,
+          "errors": 0
+        }
+      ],
+      "careers": [
+        {
+          "profile": "attached",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 330,
+          "minorPa": 744,
+          "released": 0
+        },
+        {
+          "profile": "attached",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 1347,
+          "minorPa": 568,
+          "released": 0
+        },
+        {
+          "profile": "attached",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 327,
+          "minorPa": 736,
+          "released": 0
+        },
+        {
+          "profile": "attached",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 1334,
+          "minorPa": 568,
+          "released": 0
+        },
+        {
+          "profile": "defense",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 161,
+          "minorPa": 1194,
+          "released": 0
+        },
+        {
+          "profile": "defense",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 744,
+          "minorPa": 813,
+          "released": 0
+        },
+        {
+          "profile": "defense",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 120,
+          "minorPa": 1336,
+          "released": 0
+        },
+        {
+          "profile": "defense",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 692,
+          "minorPa": 809,
+          "released": 0
+        },
+        {
+          "profile": "weak",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 1,
+          "pa": 0,
+          "minorPa": 455,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 1,
+          "pa": 0,
+          "minorPa": 455,
+          "released": 1
+        }
+      ],
+      "summary": {
+        "careers": 12,
+        "playerSeasons": 34,
+        "earlyRetirements": 4,
+        "byProfile": [
+          {
+            "profile": "attached",
+            "n": 4,
+            "earlyRetired": 0,
+            "meanPA": 834.5,
+            "meanMinorPA": 654
+          },
+          {
+            "profile": "defense",
+            "n": 4,
+            "earlyRetired": 0,
+            "meanPA": 429.25,
+            "meanMinorPA": 1038
+          },
+          {
+            "profile": "weak",
+            "n": 4,
+            "earlyRetired": 4,
+            "meanPA": 0,
+            "meanMinorPA": 227.5
+          }
+        ]
+      }
+    },
+    "before": {
+      "originalSourceQuotes": [
+        {
+          "team": 3,
+          "years": 6,
+          "totalMan": 483000,
+          "guaranteedMan": 483000,
+          "annualMan": 76000,
+          "optionMan": 0
+        },
+        {
+          "team": 6,
+          "years": 6,
+          "totalMan": 457000,
+          "guaranteedMan": 457000,
+          "annualMan": 71000,
+          "optionMan": 0
+        },
+        {
+          "team": 0,
+          "years": 6,
+          "totalMan": 434000,
+          "guaranteedMan": 434000,
+          "annualMan": 66000,
+          "optionMan": 0
+        }
+      ],
+      "quotes": [
+        {
+          "kind": "source",
+          "n": 300,
+          "meanTotal": 421486.6666666667,
+          "min": 335000,
+          "max": 508000,
+          "meanGuarantee": 421486.6666666667,
+          "errors": 0
+        },
+        {
+          "kind": "old",
+          "n": 300,
+          "meanTotal": 58690,
+          "min": 51000,
+          "max": 66000,
+          "meanGuarantee": 58690,
+          "errors": 0
+        },
+        {
+          "kind": "low-volume",
+          "n": 300,
+          "meanTotal": 28360,
+          "min": 21000,
+          "max": 38000,
+          "meanGuarantee": 28360,
+          "errors": 0
+        },
+        {
+          "kind": "poor",
+          "n": 300,
+          "meanTotal": 109113.33333333333,
+          "min": 85000,
+          "max": 134000,
+          "meanGuarantee": 109113.33333333333,
+          "errors": 0
+        }
+      ],
+      "careers": [
+        {
+          "profile": "attached",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "attached",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 1347,
+          "minorPa": 568,
+          "released": 0
+        },
+        {
+          "profile": "attached",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "attached",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 1334,
+          "minorPa": 568,
+          "released": 0
+        },
+        {
+          "profile": "defense",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "defense",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 397,
+          "minorPa": 579,
+          "released": 1
+        },
+        {
+          "profile": "defense",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "defense",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": false,
+          "age": 27,
+          "reason": null,
+          "played": 4,
+          "pa": 305,
+          "minorPa": 813,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-field",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-field",
+          "seed": 17,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 1,
+          "pa": 0,
+          "minorPa": 455,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-contact",
+          "seed": 3428207612,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 0,
+          "pa": 0,
+          "minorPa": 0,
+          "released": 1
+        },
+        {
+          "profile": "weak",
+          "program": "bat-contact",
+          "seed": 17,
+          "retired": true,
+          "age": 24,
+          "reason": "재취업 시장 실패",
+          "played": 1,
+          "pa": 0,
+          "minorPa": 455,
+          "released": 1
+        }
+      ],
+      "summary": {
+        "careers": 12,
+        "playerSeasons": 18,
+        "earlyRetirements": 8,
+        "byProfile": [
+          {
+            "profile": "attached",
+            "n": 4,
+            "earlyRetired": 2,
+            "meanPA": 670.25,
+            "meanMinorPA": 284
+          },
+          {
+            "profile": "defense",
+            "n": 4,
+            "earlyRetired": 2,
+            "meanPA": 175.5,
+            "meanMinorPA": 348
+          },
+          {
+            "profile": "weak",
+            "n": 4,
+            "earlyRetired": 4,
+            "meanPA": 0,
+            "meanMinorPA": 227.5
+          }
+        ]
+      }
+    }
+  },
+  "advice": {
+    "compared": 3,
+    "hasEdge": true,
+    "strengths": [
+      "수비",
+      "송구"
+    ],
+    "programs": [
+      {
+        "id": "bat-contact",
+        "name": "타격 종합",
+        "effect": "컨택·선구",
+        "gain": 1.3045454545454547,
+        "edge": 1.5,
+        "room": 5,
+        "score": 1.3645454545454547
+      },
+      {
+        "id": "bat-approach",
+        "name": "선구·상황 타격",
+        "effect": "선구·컨택",
+        "gain": 0.9818181818181841,
+        "edge": 0.46666666666666146,
+        "room": 4,
+        "score": 1.0004848484848505
+      }
+    ],
+    "focus": "컨택·선구",
+    "role": "수비·백업 경쟁"
+  }
+}
