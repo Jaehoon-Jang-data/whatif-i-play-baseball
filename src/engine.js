@@ -1,14 +1,14 @@
-import {postseasonRules,postseasonEligibility,postseasonHealth} from './postseason-rules.js?v=7.34';
+import {postseasonRules,postseasonEligibility,postseasonHealth} from './postseason-rules.js?v=7.35';
 export {postseasonRules,postseasonEligibility};
-import {initializeHealth,fatigue,injuryRisk,recoverOffseason,fatigueAfterDay} from './health.js?v=7.34';
-import {AWARD_MODEL_VERSION,createAwardEvaluation,rookieAwardEligibility,goldenGloveEligible} from './award-evaluation.js?v=7.34';
-import {decodeStoredJSON,writeStoredJSON} from './storage-codec.js?v=7.34';
-import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.34';
-import {expectedContribution,playingStyle} from './player-value.js?v=7.34';
+import {initializeHealth,fatigue,injuryRisk,recoverOffseason,fatigueAfterDay} from './health.js?v=7.35';
+import {AWARD_MODEL_VERSION,createAwardEvaluation,rookieAwardEligibility,goldenGloveEligible} from './award-evaluation.js?v=7.35';
+import {decodeStoredJSON,writeStoredJSON} from './storage-codec.js?v=7.35';
+import {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,programGrowth,completeProgramSeason} from './training-programs.js?v=7.35';
+import {expectedContribution,playingStyle} from './player-value.js?v=7.35';
 export {PROGRAMS,programSelection,selectedPrograms,programProfile,programOptions,expectedContribution};
-import {seasonWAR,warSnapshot,careerWarSnapshot} from './war.js?v=7.34';
-import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.34';
-import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.34';
+import {seasonWAR,warSnapshot,careerWarSnapshot} from './war.js?v=7.35';
+import {reliefAvailability,assignBullpenRoles,chooseBullpenPitcher,holdEligible} from './bullpen.js?v=7.35';
+import {seasonDate,tradeWindowOpen,rosterLimits,clubStrategy,selectClubRoster,gameEligibleRoster} from './league-operations.js?v=7.35';
 export const VERSION=8;
 export const TEAMS=['트윈스','자이언츠','랜더스','라이온즈','타이거즈','이글스','위즈','다이노스','베어스','히어로즈'];
 export const KEYS={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
@@ -845,7 +845,8 @@ export function nationalSelectionChance(c,name,stat){
   if(policy.kind==='senior'&&c.age>=36)chance*=score>=75?.9:score>=68?.65:.35;
   if(policy.kind==='youth'&&c.age>policy.baseAge&&category==='연령·연차 대상')chance*=score>=75?.7:score>=68?.4:.15;
   if(category==='와일드카드')chance*=policy.wildcards/policy.rosterSize*(score>=75?1:score>=68?.65:.3);
-  if(roster)chance=roster.complete&&roster.selected.some(p=>p.id==='user')?clamp(.90+(score-60)*.002,.85,.96)*clamp((form-25)/15,.05,1)*clamp(sample/.5,.1,1):0;
+  // The constrained 24-player roster is the selection. Do not run a second rejection lottery.
+  if(roster)chance=roster.complete&&roster.selected.some(p=>p.id==='user')?1:0;
   return {chance,score,sample,form,category,group,stronger,slots,...(roster?{roster}:{} )};
 }
 export function nationalInvitation(c,name,stat=null){
@@ -854,10 +855,13 @@ export function nationalInvitation(c,name,stat=null){
   if(c.nationalDecisions?.[key])return null;
   const last=stat||c.history.filter(x=>x.stage==='프로'&&!x.military&&x.role===c.player.role).at(-1)?.stat;
   if(!last?.g)return null;
-  const {chance,score,category,group,stronger,slots}=nationalSelectionChance(c,name,last);
-  const invited=rng(c.seed+c.year*997+['WBC','아시안게임','프리미어12'].indexOf(name)*61)()<chance;
-  if(!invited){(c.nationalDecisions??={})[key]='미선발';return null;}
+  const evaluation=nationalSelectionChance(c,name,last),{chance,score,category,group,stronger,slots}=evaluation;
+  const finalRoster=nationalPolicy(c.year,name).kind==='youth'&&evaluation.roster?.complete===true;
+  const roll=finalRoster?null:rng(c.seed+c.year*997+['WBC','아시안게임','프리미어12'].indexOf(name)*61)(),invited=finalRoster?chance===1:roll<chance;
   const sourceYear=stat?c.year:c.history.filter(x=>x.stage==='프로'&&!x.military&&x.role===c.player.role).at(-1)?.year;
+  const reason=evaluation.reason||(finalRoster?(invited?'24인 명단 선발':'24인 포지션·구단·와일드카드 경쟁에서 미선발'):evaluation.roster?'24인 명단 구성 조건 미충족':invited?'후보 평가 초청':'후보 평가 미선발');
+  (c.nationalAssessments??={})[key]={model:finalRoster?'final-roster-v2':'candidate-evaluation-v1',sourceYear:sourceYear??null,sourceStat:structuredClone(last),sourceAbilities:[...c.player.a],age:c.age,position:c.player.position,team:c.player.team,policy:nationalPolicy(c.year,name),score,category,group:group??null,stronger:stronger??null,slots:slots??null,sample:evaluation.sample??0,form:evaluation.form??null,chance,roll,invited,reason,...(evaluation.roster?{roster:structuredClone(evaluation.roster)}:{})};
+  if(!invited){(c.nationalDecisions??={})[key]='미선발';return null;}
   return {type:'national_invitation',year:c.year,name,score:Math.round(score),category,group,stronger,slots,sourceYear,sourceStat:structuredClone(last),month:name==='WBC'?'3월':name==='아시안게임'?'9월 하순':'11월'};
 }
 export function preSeasonNationalInvitation(c){
@@ -888,7 +892,7 @@ function nationalOutcome(c,name,accepted){
 export function decideNationalInvitation(c,accept){
   const invitation=c.pendingEvent;if(invitation?.type!=='national_invitation')throw Error('대표팀 선발 제안이 없습니다.');
   (c.nationalDecisions??={})[nationalKey(c.year,invitation.name)]=accept?'수락':'거절';
-  if(invitation.sourceYear)(c.nationalAssessments??={})[nationalKey(c.year,invitation.name)]={sourceYear:invitation.sourceYear,sourceStat:invitation.sourceStat,score:invitation.score,group:invitation.group,category:invitation.category};
+  if(invitation.sourceYear)(c.nationalAssessments??={})[nationalKey(c.year,invitation.name)]={...(c.nationalAssessments?.[nationalKey(c.year,invitation.name)]||{}),sourceYear:invitation.sourceYear,sourceStat:invitation.sourceStat,score:invitation.score,group:invitation.group,category:invitation.category};
   c.pendingEvent=(c.eventQueue||[]).shift()||null;
   if(!accept||invitation.name!=='아시안게임'){
     const event=nationalOutcome(c,invitation.name,accept);

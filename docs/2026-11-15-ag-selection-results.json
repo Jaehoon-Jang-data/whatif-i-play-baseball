@@ -1,0 +1,139 @@
+{
+  "baseline": "388780b",
+  "sourceSha256": "30b077365c1d49ea961c09c9c7f60c62a94d3233fbf45b077e33dd3b05d35f32",
+  "samples": {
+    "worlds": 6,
+    "worldSeeds": [
+      11,
+      83,
+      313
+    ],
+    "tournamentYears": [
+      2034,
+      2038
+    ],
+    "ages": [
+      23,
+      25,
+      28,
+      32
+    ],
+    "positions": [
+      "포수",
+      "1루수",
+      "2루수",
+      "3루수",
+      "유격수",
+      "중견수",
+      "지명타자",
+      "선발",
+      "중간계투",
+      "마무리"
+    ],
+    "casesPerEngine": 240
+  },
+  "engines": {
+    "after": {
+      "source": {
+        "sourceYear": 2033,
+        "chance": 1,
+        "referenceRoll": 0.9181062320712954,
+        "decisionRoll": null,
+        "included": true,
+        "invited": true,
+        "category": "연령·연차 대상",
+        "score": 61.42738528877371,
+        "rosterComplete": true
+      },
+      "summary": {
+        "cases": 240,
+        "complete": 176,
+        "included": 148,
+        "partialRosters": 4,
+        "invited": 148,
+        "redundantExclusions": 0,
+        "outsideInvites": 0,
+        "quotaErrors": 0
+      },
+      "byAge": [
+        {
+          "age": 23,
+          "n": 60,
+          "included": 59,
+          "invited": 59
+        },
+        {
+          "age": 25,
+          "n": 60,
+          "included": 59,
+          "invited": 59
+        },
+        {
+          "age": 28,
+          "n": 60,
+          "included": 30,
+          "invited": 30
+        },
+        {
+          "age": 32,
+          "n": 60,
+          "included": 0,
+          "invited": 0
+        }
+      ]
+    },
+    "before": {
+      "source": {
+        "sourceYear": 2033,
+        "chance": 0.9028547705775475,
+        "referenceRoll": 0.9181062320712954,
+        "decisionRoll": 0.9181062320712954,
+        "included": true,
+        "invited": false,
+        "category": "연령·연차 대상",
+        "score": 61.42738528877371,
+        "rosterComplete": true
+      },
+      "summary": {
+        "cases": 240,
+        "complete": 176,
+        "included": 148,
+        "partialRosters": 4,
+        "invited": 140,
+        "redundantExclusions": 8,
+        "outsideInvites": 0,
+        "quotaErrors": 0
+      },
+      "byAge": [
+        {
+          "age": 23,
+          "n": 60,
+          "included": 59,
+          "invited": 59
+        },
+        {
+          "age": 25,
+          "n": 60,
+          "included": 59,
+          "invited": 55
+        },
+        {
+          "age": 28,
+          "n": 60,
+          "included": 30,
+          "invited": 26
+        },
+        {
+          "age": 32,
+          "n": 60,
+          "included": 0,
+          "invited": 0
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "rosterDifferences": 0,
+    "adultChanceDifferences": 0
+  }
+}

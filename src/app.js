@@ -1,9 +1,9 @@
-import {fatigueMeter} from './health-ui.js?v=7.34';
-import {teamDevelopment} from './team-development.js?v=7.34';
-import {fatigue,injuryRisk,TRAINING_INTENSITIES} from './health.js?v=7.34';
-import {decodeStoredJSON} from './storage-codec.js?v=7.34';
-import {normalizeCreationDraft} from './creation-flow.js?v=7.34';
-import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.34';
+import {fatigueMeter} from './health-ui.js?v=7.35';
+import {teamDevelopment} from './team-development.js?v=7.35';
+import {fatigue,injuryRisk,TRAINING_INTENSITIES} from './health.js?v=7.35';
+import {decodeStoredJSON} from './storage-codec.js?v=7.35';
+import {normalizeCreationDraft} from './creation-flow.js?v=7.35';
+import {seasonWAR,careerWAR,compareCareerWAR} from './war.js?v=7.35';
 import {
   TEAMS,KEYS,TITLES,PROGRAMS,programProfile,programOptions,SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,HIGH_SCHOOLS,randomName,abilityCandidates,createCareer,skillCaps,rosterPlan,coachChallenge,springEvaluation,decideRetirementAdvice,
   injuryForecast,progress,nextYear,resolvePositionOffer,rates,sumStats,ranking,statValue,preSeasonNationalInvitation,decideNationalInvitation,
@@ -11,11 +11,11 @@ import {
   beginDraft,revealDraft,finishDraft,developmentalEligibility,developmentalTryout,declareFA,deferFA,offers,sign,salaryOffer,negotiateSalary,requestTrade,
   sangmuRecruitment,enlist,mandatoryEnlist,conversionOffer,convert,retire,saveCareer,loadCareer,
   overall,qualification,faGrade,faContractTerm,standings,visibleSalaryChange,decideTradeOffer,acknowledgeEvent,secondaryDraft,releasedSecondaryDraft,waiverCheck,advanceWaiverYear,freeAgentOffers,signFreeAgent,freeAgentTryout,hasChampionshipRing,awardSummary,publicReason,careerRecordMarker,careerComparisonEligible,incomeBreakdown,nationalTournamentYear,militaryOpportunities,careerTimeline,careerTeams,acknowledgeSeasonNational
-} from './engine.js?v=7.34';
-import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.34';
-import {programOptionHtml} from './training-ui.js?v=7.34';
-import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.34';
-import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.34';
+} from './engine.js?v=7.35';
+import {awardBadgeHtml,awardBadgesHtml,recordBadgesHtml,noAppearanceText,warMetricHtml,warCareerHtml,formatWAR,careerWarLabel} from './presentation.js?v=7.35';
+import {programOptionHtml} from './training-ui.js?v=7.35';
+import {SEASON_PLAYBACK_STEPS,seasonPlaybackStep,seasonPlaybackStops} from './progress-display.js?v=7.35';
+import {ARCHIVE_KEY,ARCHIVE_LIMIT,ARCHIVE_EXPORT_FORMAT,archiveEntries,savedCareerSlots,removeArchivedEntry,removeCareerSlot,retirementArchiveState,storeRetiredCareer,replaceArchivedCareer,archiveExport,importArchiveExport} from './storage-management.js?v=7.35';
 
 const $=s=>document.querySelector(s);
 const esc=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -226,7 +226,7 @@ function startSeasonCalculation(){
   }
   let worker;
   try{
-    worker=new Worker(new URL('./season-worker.js?v=7.34',import.meta.url),{type:'module'});
+    worker=new Worker(new URL('./season-worker.js?v=7.35',import.meta.url),{type:'module'});
     worker.onmessage=event=>{
       worker.terminate();if(event.data.type==='done')calculated(event.data.career);else fail(Error(event.data.message||'시즌 계산 실패'));
     };

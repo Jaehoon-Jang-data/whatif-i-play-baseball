@@ -1,5 +1,5 @@
-import {PROGRAMS} from './training-programs.js?v=7.34';
-import {expectedContribution} from './player-value.js?v=7.34';
+import {PROGRAMS} from './training-programs.js?v=7.35';
+import {expectedContribution} from './player-value.js?v=7.35';
 const names={bat:['컨택','파워','선구','주루','수비','송구'],pitch:['구속','제구','구위','체력','변화구','위기관리']};
 export function teamDevelopment(c){
  const p=c.player,pool=c.phase==='prepare'&&c.leagueRoster?.length?c.leagueRoster:c.latest?.level==='major'?c.latest.players:c.leagueRoster||[],peers=pool.filter(x=>x.id!=='user'&&x.team===p.team&&x.role===p.role&&x.position===p.position&&x.a?.length===6),base=expectedContribution(p).score;

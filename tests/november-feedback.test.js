@@ -34,7 +34,7 @@ test('아시안게임 예상 명단은 24명·11/2/7/4·와일드카드 3명·�
  assert.equal(roster.selected.filter(p=>p.role==='pitch').length,11);assert.equal(roster.selected.filter(p=>p.position==='포수').length,2);assert.equal(roster.selected.filter(p=>['1루수','2루수','3루수','유격수','지명타자'].includes(p.position)).length,7);assert.equal(roster.selected.filter(p=>['좌익수','중견수','우익수'].includes(p.position)).length,4);
  assert.equal(new Set(roster.selected.map(p=>p.team)).size,10);for(const team of new Set(roster.selected.map(p=>p.team)))assert.ok(roster.selected.filter(p=>p.team===team).length<=3);
  for(const position of ['1루수','2루수','3루수','유격수'])assert.ok(roster.selected.some(p=>p.position===position));
- assert.ok(nationalSelectionChance(c,'아시안게임',bat).chance<=.96);assert.equal(nationalSelectionChance({...c,service:1},'아시안게임',bat).chance,0);
+ assert.equal(nationalSelectionChance(c,'아시안게임',bat).chance,roster.selected.some(p=>p.id==='user')?1:0);assert.equal(nationalSelectionChance({...c,service:1},'아시안게임',bat).chance,0);
 });
 test('아시안게임은 같은 내야라도 포지션 공백·경쟁과 실제 입단 연도를 사용한다',()=>{
  const c=make();c.latest=selectionLeague();c.player.a.fill(85);c.history=[{year:2028,stage:'프로'}];
