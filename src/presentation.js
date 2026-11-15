@@ -1,5 +1,5 @@
 import {careerWAR,bestWarSeasons} from './war.js?v=7.35';
-import {canonicalAwardName} from './engine.js?v=7.35';
+import {canonicalAwardName} from './engine.js?v=7.38';
 import {recordAchievements} from './record-achievements.js?v=7.35';
 
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

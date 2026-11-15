@@ -27,12 +27,12 @@ function career(){
  const l=simulateSeason({seed:11,year:2030,games:18,player:{...c.player,a:Array(6).fill(80),opportunity:1}}),p=l.players.find(x=>x.id==='user');
  c.history=Array.from({length:24},(_,i)=>{const league=structuredClone(l);league.year=2027+i;return{year:league.year,age:18+i,stage:'프로',role:'bat',position:'우익수',team:0,stat:structuredClone(p.stat),league,awards:[],teamSegments:[{team:0,stat:structuredClone(p.stat)}]};});c.latest=c.history.at(-1).league;retire(c);return c;
 }
-test('24시즌 현재 저장·은퇴 7명·불러오기·내보내기는 동일한 기록과 WAR를 보존한다',()=>{
+test('24시즌 현재 저장·은퇴 10명·불러오기·내보내기는 동일한 기록과 WAR를 보존한다',()=>{
  const c=career(),storage=db(1500000);saveCareer(c,storage);assert.equal(JSON.parse(storage.getItem(SAVE_KEY))._storageCodec,STORAGE_CODEC);
  const before=loadCareer({getItem:()=>JSON.stringify(c)}),after=loadCareer(storage);assert.deepEqual(after,before);assert.deepEqual(careerWarSnapshot(after.history),careerWarSnapshot(before.history));assert.deepEqual(after.latest,before.latest);
- for(let i=0;i<7;i++){const next=structuredClone(c);next.archiveId='long-'+i;next.player.name='보관 '+i;assert.equal(storeRetiredCareer(storage,next),true);}
- const original=archiveEntries(storage),backup=archiveExport(original),target=db(1500000);assert.equal(importArchiveExport(target,backup),7);assert.deepEqual(archiveEntries(target),original);
- const eighth=structuredClone(c);eighth.archiveId='long-8';assert.equal(storeRetiredCareer(storage,eighth),false);replaceArchivedCareer(storage,eighth,2,'long-2');assert.equal(archiveEntries(storage).length,7);assert.equal(archiveEntries(storage).filter(x=>x.id==='long-8').length,1);
+ for(let i=0;i<10;i++){const next=structuredClone(c);next.archiveId='long-'+i;next.player.name='보관 '+i;assert.equal(storeRetiredCareer(storage,next),true);}
+ const original=archiveEntries(storage),backup=archiveExport(original),target=db(1500000);assert.equal(importArchiveExport(target,backup),10);assert.deepEqual(archiveEntries(target),original);
+ const eleventh=structuredClone(c);eleventh.archiveId='long-11';assert.equal(storeRetiredCareer(storage,eleventh),false);replaceArchivedCareer(storage,eleventh,2,'long-2');assert.equal(archiveEntries(storage).length,10);assert.equal(archiveEntries(storage).filter(x=>x.id==='long-11').length,1);
  assert.equal(savedCareerSlots(storage).find(x=>x.key===SAVE_KEY).name,c.player.name);
  const legacy=db(1500000);legacy.setItem(LEGACY_SAVE_KEYS[0],encodeStoredJSON(c));assert.equal(loadCareer(legacy).year,c.year);
 });

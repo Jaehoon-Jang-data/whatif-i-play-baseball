@@ -1,6 +1,6 @@
 import {decodeStoredJSON,storedJSONPreview,writeStoredJSON} from './storage-codec.js?v=7.35';
 import {careerWarSnapshot} from './war.js?v=7.35';
-import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.35';
+import {SAVE_KEY,SAVE_TOMBSTONE,LEGACY_SAVE_KEYS,ARCHIVE_LIMIT,upsertArchive,archiveEntry,STORAGE_RELATED_KEYS} from './engine.js?v=7.38';
 
 export const ARCHIVE_KEY='charari-naega-kiunda-careers';
 export const ARCHIVE_EXPORT_FORMAT='charari-naega-kiunda-archives-v1';
@@ -73,7 +73,7 @@ export function importArchiveExport(storage,data){
     const index=entries.findIndex(x=>x.id===entry.id);
     if(index<0)entries.push(normalizeArchive(entry));else entries[index]=normalizeArchive(entry);
   }
-  if(entries.length>ARCHIVE_LIMIT)throw Error('은퇴 선수는 7명까지 보관할 수 있습니다. 기존 기록을 내보내고 정리한 뒤 불러오세요.');
+  if(entries.length>ARCHIVE_LIMIT)throw Error('은퇴 선수는 10명까지 보관할 수 있습니다. 기존 기록을 내보내고 정리한 뒤 불러오세요.');
   writeStoredJSON(storage,ARCHIVE_KEY,entries,STORAGE_RELATED_KEYS);return entries.length;
 }
 
